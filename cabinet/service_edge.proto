@@ -1,0 +1,48 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+import "shared.proto";
+
+// Edges define the core relationships across all elements in a Cabinet, implemented in a QUAD data store
+// This model resembled the implementations found in Neo4J or Redis Graph, allowing for quick lookups and lists
+// Coming from a relational model, Edges take the role of any Foreign Key and are optimized for large numbers
+
+// Schematic Representation:
+// /edge/{SUBJECT}/{PREDICATE}/{TARGET} = {EMBEDDED_PROP}
+
+// IRI Representation:
+// Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/e/{SUBJECT}/{PREDICATE}/{TARGET}
+// Edge Property cds://cab@{APPLICATION.PLATFORM}:{REGION}/e/{SUBJECT}/{PREDICATE}/{TARGET}/p/{PROPERTY_ID}
+
+// You can lookup Edges by: {SUBJECT} or {SUBJECT} + {PREDICATE}
+
+message EdgeMutationRequest {
+    Edge edge = 1;
+}
+
+message EdgeGetRequest {
+    RetrieveMode mode = 1;
+    Edge edge = 2;
+}
+
+message EdgeGetResponse {
+    Edge edge = 1;
+}
+
+message EdgeListRequest {
+    RetrieveMode mode = 1;
+    string resume_at = 2;
+    int32 page_size = 3;
+
+    string subject = 4;
+    uint32 predicate = 5;
+}
+
+message EdgeListResponse {
+    int32 cnt = 1;
+    repeated Edge edges = 2;
+}

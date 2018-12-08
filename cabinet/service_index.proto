@@ -1,0 +1,43 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+import "shared.proto";
+
+// Indexes are views of Nodes and their properties optimized for value lookups
+
+// Schematic Representation:
+// /idx/n/{INDEX_ID}/{VALUE}/{NODE_ID} = {EMBEDDED_PROP}|NULL
+
+// IRI Representation:
+// Index cds://cab@{APPLICATION.PLATFORM}:{REGION}/i/n/{INDEX_ID}/{VALUE}/{NODE_ID}
+// Index Property cds://cab@{APPLICATION.PLATFORM}:{REGION}/i/n/{INDEX_ID}/{VALUE}/{NODE_ID}/p/{PROPERTY_ID}
+
+message IndexMutationRequest{
+    Index index = 1;
+}
+
+message IndexGetRequest{
+    Index index = 1;
+    RetrieveMode mode = 2;
+}
+
+message IndexGetResponse{
+    Index index = 1;
+}
+
+message IndexListRequest{
+    RetrieveMode mode = 1;
+    string resume_at = 2;
+    int32 page_size = 3;
+
+    string index_id = 4;
+    string value = 5;
+}
+
+message IndexListResponse{
+    repeated Index index = 1;
+}

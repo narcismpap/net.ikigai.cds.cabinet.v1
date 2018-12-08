@@ -1,0 +1,77 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+
+import "service_counter.proto";
+import "service_edge.proto";
+import "service_index.proto";
+import "service_meta.proto";
+import "service_node.proto";
+
+// Transactions are the fundamental ACID compliance layer within Cabinet
+// Our underlying data store allows for a novel approach, where a transaction can be invalidated by a change to
+// any of the values read or written to as part of single commit event. Applications can take advantage of this by
+// employing strategic [ReadCheck] operators to ensure data predictability in a highly distributed system.
+
+// No schema/IRI representation exists for Transactions as they do not store any data.
+
+message TransactionRequest{
+    repeated TransactionAction op = 1;
+}
+
+message TransactionAction{
+    oneof action{
+        CounterIncrementRequest counter_increment = 1;
+
+        EdgeMutationRequest edge_create = 2;
+        EdgeMutationRequest edge_update = 3;
+        EdgeMutationRequest edge_delete = 4;
+
+        IndexMutationRequest index_create = 10;
+        IndexMutationRequest index_update = 11;
+        IndexMutationRequest index_delete = 12;
+
+        MetaMutationRequest meta_create = 20;
+        MetaMutationRequest meta_update = 21;
+        MetaMutationRequest meta_delete = 22;
+
+        NodeMutationRequest node_create = 30;
+        NodeMutationRequest node_update = 31;
+        NodeMutationRequest node_delete = 32;
+
+        ReadCheck read_check = 40;
+    }
+
+    TransactionRetryBehaviour retry_mode = 100;
+}
+
+message TransactionMutationResponse{
+    MutationStatus status = 1;
+    string tid = 2;
+
+    int32 executed = 3;
+    int32 affected = 4;
+}
+
+
+message ReadCheck{
+    string source = 1;
+
+    CheckOperators operator = 2;
+    CheckTarget target = 3;
+}
+
+message ReadCheckResponse{
+    bool result = 1;
+}
+
+message CheckTarget{
+    oneof target{
+        string val = 1;
+        string iri = 2;
+    }
+}

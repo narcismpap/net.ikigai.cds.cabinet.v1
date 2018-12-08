@@ -1,0 +1,46 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+import "shared.proto";
+
+// Nodes are the core data format in Cabinet, these elements are globally unique document stores
+
+// Schematic Representation:
+// /node/{NODE_TYPE}/{NODE_ID} = {EMBEDDED_PROP}
+
+// IRI Representation:
+// Node:            cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}
+// Node Property    cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}/p/{PROPERTY_ID}
+// Node Attribute   cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}/[v/c/u]
+
+message NodeMutationRequest {
+    Node node = 1;
+}
+
+message NodeGetRequest {
+    RetrieveMode mode = 1;
+
+    string id = 2;
+    string type = 3;
+}
+
+message NodeGetResponse {
+    Node node = 1;
+}
+
+message NodeListRequest {
+    RetrieveMode mode = 1;
+    string resume_at = 2;
+    int32 page_size = 3;
+
+    int32 type = 4;
+}
+
+message NodeList {
+    int32 cnt = 1;
+    repeated Node nodes = 2;
+}

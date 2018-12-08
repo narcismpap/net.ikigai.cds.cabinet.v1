@@ -1,0 +1,38 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+import "shared.proto";
+
+// Counters are highly-scalable locally-distributed atomic INT fields
+
+// Schematic Representation:
+// Node: /cnt/n/{COUNT_ID}/{NODE_ID}/{0x0 - OxF} = atomic<INT>
+// Edge: /cnt/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}/{0x0 - OxF} = atomic<INT>
+
+// IRI Representation:
+// Node: cds://cab@{APPLICATION.PLATFORM}:{REGION}/c/n/{COUNT_ID}/{NODE_ID}
+// Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}
+
+message CounterIncrementRequest{
+    oneof field{
+        string node_id = 1;
+        Edge edge = 2;
+    }
+
+    int32 value = 10;
+}
+
+message CounterValueRequest{
+    oneof field{
+        string node_id = 1;
+        Edge edge = 2;
+    }
+}
+
+message CounterValueResponse{
+    int64 value = 1;
+}
