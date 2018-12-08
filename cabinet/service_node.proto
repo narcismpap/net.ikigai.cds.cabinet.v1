@@ -10,7 +10,7 @@ import "shared.proto";
 // Nodes are the core data format in Cabinet, these elements are globally unique document stores
 
 // Schematic Representation:
-// /node/{NODE_TYPE}/{NODE_ID} = {EMBEDDED_PROP}
+// /n/{NODE_TYPE}/{NODE_ID} = {EMBEDDED_PROP}
 
 // IRI Representation:
 // Node:            cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}

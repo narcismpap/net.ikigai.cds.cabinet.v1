@@ -56,11 +56,14 @@ message Field{
 }
 
 enum ErrorCodes {
-    AuthenticationFailed = 0;
-    ConnectionError = 1;
-    IRIAccessDenied = 2;
-    MutationAccessDenied = 3;
-    MalformedIRI = 4;
+    AccessDenied = 0;
+    AccessDeniedIRI = 1;
+    AccessDeniedMutation = 2;
+    AccessDeniedMethod = 3;
+
+    ConnectionError = 10;
+    MalformedIRI = 11;
+    GeneralError = 12;
 
     ListNoPagination = 50;
     IllegalUpdate = 51;
@@ -75,8 +78,9 @@ enum ErrorCodes {
     EdgeInvalidPredicate = 153;
 
     IndexNotFound = 200;
-    IndexInvalidName = 201;
-    IndexInvalidQuery = 202;
+    IndexInvalidID = 201;
+    IndexInvalidValue = 202;
+    IndexInvalidNode = 203;
 
     MetaNotFound = 250;
     MetaInvalidObject = 251;
@@ -86,12 +90,14 @@ enum ErrorCodes {
 
     FieldInvalidID = 350;
     FieldInvalidUUID = 351;
+    FieldInvalidType = 352;
 
     CounterInvalidIncrement = 400;
 
-    TransactionInvalidAction = 401;
-    TransactionSyntaxError = 402;
-    ReadCheckNaN = 403;
+    TransactionInvalidAction = 451;
+    TransactionSyntaxError = 452;
+    ReadCheckNaN = 453;
+    TransactionRetriesExceeded = 454;
 }
 
 enum RetrieveMode {
@@ -120,7 +126,7 @@ message Edge{
 }
 
 message Index{
-    int32   itype = 1;
+    int32   type = 1;
     int32   field = 2;
     string  node = 3;
     string  value = 4;

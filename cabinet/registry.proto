@@ -12,7 +12,7 @@ import "shared.proto";
 // Data is returned at uint32 yet it is safe to cast as uint16
 
 // Schematic Representation:
-// /reg/{PROPERTY_TYPE}/{SEQ_ID} = {UUID, NAME}
+// /r/{PROPERTY_TYPE}/{SEQ_ID} = {UUID, NAME}
 
 // IRI Representation:
 // cds://cab@{APPLICATION.PLATFORM}:{REGION}/r/{PROPERTY_TYPE}/{SEQ_ID}

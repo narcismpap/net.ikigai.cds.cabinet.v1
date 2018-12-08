@@ -10,7 +10,7 @@ import "shared.proto";
 // Indexes are views of Nodes and their properties optimized for value lookups
 
 // Schematic Representation:
-// /idx/n/{INDEX_ID}/{VALUE}/{NODE_ID} = {EMBEDDED_PROP}|NULL
+// /i/n/{INDEX_ID}/{VALUE}/{NODE_ID} = {EMBEDDED_PROP}|NULL
 
 // IRI Representation:
 // Index cds://cab@{APPLICATION.PLATFORM}:{REGION}/i/n/{INDEX_ID}/{VALUE}/{NODE_ID}

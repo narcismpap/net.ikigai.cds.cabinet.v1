@@ -12,7 +12,7 @@ import "shared.proto";
 // Coming from a relational model, Edges take the role of any Foreign Key and are optimized for large numbers
 
 // Schematic Representation:
-// /edge/{SUBJECT}/{PREDICATE}/{TARGET} = {EMBEDDED_PROP}
+// /e/{SUBJECT}/{PREDICATE}/{TARGET} = {EMBEDDED_PROP}
 
 // IRI Representation:
 // Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/e/{SUBJECT}/{PREDICATE}/{TARGET}

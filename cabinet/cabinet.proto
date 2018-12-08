@@ -1,3 +1,9 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
 syntax = "proto3";
 
 import "registry.proto";
@@ -9,7 +15,11 @@ import "service_node.proto";
 import "service_transaction.proto";
 import "shared.proto";
 
+// Ikigai Cloud Data Services
+// > Cabinet
 
+// This service provides read, list and mutation APIs for the core elements of CDS Cabinet:
+// Node, Edges, Indexes, Meta, Counters and Transactions
 
 service CabinetService {
 
@@ -19,7 +29,7 @@ service CabinetService {
     // @throws: FieldInvalidID, FieldInvalidUUID
     rpc FieldRegister(FieldRegisterRequest) returns(FieldRegisterResponse);
 
-    // @required: seq_id OR uuid
+    // @required: id.seq_id|id.uuid
     // @throws: FieldInvalidID, FieldInvalidUUID
     rpc FieldGet(FieldGetRequest) returns(FieldGetResponse);
 
@@ -27,6 +37,7 @@ service CabinetService {
     rpc FieldList(FieldListRequest) returns(FieldListResponse);
 
     // **** Counters *****
+
     // @required: node_id|Edge, value
     // @throws: CounterInvalidIncrement, NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
     rpc CounterIncrement(CounterIncrementRequest) returns(MutationResponse);
@@ -43,29 +54,41 @@ service CabinetService {
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeUpdate (EdgeMutationRequest) returns (MutationResponse);
+    rpc EdgeUpdate(EdgeMutationRequest) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeDelete (EdgeMutationRequest) returns (MutationResponse);
+    rpc EdgeDelete(EdgeMutationRequest) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeGet (EdgeGetRequest) returns (EdgeGetResponse);
+    rpc EdgeGet(EdgeGetRequest) returns(EdgeGetResponse);
 
-    // lists edges and properties by:
     // @required: edge.subject
     // @optional: edge.predicate, edge.resume_from, edge.page_size, edge.mode
     // @throws: ListNoPagination, EdgeInvalidSubject, EdgeInvalidPredicate
-    rpc EdgeList (EdgeListRequest) returns (EdgeListResponse);
+    rpc EdgeList(EdgeListRequest) returns(EdgeListResponse);
 
     // **** Indexes *****
 
-    rpc IndexCreate (IndexMutationRequest) returns (MutationResponse);
-    rpc IndexUpdate (IndexMutationRequest) returns (MutationResponse);
-    rpc IndexDelete (IndexMutationRequest) returns (MutationResponse);
+    // @required: index.type, index.field, index.node, index.value
+    // @throws: IndexInvalidQuery, IndexInvalidID
+    rpc IndexCreate(IndexMutationRequest) returns(MutationResponse);
 
+    // @required: index.type, index.field, index.node, index.value
+    // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
+    rpc IndexUpdate(IndexMutationRequest) returns(MutationResponse);
+
+    // @required: index.type, index.field, index.node
+    // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
+    rpc IndexDelete(IndexMutationRequest) returns(MutationResponse);
+
+    // @required: index.type, index.field, index.node
+    // @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
     rpc IndexGet(IndexGetRequest) returns(IndexGetResponse);
+
+    // @required: index.type, index.field
+    // @throws: IndexInvalidID
     rpc IndexList(IndexListRequest) returns(IndexListResponse);
 
     // **** Meta *****
@@ -94,31 +117,31 @@ service CabinetService {
 
     // @required: node.type, node.id
     // @throws: NodeInvalidID, NodeInvalidType
-    rpc NodeCreate (NodeMutationRequest) returns (MutationResponse);
+    rpc NodeCreate(NodeMutationRequest) returns(MutationResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeIllegalUpdate
-    rpc NodeUpdate (NodeMutationRequest) returns (MutationResponse);
+    rpc NodeUpdate(NodeMutationRequest) returns(MutationResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    rpc NodeDelete (NodeMutationRequest) returns (MutationResponse);
+    rpc NodeDelete(NodeMutationRequest) returns(MutationResponse);
 
     // @required: id, type
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    rpc NodeGet (NodeGetRequest) returns (NodeGetResponse);
+    rpc NodeGet(NodeGetRequest) returns(NodeGetResponse);
 
     // List node with pagination
     // @required: type, per_page
-    rpc NodeList (NodeListRequest) returns (NodeList)
+    rpc NodeList(NodeListRequest) returns(NodeList)
 
     // **** Transaction *****
 
     // @required: action.*, retry_mode
     // @throws: TransactionInvalidAction, TransactionSyntaxError
-    rpc Transaction (TransactionRequest) returns (TransactionMutationResponse);
+    rpc Transaction(TransactionRequest) returns(TransactionMutationResponse);
 
     // @required: source, operator, target
     // @throws: @ReadCheckNaN
-    rpc ReadCheck (ReadCheck) returns (ReadCheckResponse)
+    rpc ReadCheck(ReadCheck) returns(ReadCheckResponse)
 }

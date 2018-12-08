@@ -10,8 +10,8 @@ import "shared.proto";
 // Meta are out-of-band K/V property storage units for Nodes or Edges
 
 // Schematic Representation:
-// /idx/m/n/{NODE_ID}/{PROPERTY_ID} = {BIN}
-// /idx/m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID} = {BIN}
+// Node: /m/n/{NODE_ID}/{PROPERTY_ID} = {BIN}
+// Edge: /m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID} = {BIN}
 
 // IRI Representation:
 // Node: cds://cab@{APPLICATION.PLATFORM}:{REGION}/m/n/{NODE_ID}/{PROPERTY_ID}
