@@ -9,11 +9,22 @@ package main
 import(
 	pb "cds.ikigai.net/cabinet.v1/cds_go"
 	"context"
+	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"log"
 )
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
 	//val := pb.CounterValueResponse{Value:1}
 	//return &val, nil
+
+	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, e error) {
+		tr.Set(fdb.Key("hello"), []byte("world"))
+		return
+	})
+
+	if err != nil {
+		log.Fatalf("Unable to set FDB database value (%v)", err)
+	}
 
 	return nil, nil
 }

@@ -10,6 +10,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -23,11 +24,19 @@ var (
 
 type CDSCabinetServer struct{
 	version int32
+	fdb fdb.Transactor
 }
 
 func newCDSServer() *CDSCabinetServer {
+	// Different API versions may expose different runtime behaviors.
+	fdb.MustAPIVersion(600)
+
+	// Open the default database from the system cluster
+	db := fdb.MustOpenDefault()
+
 	s := &CDSCabinetServer{
 		version:1,
+		fdb:db,
 	}
 
 	return s
@@ -38,8 +47,10 @@ func main(){
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 
 	if err != nil {
-		log.Fatalf("Failed to bind on :%d: %v", port, err)
+		log.Fatalf("Failed to bind on :%d: %v", *port, err)
 	}
+
+	log.Printf("I am running! on port %d", *port)
 
 	var opts []grpc.ServerOption
 
