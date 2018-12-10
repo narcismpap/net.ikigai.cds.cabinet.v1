@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Nodes are the core data format in Cabinet, these elements are globally unique document stores
@@ -17,13 +19,10 @@ import "shared.proto";
 // Node Property    ./n/{NODE_ID}/p/{PROPERTY_ID}
 // Node Attribute   ./n/{NODE_ID}/[v/c/u]
 
-message NodeMutationRequest {
-    Node node = 1;
-}
 
 message NodeCreateResponse{
     MutationStatus status = 1;
-    string node_id = 2;
+    string id = 2; // IDs are created server-side
 }
 
 message NodeGetRequest {
@@ -31,19 +30,8 @@ message NodeGetRequest {
     string id = 2;
 }
 
-message NodeGetResponse {
-    Node node = 1;
-}
-
 message NodeListRequest {
-    RetrieveMode mode = 1;
-    string resume_at = 2;
-    int32 page_size = 3;
-
-    int32 type = 4;
+    ListOptions opt = 1;
+    int32 node_type = 2;
 }
 
-message NodeListResponse {
-    int32 cnt = 1;
-    repeated Node nodes = 2;
-}

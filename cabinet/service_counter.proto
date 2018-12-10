@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Counters are highly-scalable locally-distributed atomic INT fields
@@ -17,25 +19,6 @@ import "shared.proto";
 // Node: ./c/n/{COUNT_ID}/{NODE_ID}
 // Edge: ./c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}
 
-message CounterIncrementRequest{
-    oneof field{
-        string node_id = 1;
-        Edge edge = 2;
-    }
-
-    string counter = 9;
-    int32 value = 10;
-}
-
-message CounterRequest{
-    oneof field{
-        string node_id = 1;
-        Edge edge = 2;
-    }
-
-    string counter = 9;
-}
-
 message CounterValueResponse{
-    int64 value = 1;
+    uint32 value = 1;
 }

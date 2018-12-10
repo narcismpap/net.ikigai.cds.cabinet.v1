@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Edges define the core relationships across all elements in a Cabinet, implemented in a QUAD data store
@@ -20,29 +22,14 @@ import "shared.proto";
 
 // You can lookup Edges by: {SUBJECT} or {SUBJECT} + {PREDICATE}
 
-message EdgeMutationRequest {
-    Edge edge = 1;
-}
-
 message EdgeGetRequest {
     RetrieveMode mode = 1;
     Edge edge = 2;
 }
 
-message EdgeGetResponse {
-    Edge edge = 1;
-}
-
 message EdgeListRequest {
-    RetrieveMode mode = 1;
-    string resume_at = 2;
-    int32 page_size = 3;
+    ListOptions opt = 1;
 
-    string subject = 4;
-    string predicate = 5;
-}
-
-message EdgeListResponse {
-    int32 cnt = 1;
-    repeated Edge edges = 2;
+    string subject = 10;
+    string predicate = 11;
 }

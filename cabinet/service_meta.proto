@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Meta are out-of-band K/V property storage units for Nodes or Edges
@@ -17,38 +19,11 @@ import "shared.proto";
 // Node: ./m/n/{NODE_ID}/{PROPERTY_ID}
 // Edge: ./m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID}
 
-message MetaMutationRequest{
-    oneof field{
-        Edge edge = 1;
-        string node_id = 2;
-    }
-
-    repeated Meta meta = 10;
-}
-
-message MetaGetRequest{
-    oneof field{
-        Edge edge = 1;
-        string node_id = 2;
-    }
-
-    int32 key = 10;
-}
-
 message MetaGetResponse{
     bytes val = 1;
 }
 
 message MetaListRequest{
-    oneof field{
-        Edge edge = 1;
-        string node_id = 2;
-    }
-
-    int32 resume_at = 10;
-    int32 page_size = 11;
-}
-
-message MetaListResponse{
-    repeated Meta meta = 1;
+    ListOptions opt = 1;
+    Meta meta = 10;
 }

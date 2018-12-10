@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Indexes are views of Nodes and their properties optimized for value lookups
@@ -16,28 +18,14 @@ import "shared.proto";
 // Index ./i/n/{INDEX_ID}/{VALUE}/{NODE_ID}
 // Index Property ./i/n/{INDEX_ID}/{VALUE}/{NODE_ID}/p/{PROPERTY_ID}
 
-message IndexMutationRequest{
-    Index index = 1;
-}
-
 message IndexGetRequest{
     Index index = 1;
     RetrieveMode mode = 2;
 }
 
-message IndexGetResponse{
-    Index index = 1;
-}
-
 message IndexListRequest{
-    RetrieveMode mode = 1;
-    string resume_at = 2;
-    int32 page_size = 3;
+    ListOptions opt = 1;
 
-    string index_id = 4;
-    string value = 5;
-}
-
-message IndexListResponse{
-    repeated Index index = 1;
+    string index_id = 10;
+    string value = 11;
 }

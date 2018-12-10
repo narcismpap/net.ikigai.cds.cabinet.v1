@@ -5,6 +5,7 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
 
 import "service_counter.proto";
 import "service_edge.proto";
@@ -16,122 +17,123 @@ import "service_transaction.proto";
 
 import "shared.proto";
 
-// Ikigai Cloud Data Services
+// Ikigai Cloud Data Services (CSS)
 // > Cabinet
 
 // This service provides read, list and mutation APIs for the core elements of CDS Cabinet:
 // Node, Edges, Indexes, Meta, Counters and Transactions
+// Mutation Operators, outside of Sequential* are only available in the Transaction RPC
 
-service CabinetService {
+service CDSCabinet {
 
     // **** Counters *****
 
     // @required: node_id|Edge, value
     // @throws: CounterInvalidIncrement, NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    // rpc CounterIncrement(CounterIncrementRequest) returns(MutationResponse);
+    // rpc CounterIncrement(Counter) returns(MutationResponse);
 
     // @required: node_id|Edge, value
     // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    rpc CounterDelete(CounterRequest) returns(MutationResponse);
+    // rpc CounterDelete(Counter) returns(MutationResponse);
 
     // @required: node_id|Edge, value
     // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    rpc CounterValue(CounterRequest) returns(CounterValueResponse);
+    rpc CounterGet(Counter) returns(CounterValueResponse);
 
     // **** Edges *****
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    //rpc EdgeCreate(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeCreate(Edge) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    //rpc EdgeUpdate(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeUpdate(Edge) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    //rpc EdgeDelete(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeDelete(Edge) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeGet(EdgeGetRequest) returns(EdgeGetResponse);
+    rpc EdgeGet(EdgeGetRequest) returns(Edge);
 
     // @required: edge.subject
     // @optional: edge.predicate, edge.resume_from, edge.page_size, edge.mode
     // @throws: ListNoPagination, EdgeInvalidSubject, EdgeInvalidPredicate
-    rpc EdgeList(EdgeListRequest) returns(EdgeListResponse);
+    rpc EdgeList(EdgeListRequest) returns(stream Edge);
 
     // **** Indexes *****
 
     // @required: index.type, index.field, index.node, index.value
     // @throws: IndexInvalidQuery, IndexInvalidID
-    //rpc IndexCreate(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexCreate(Index) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node, index.value
     // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    //rpc IndexUpdate(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexUpdate(Index) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node
     // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    //rpc IndexDelete(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexDelete(Index) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node
     // @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
-    rpc IndexGet(IndexGetRequest) returns(IndexGetResponse);
+    rpc IndexGet(IndexGetRequest) returns(Index);
 
     // @required: index.type, index.field
     // @throws: IndexInvalidID
-    rpc IndexList(IndexListRequest) returns(IndexListResponse);
+    rpc IndexList(IndexListRequest) returns(stream Index);
 
     // **** Meta *****
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaInvalidObject, MetaInvalidKey
-    //rpc MetaCreate(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaCreate(Meta) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    //rpc MetaUpdate(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaUpdate(Meta) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    //rpc MetaDelete(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaDelete(Meta) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, key
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    rpc MetaGet(MetaGetRequest) returns(MetaGetResponse);
+    rpc MetaGet(Meta) returns(MetaGetResponse);
 
     // @required: field.edge|field.node_id
     // @throws: MetaInvalidObject, MetaInvalidKey
-    rpc MetaList(MetaListRequest) returns(MetaListResponse);
+    rpc MetaList(MetaListRequest) returns(stream Meta);
 
     // **** Node *****
 
     // @required: node.type, node.id
     // @throws: NodeInvalidID, NodeInvalidType
-    //rpc NodeCreate(NodeMutationRequest) returns(NodeCreateResponse);
+    //rpc NodeCreate(Node) returns(NodeCreateResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeIllegalUpdate
-    //rpc NodeUpdate(NodeMutationRequest) returns(MutationResponse);
+    //rpc NodeUpdate(Node) returns(MutationResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    //rpc NodeDelete(NodeMutationRequest) returns(MutationResponse);
+    //rpc NodeDelete(Node) returns(MutationResponse);
 
     // @required: id, type
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    rpc NodeGet(NodeGetRequest) returns(NodeGetResponse);
+    rpc NodeGet(NodeGetRequest) returns(Node);
 
     // List node with pagination
     // @required: type, per_page
-    rpc NodeList(NodeListRequest) returns(NodeListResponse);
+    rpc NodeList(NodeListRequest) returns(stream Node);
 
     // **** Transaction *****
 
     // @required: <action.*>, retry_mode
     // @throws: TransactionInvalidAction, TransactionSyntaxError
-    rpc Transaction(TransactionRequest) returns(TransactionMutationResponse);
+    rpc Transaction(stream TransactionAction) returns(stream TransactionActionResponse);
 
     // @required: source, operator, target
     // @throws: @ReadCheckNaN
@@ -139,24 +141,24 @@ service CabinetService {
 
     // **** Sequences *****
 
-    // @required: seq.type, seq.node
+    // @required: type, node
     // @throws: NodeNotFound, SequentialInvalidType
-    rpc SequentialCreate(SequentialMutationRequest) returns(SequentialMutationResponse);
+    rpc SequentialCreate(Sequential) returns(Sequential);
 
-    // @required: seq.type, seq.seqid, seq.node
+    // @required: type, seqid, node
     // @throws: NodeNotFound, SequentialInvalidType
-    rpc SequentialUpdate(SequentialUpdateRequest) returns(MutationResponse);
+    rpc SequentialUpdate(Sequential) returns(MutationResponse);
 
-    // @required: seq.type, seq.seqid, seq.node
+    // @required: type, seqid, node
     // @throws: NodeNotFound, SequentialInvalidType
-    rpc SequentialDelete(SequentialDeleteRequest) returns(MutationResponse);
+    rpc SequentialDelete(Sequential) returns(MutationResponse);
 
-    // @required: seq.type, seq.seqid, seq.node
+    // @required: type, seqid
     // @throws: NodeNotFound, SequentialInvalidType
-    rpc SequentialGet(SequentialGetRequest) returns(SequentialGetResponse);
+    rpc SequentialGet(Sequential) returns(Sequential);
 
     // @required: type, per_page
     // @throws: SequentialInvalidType
-    rpc SequentialList(SequentialListRequest) returns(SequentialListResponse);
+    rpc SequentialList(SequentialListRequest) returns(stream Sequential);
 
 }

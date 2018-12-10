@@ -5,6 +5,7 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
 
 enum TransactionRetryBehaviour{
     AUTOMATIC = 0;
@@ -128,8 +129,13 @@ message Index{
 }
 
 message Meta{
-    string key = 1;
-    bytes val = 2;
+    oneof object{
+        Edge edge = 1;
+        string node = 2;
+    }
+
+    string key = 10;
+    bytes val = 11;
 }
 
 message Sequential{
@@ -137,6 +143,22 @@ message Sequential{
 
     string seqid = 2;
     string node = 3;
+}
+
+message Counter{
+    oneof object{
+        string node = 1;
+        Edge edge = 2;
+    }
+
+    string counter = 10;
+    string value = 11;
+}
+
+message ListOptions{
+    RetrieveMode mode = 1;
+    string resume_at = 2;
+    int32 page_size = 3;
 }
 
 message MutationResponse{

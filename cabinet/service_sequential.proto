@@ -5,6 +5,8 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
+
 import "shared.proto";
 
 // Sequential Number Engine can be used to generate well-defined sequences, similar to traditional Relational DB IDs
@@ -19,38 +21,8 @@ import "shared.proto";
 // Last Number: ./s/{SEQUENTIAL_NAME}
 // A. Note:     ./s/{SEQUENTIAL_NAME}/{SEQ_NUM}
 
-message SequentialMutationRequest{
-    Sequential seq = 1;
-}
-
-message SequentialMutationResponse{
-    Sequential seq = 1;
-}
-
-message SequentialGetRequest{
-    string type = 1;
-    string seqid = 2;
-}
-
-message SequentialGetResponse{
-    Sequential seq = 1;
-}
-
-message SequentialDeleteRequest{
-    Sequential seq = 1;
-}
-
-message SequentialUpdateRequest{
-    Sequential seq = 1;
-}
-
 message SequentialListRequest{
-    string type = 1;
+    ListOptions opt = 1;
 
-    string resume_at = 2;
-    int32 page_size = 3;
-}
-
-message SequentialListResponse{
-    repeated Sequential seq = 1;
+    string type = 10;
 }

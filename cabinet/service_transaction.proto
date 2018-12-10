@@ -5,6 +5,7 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 syntax = "proto3";
+package cds.cabinet.v1;
 
 import "service_counter.proto";
 import "service_edge.proto";
@@ -21,51 +22,36 @@ import "shared.proto";
 
 // No schema/IRI representation exists for Transactions as they do not store any data.
 
-message TransactionRequest{
-    repeated TransactionAction op = 1;
-}
-
 message TransactionAction{
     oneof action{
-        CounterIncrementRequest counter_increment = 1;
+        Counter counter_increment = 1;
+        Counter counter_delete = 2;
 
-        EdgeMutationRequest edge_create = 2;
-        EdgeMutationRequest edge_update = 3;
-        EdgeMutationRequest edge_delete = 4;
+        Edge edge_create = 10;
+        Edge edge_update = 11;
+        Edge edge_delete = 12;
 
-        IndexMutationRequest index_create = 10;
-        IndexMutationRequest index_update = 11;
-        IndexMutationRequest index_delete = 12;
+        Index index_create = 20;
+        Index index_update = 21;
+        Index index_delete = 22;
 
-        MetaMutationRequest meta_create = 20;
-        MetaMutationRequest meta_update = 21;
-        MetaMutationRequest meta_delete = 22;
+        Meta meta_create = 30;
+        Meta meta_update = 31;
+        Meta meta_delete = 32;
 
-        NodeMutationRequest node_create = 30;
-        NodeMutationRequest node_update = 31;
-        NodeMutationRequest node_delete = 32;
+        Node node_create = 40;
+        Node node_update = 41;
+        Node node_delete = 42;
 
-        ReadCheckRequest read_check = 40;
+        ReadCheckRequest read_check = 50;
     }
 
     int32 action_id = 80;
-    TransactionRetryBehaviour retry_mode = 100;
-
-}
-
-message TransactionMutationResponse{
-    MutationStatus status = 1;
-    string tid = 2;
-
-    int32 executed = 3;
-    int32 affected = 4;
-
-    repeated TransactionActionResponse rp = 5;
 }
 
 message TransactionActionResponse{
-    int32   action_id = 1;
-    bool    is_error = 2;
+    MutationStatus status = 1;
+    int32 action_id = 2;
 
     oneof response {
         MutationResponse mutation_generic = 10;
