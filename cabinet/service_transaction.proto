@@ -48,7 +48,9 @@ message TransactionAction{
         ReadCheckRequest read_check = 40;
     }
 
+    int32 action_id = 80;
     TransactionRetryBehaviour retry_mode = 100;
+
 }
 
 message TransactionMutationResponse{
@@ -57,6 +59,20 @@ message TransactionMutationResponse{
 
     int32 executed = 3;
     int32 affected = 4;
+
+    repeated TransactionActionResponse rp = 5;
+}
+
+message TransactionActionResponse{
+    int32   action_id = 1;
+    bool    is_error = 2;
+
+    oneof response {
+        MutationResponse mutation_generic = 10;
+        NodeCreateResponse node_create = 20;
+        ReadCheckResponse read_check = 30;
+    }
+
 }
 
 

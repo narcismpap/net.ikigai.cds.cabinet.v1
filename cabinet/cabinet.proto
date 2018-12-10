@@ -28,7 +28,7 @@ service CabinetService {
 
     // @required: node_id|Edge, value
     // @throws: CounterInvalidIncrement, NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    rpc CounterIncrement(CounterIncrementRequest) returns(MutationResponse);
+    // rpc CounterIncrement(CounterIncrementRequest) returns(MutationResponse);
 
     // @required: node_id|Edge, value
     // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
@@ -42,15 +42,15 @@ service CabinetService {
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    rpc EdgeCreate(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeCreate(EdgeMutationRequest) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeUpdate(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeUpdate(EdgeMutationRequest) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    rpc EdgeDelete(EdgeMutationRequest) returns(MutationResponse);
+    //rpc EdgeDelete(EdgeMutationRequest) returns(MutationResponse);
 
     // @required: edge.subject, edge.target, edge.predicate
     // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
@@ -65,15 +65,15 @@ service CabinetService {
 
     // @required: index.type, index.field, index.node, index.value
     // @throws: IndexInvalidQuery, IndexInvalidID
-    rpc IndexCreate(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexCreate(IndexMutationRequest) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node, index.value
     // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    rpc IndexUpdate(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexUpdate(IndexMutationRequest) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node
     // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    rpc IndexDelete(IndexMutationRequest) returns(MutationResponse);
+    //rpc IndexDelete(IndexMutationRequest) returns(MutationResponse);
 
     // @required: index.type, index.field, index.node
     // @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
@@ -87,15 +87,15 @@ service CabinetService {
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaInvalidObject, MetaInvalidKey
-    rpc MetaCreate(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaCreate(MetaMutationRequest) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    rpc MetaUpdate(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaUpdate(MetaMutationRequest) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, meta
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    rpc MetaDelete(MetaMutationRequest) returns(MutationResponse);
+    //rpc MetaDelete(MetaMutationRequest) returns(MutationResponse);
 
     // @required: field.edge|field.node_id, key
     // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
@@ -109,15 +109,15 @@ service CabinetService {
 
     // @required: node.type, node.id
     // @throws: NodeInvalidID, NodeInvalidType
-    rpc NodeCreate(NodeMutationRequest) returns(NodeCreateResponse);
+    //rpc NodeCreate(NodeMutationRequest) returns(NodeCreateResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeIllegalUpdate
-    rpc NodeUpdate(NodeMutationRequest) returns(MutationResponse);
+    //rpc NodeUpdate(NodeMutationRequest) returns(MutationResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    rpc NodeDelete(NodeMutationRequest) returns(MutationResponse);
+    //rpc NodeDelete(NodeMutationRequest) returns(MutationResponse);
 
     // @required: id, type
     // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
