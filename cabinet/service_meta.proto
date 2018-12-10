@@ -13,9 +13,9 @@ import "shared.proto";
 // Node: /m/n/{NODE_ID}/{PROPERTY_ID} = {BIN}
 // Edge: /m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID} = {BIN}
 
-// IRI Representation:
-// Node: cds://cab@{APPLICATION.PLATFORM}:{REGION}/m/n/{NODE_ID}/{PROPERTY_ID}
-// Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID}
+// IRI Relative Representation:
+// Node: ./m/n/{NODE_ID}/{PROPERTY_ID}
+// Edge: ./m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY_ID}
 
 message MetaMutationRequest{
     oneof field{

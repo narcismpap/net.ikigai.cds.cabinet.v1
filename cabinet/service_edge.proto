@@ -14,9 +14,9 @@ import "shared.proto";
 // Schematic Representation:
 // /e/{SUBJECT}/{PREDICATE}/{TARGET} = {EMBEDDED_PROP}
 
-// IRI Representation:
-// Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/e/{SUBJECT}/{PREDICATE}/{TARGET}
-// Edge Property cds://cab@{APPLICATION.PLATFORM}:{REGION}/e/{SUBJECT}/{PREDICATE}/{TARGET}/p/{PROPERTY_ID}
+// IRI Relative Representation:
+// Edge: ./e/{SUBJECT}/{PREDICATE}/{TARGET}
+// Edge Property ./e/{SUBJECT}/{PREDICATE}/{TARGET}/p/{PROPERTY_ID}
 
 // You can lookup Edges by: {SUBJECT} or {SUBJECT} + {PREDICATE}
 

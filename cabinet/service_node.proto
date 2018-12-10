@@ -10,22 +10,25 @@ import "shared.proto";
 // Nodes are the core data format in Cabinet, these elements are globally unique document stores
 
 // Schematic Representation:
-// /n/{NODE_TYPE}/{NODE_ID} = {EMBEDDED_PROP}
+// /n/{NODE_TYPE_NODE_ID} = {EMBEDDED_PROP}
 
-// IRI Representation:
-// Node:            cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}
-// Node Property    cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}/p/{PROPERTY_ID}
-// Node Attribute   cds://cab@{APPLICATION.PLATFORM}:{REGION}/n/{NODE_TYPE}/{NODE_ID}/[v/c/u]
+// IRI Relative Representation:
+// Node:            ./n/{NODE_ID}
+// Node Property    ./n/{NODE_ID}/p/{PROPERTY_ID}
+// Node Attribute   ./n/{NODE_ID}/[v/c/u]
 
 message NodeMutationRequest {
     Node node = 1;
 }
 
+message NodeCreateResponse{
+    MutationStatus status = 1;
+    string node_id = 2;
+}
+
 message NodeGetRequest {
     RetrieveMode mode = 1;
-
     string id = 2;
-    string type = 3;
 }
 
 message NodeGetResponse {

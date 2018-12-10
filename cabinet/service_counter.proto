@@ -13,9 +13,9 @@ import "shared.proto";
 // Node: /c/n/{COUNT_ID}/{NODE_ID}/{0x0 - OxF} = atomic<INT>
 // Edge: /c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}/{0x0 - OxF} = atomic<INT>
 
-// IRI Representation:
-// Node: cds://cab@{APPLICATION.PLATFORM}:{REGION}/c/n/{COUNT_ID}/{NODE_ID}
-// Edge: cds://cab@{APPLICATION.PLATFORM}:{REGION}/c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}
+// IRI Relative Representation:
+// Node: ./c/n/{COUNT_ID}/{NODE_ID}
+// Edge: ./c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}
 
 message CounterIncrementRequest{
     oneof field{
@@ -23,14 +23,17 @@ message CounterIncrementRequest{
         Edge edge = 2;
     }
 
+    int32 counter = 9;
     int32 value = 10;
 }
 
-message CounterValueRequest{
+message CounterRequest{
     oneof field{
         string node_id = 1;
         Edge edge = 2;
     }
+
+    int32 counter = 9;
 }
 
 message CounterValueResponse{

@@ -39,20 +39,11 @@ enum CheckOperators{
 
 enum FieldType{
     NODE = 0;       // n
-    PREDICATE = 1;  // p
+    PREDICATE = 1;  // p <global>
     INDEX = 2;      // i
     PROPERTY = 3;   // a
     META = 4;       // m
     COUNTER = 5;    // c
-}
-
-message Field{
-    FieldType field = 1;
-
-    string uuid = 2;
-    uint32 seq_id = 3;
-
-    string name = 4;
 }
 
 enum ErrorCodes {
@@ -98,6 +89,8 @@ enum ErrorCodes {
     TransactionSyntaxError = 452;
     ReadCheckNaN = 453;
     TransactionRetriesExceeded = 454;
+
+    SequentialInvalidType = 500;
 }
 
 enum RetrieveMode {
@@ -137,6 +130,13 @@ message Index{
 message Meta{
     int32 key = 1;
     bytes val = 2;
+}
+
+message Sequential{
+    string type = 1;
+
+    uint32 seqid = 2;
+    string node = 3;
 }
 
 message MutationResponse{

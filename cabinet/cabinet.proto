@@ -6,13 +6,14 @@
 
 syntax = "proto3";
 
-import "registry.proto";
 import "service_counter.proto";
 import "service_edge.proto";
 import "service_index.proto";
 import "service_meta.proto";
 import "service_node.proto";
+import "service_sequential.proto";
 import "service_transaction.proto";
+
 import "shared.proto";
 
 // Ikigai Cloud Data Services
@@ -23,19 +24,6 @@ import "shared.proto";
 
 service CabinetService {
 
-    // **** Registry *****
-
-    // @required: type, uuid, name
-    // @throws: FieldInvalidID, FieldInvalidUUID
-    rpc FieldRegister(FieldRegisterRequest) returns(FieldRegisterResponse);
-
-    // @required: id.seq_id|id.uuid
-    // @throws: FieldInvalidID, FieldInvalidUUID
-    rpc FieldGet(FieldGetRequest) returns(FieldGetResponse);
-
-    // @required: type
-    rpc FieldList(FieldListRequest) returns(FieldListResponse);
-
     // **** Counters *****
 
     // @required: node_id|Edge, value
@@ -44,7 +32,11 @@ service CabinetService {
 
     // @required: node_id|Edge, value
     // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    rpc CounterValue(CounterValueRequest) returns(CounterValueResponse);
+    rpc CounterDelete(CounterRequest) returns(MutationResponse);
+
+    // @required: node_id|Edge, value
+    // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
+    rpc CounterValue(CounterRequest) returns(CounterValueResponse);
 
     // **** Edges *****
 
@@ -117,7 +109,7 @@ service CabinetService {
 
     // @required: node.type, node.id
     // @throws: NodeInvalidID, NodeInvalidType
-    rpc NodeCreate(NodeMutationRequest) returns(MutationResponse);
+    rpc NodeCreate(NodeMutationRequest) returns(NodeCreateResponse);
 
     // @required: node.type, node.id
     // @throws: NodeNotFound, NodeIllegalUpdate
@@ -144,4 +136,28 @@ service CabinetService {
     // @required: source, operator, target
     // @throws: @ReadCheckNaN
     rpc ReadCheck(ReadCheck) returns(ReadCheckResponse)
+
+    // **** Sequences *****
+
+    // @required: seq.type, seq.node
+    // @throws: NodeNotFound, SequentialInvalidType
+    rpc SequentialCreate(SequentialMutationRequest) returns(SequentialMutationResponse);
+
+    // @required: seq.type, seq.seqid, seq.node
+    // @throws: NodeNotFound, SequentialInvalidType
+    rpc SequentialUpdate(SequentialUpdateRequest) returns(MutationResponse);
+
+    // @required: seq.type, seq.seqid, seq.node
+    // @throws: NodeNotFound, SequentialInvalidType
+    rpc SequentialDelete(SequentialDeleteRequest) returns(MutationResponse);
+
+    // @required: seq.type, seq.seqid, seq.node
+    // @throws: NodeNotFound, SequentialInvalidType
+    rpc SequentialGet(SequentialGetRequest) returns(SequentialGetResponse);
+
+    // @required: type, per_page
+    // @throws: SequentialInvalidType
+    rpc SequentialList(SequentialListRequest) returns(SequentialListResponse);
+
+
 }

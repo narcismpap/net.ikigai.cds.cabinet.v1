@@ -12,9 +12,9 @@ import "shared.proto";
 // Schematic Representation:
 // /i/n/{INDEX_ID}/{VALUE}/{NODE_ID} = {EMBEDDED_PROP}|NULL
 
-// IRI Representation:
-// Index cds://cab@{APPLICATION.PLATFORM}:{REGION}/i/n/{INDEX_ID}/{VALUE}/{NODE_ID}
-// Index Property cds://cab@{APPLICATION.PLATFORM}:{REGION}/i/n/{INDEX_ID}/{VALUE}/{NODE_ID}/p/{PROPERTY_ID}
+// IRI Relative Representation:
+// Index ./i/n/{INDEX_ID}/{VALUE}/{NODE_ID}
+// Index Property ./i/n/{INDEX_ID}/{VALUE}/{NODE_ID}/p/{PROPERTY_ID}
 
 message IndexMutationRequest{
     Index index = 1;

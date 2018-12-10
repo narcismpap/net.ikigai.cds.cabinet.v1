@@ -1,0 +1,56 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+import "shared.proto";
+
+// Sequential Number Engine can be used to generate well-defined sequences, similar to traditional Relational DB IDs
+// These sequences are only useful in a handful of cases where the risk of collisions is low
+// Cabinet Registry uses Sequential ID to issue Predicate, Node Type, etc. IDs used to keep the dataset small
+// Sequence ID always point to a Node, which can then be used for property and meta storage or even creating edges
+
+// Schematic Representation (0 stores last_num)
+// /s/{SEQUENTIAL_NAME}/[1..n + 0] = {NODE_ID}
+
+// IRI Relative Representation:
+// Last Number: ./s/{SEQUENTIAL_NAME}
+// A. Note:     ./s/{SEQUENTIAL_NAME}/{SEQ_NUM}
+
+message SequentialMutationRequest{
+    Sequential seq = 1;
+}
+
+message SequentialMutationResponse{
+    Sequential seq = 1;
+}
+
+message SequentialGetRequest{
+    string type = 1;
+    uint32 seqid = 2;
+}
+
+message SequentialGetResponse{
+    Sequential seq = 1;
+}
+
+message SequentialDeleteRequest{
+    Sequential seq = 1;
+}
+
+message SequentialUpdateRequest{
+    Sequential seq = 1;
+}
+
+message SequentialListRequest{
+    string type = 1;
+
+    string resume_at = 2;
+    int32 page_size = 3;
+}
+
+message SequentialListResponse{
+    repeated Sequential seq = 1;
+}
