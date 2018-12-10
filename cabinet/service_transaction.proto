@@ -13,6 +13,13 @@ import "service_index.proto";
 import "service_meta.proto";
 import "service_node.proto";
 
+import "counter.proto";
+import "edge.proto";
+import "index.proto";
+import "meta.proto";
+import "node.proto";
+
+import "opts.proto";
 import "shared.proto";
 
 // Transactions are the fundamental ACID compliance layer within Cabinet
@@ -46,12 +53,12 @@ message TransactionAction{
         ReadCheckRequest read_check = 50;
     }
 
-    int32 action_id = 80;
+    uint32 action_id = 80;
 }
 
 message TransactionActionResponse{
     MutationStatus status = 1;
-    int32 action_id = 2;
+    uint32 action_id = 2;
 
     oneof response {
         MutationResponse mutation_generic = 10;

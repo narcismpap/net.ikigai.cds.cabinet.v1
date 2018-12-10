@@ -15,6 +15,13 @@ import "service_node.proto";
 import "service_sequential.proto";
 import "service_transaction.proto";
 
+import "counter.proto";
+import "edge.proto";
+import "index.proto";
+import "meta.proto";
+import "node.proto";
+import "sequential.proto";
+
 import "shared.proto";
 
 // Ikigai Cloud Data Services (CSS)

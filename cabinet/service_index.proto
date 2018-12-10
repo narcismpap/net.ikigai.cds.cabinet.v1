@@ -8,6 +8,7 @@ syntax = "proto3";
 package cds.cabinet.v1;
 
 import "shared.proto";
+import "index.proto";
 
 // Indexes are views of Nodes and their properties optimized for value lookups
 

@@ -7,12 +7,6 @@
 syntax = "proto3";
 package cds.cabinet.v1;
 
-enum TransactionRetryBehaviour{
-    AUTOMATIC = 0;
-    SINGLE_ATTEMPT = 1;
-    SINGLE_RETRY = 2;
-}
-
 enum MutationStatus{
     SUCCESS = 0;
 
@@ -23,137 +17,12 @@ enum MutationStatus{
     MUTATION_FAILURE = 14;
 }
 
-enum CheckOperators{
-    EXISTS = 0;
-
-    EQUAL = 1;
-    NOT_EQUAL = 2;
-
-    GREATER_THAN = 3;
-    GREATER_THAN_EQUAL = 4;
-
-    LESS_THAN = 5;
-    LESS_THAN_EQUAL = 6;
-
-    BETWEEN = 7;
-}
-
-enum FieldType{
-    NODE = 0;       // n
-    PREDICATE = 1;  // p <global>
-    INDEX = 2;      // i
-    PROPERTY = 3;   // a
-    META = 4;       // m
-    COUNTER = 5;    // c
-}
-
-enum ErrorCodes {
-    AccessDenied = 0;
-    AccessDeniedIRI = 1;
-    AccessDeniedMutation = 2;
-    AccessDeniedMethod = 3;
-
-    ConnectionError = 10;
-    MalformedIRI = 11;
-    GeneralError = 12;
-
-    ListNoPagination = 50;
-    IllegalUpdate = 51;
-
-    NodeNotFound = 100;
-    NodeInvalidID = 101;
-    NodeInvalidType = 102;
-
-    EdgeNotFound = 150;
-    EdgeInvalidSubject = 151;
-    EdgeInvalidTarget = 152;
-    EdgeInvalidPredicate = 153;
-
-    IndexNotFound = 200;
-    IndexInvalidID = 201;
-    IndexInvalidValue = 202;
-    IndexInvalidNode = 203;
-
-    MetaNotFound = 250;
-    MetaInvalidObject = 251;
-    MetaInvalidKey = 252;
-
-    BatchIllegalOperation = 300;
-
-    FieldInvalidID = 350;
-    FieldInvalidUUID = 351;
-    FieldInvalidType = 352;
-
-    CounterInvalidIncrement = 400;
-
-    TransactionInvalidAction = 451;
-    TransactionSyntaxError = 452;
-    ReadCheckNaN = 453;
-    TransactionRetriesExceeded = 454;
-
-    SequentialInvalidType = 500;
-}
-
 enum RetrieveMode {
     ALL = 0;    // return the whole associated record(s)
     PROP = 2;   // returns just map<k:v> properties
     IDS = 3;    // return list<IDS>
 }
 
-message Node{
-    string  type = 1;
-    string  id = 2;
-
-    int32   version = 3;
-    uint32  created = 4;
-    uint32  updated = 5;
-
-    map<int32, bytes> prop = 6;
-}
-
-message Edge{
-    string subject = 1;
-    string predicate = 2;
-    string target = 3;
-
-    map<int32, bytes> prop = 4;
-}
-
-message Index{
-    string  type = 1;
-    string  field = 2;
-    string  node = 3;
-    string  value = 4;
-
-    map<int32, bytes> prop = 5;
-}
-
-message Meta{
-    oneof object{
-        Edge edge = 1;
-        string node = 2;
-    }
-
-    string key = 10;
-    bytes val = 11;
-}
-
-message Sequential{
-    string type = 1;
-
-    string seqid = 2;
-    string node = 3;
-}
-
-message Counter{
-    oneof object{
-        string node = 1;
-        Edge edge = 2;
-    }
-
-    string counter = 10;
-    string value = 11;
-}
 
 message ListOptions{
     RetrieveMode mode = 1;
@@ -164,3 +33,5 @@ message ListOptions{
 message MutationResponse{
     MutationStatus status = 1;
 }
+
+

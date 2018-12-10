@@ -32,6 +32,6 @@ message NodeGetRequest {
 
 message NodeListRequest {
     ListOptions opt = 1;
-    int32 node_type = 2;
+    string node_type = 2;
 }
 

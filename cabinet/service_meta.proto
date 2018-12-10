@@ -8,6 +8,7 @@ syntax = "proto3";
 package cds.cabinet.v1;
 
 import "shared.proto";
+import "meta.proto";
 
 // Meta are out-of-band K/V property storage units for Nodes or Edges
 

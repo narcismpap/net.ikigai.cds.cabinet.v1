@@ -8,6 +8,7 @@ syntax = "proto3";
 package cds.cabinet.v1;
 
 import "shared.proto";
+import "edge.proto";
 
 // Edges define the core relationships across all elements in a Cabinet, implemented in a QUAD data store
 // This model resembled the implementations found in Neo4J or Redis Graph, allowing for quick lookups and lists

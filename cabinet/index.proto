@@ -1,0 +1,17 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+package cds.cabinet.v1;
+
+message Index{
+    string type = 1;
+    string field = 2;
+    string node = 3;
+    string value = 4;
+
+    map<int32, bytes> prop = 5;
+}

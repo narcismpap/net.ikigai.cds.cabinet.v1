@@ -1,0 +1,21 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. Pap
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+syntax = "proto3";
+package cds.cabinet.v1;
+
+import "edge.proto";
+
+
+message Meta{
+    oneof object{
+        Edge edge = 1;
+        string node = 2;
+    }
+
+    string key = 10;
+    bytes val = 11;
+}
