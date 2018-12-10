@@ -100,7 +100,7 @@ enum RetrieveMode {
 }
 
 message Node{
-    int32   type = 1;
+    string  type = 1;
     string  id = 2;
 
     int32   version = 3;
@@ -112,15 +112,15 @@ message Node{
 
 message Edge{
     string subject = 1;
-    uint32 predicate = 2;
+    string predicate = 2;
     string target = 3;
 
     map<int32, bytes> prop = 4;
 }
 
 message Index{
-    int32   type = 1;
-    int32   field = 2;
+    string  type = 1;
+    string  field = 2;
     string  node = 3;
     string  value = 4;
 
@@ -128,14 +128,14 @@ message Index{
 }
 
 message Meta{
-    int32 key = 1;
+    string key = 1;
     bytes val = 2;
 }
 
 message Sequential{
     string type = 1;
 
-    uint32 seqid = 2;
+    string seqid = 2;
     string node = 3;
 }
 

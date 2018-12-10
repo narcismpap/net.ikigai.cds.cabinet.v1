@@ -29,7 +29,7 @@ message SequentialMutationResponse{
 
 message SequentialGetRequest{
     string type = 1;
-    uint32 seqid = 2;
+    string seqid = 2;
 }
 
 message SequentialGetResponse{

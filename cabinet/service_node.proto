@@ -43,7 +43,7 @@ message NodeListRequest {
     int32 type = 4;
 }
 
-message NodeList {
+message NodeListResponse {
     int32 cnt = 1;
     repeated Node nodes = 2;
 }

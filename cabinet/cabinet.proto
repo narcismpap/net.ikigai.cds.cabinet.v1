@@ -125,17 +125,17 @@ service CabinetService {
 
     // List node with pagination
     // @required: type, per_page
-    rpc NodeList(NodeListRequest) returns(NodeList)
+    rpc NodeList(NodeListRequest) returns(NodeListResponse);
 
     // **** Transaction *****
 
-    // @required: action.*, retry_mode
+    // @required: <action.*>, retry_mode
     // @throws: TransactionInvalidAction, TransactionSyntaxError
     rpc Transaction(TransactionRequest) returns(TransactionMutationResponse);
 
     // @required: source, operator, target
     // @throws: @ReadCheckNaN
-    rpc ReadCheck(ReadCheck) returns(ReadCheckResponse)
+    rpc ReadCheck(ReadCheckRequest) returns(ReadCheckResponse);
 
     // **** Sequences *****
 
@@ -158,6 +158,5 @@ service CabinetService {
     // @required: type, per_page
     // @throws: SequentialInvalidType
     rpc SequentialList(SequentialListRequest) returns(SequentialListResponse);
-
 
 }

@@ -12,6 +12,8 @@ import "service_index.proto";
 import "service_meta.proto";
 import "service_node.proto";
 
+import "shared.proto";
+
 // Transactions are the fundamental ACID compliance layer within Cabinet
 // Our underlying data store allows for a novel approach, where a transaction can be invalidated by a change to
 // any of the values read or written to as part of single commit event. Applications can take advantage of this by
@@ -43,7 +45,7 @@ message TransactionAction{
         NodeMutationRequest node_update = 31;
         NodeMutationRequest node_delete = 32;
 
-        ReadCheck read_check = 40;
+        ReadCheckRequest read_check = 40;
     }
 
     TransactionRetryBehaviour retry_mode = 100;
@@ -58,7 +60,7 @@ message TransactionMutationResponse{
 }
 
 
-message ReadCheck{
+message ReadCheckRequest{
     string source = 1;
 
     CheckOperators operator = 2;

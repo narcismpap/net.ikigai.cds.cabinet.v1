@@ -23,7 +23,7 @@ message CounterIncrementRequest{
         Edge edge = 2;
     }
 
-    int32 counter = 9;
+    string counter = 9;
     int32 value = 10;
 }
 
@@ -33,7 +33,7 @@ message CounterRequest{
         Edge edge = 2;
     }
 
-    int32 counter = 9;
+    string counter = 9;
 }
 
 message CounterValueResponse{

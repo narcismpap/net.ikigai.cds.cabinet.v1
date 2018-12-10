@@ -39,7 +39,7 @@ message EdgeListRequest {
     int32 page_size = 3;
 
     string subject = 4;
-    uint32 predicate = 5;
+    string predicate = 5;
 }
 
 message EdgeListResponse {
