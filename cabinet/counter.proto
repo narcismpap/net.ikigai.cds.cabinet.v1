@@ -16,6 +16,6 @@ message Counter{
         Edge edge = 2;
     }
 
-    string counter = 10;
+    uint32 counter = 10;
     string value = 11;
 }

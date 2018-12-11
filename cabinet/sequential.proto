@@ -11,6 +11,6 @@ package cds.cabinet.v1;
 message Sequential{
     string type = 1;
 
-    string seqid = 2;
+    uint32 seqid = 2;
     string node = 3;
 }

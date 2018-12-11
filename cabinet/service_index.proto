@@ -27,6 +27,6 @@ message IndexGetRequest{
 message IndexListRequest{
     ListOptions opt = 1;
 
-    string index_id = 10;
+    uint32 index = 10;
     string value = 11;
 }

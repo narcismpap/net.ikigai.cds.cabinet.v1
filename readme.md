@@ -1,6 +1,6 @@
 ### Compiling protobuf
 
-    protoc -I cabinet/ cabinet/*.proto --go_out=plugins=grpc:cabinet
+    protoc --proto_path=./cabinet --go_out=plugins=grpc:./rpc cabinet/*.proto
     
 ### fdb
 

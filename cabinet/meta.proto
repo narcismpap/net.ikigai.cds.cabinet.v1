@@ -16,6 +16,6 @@ message Meta{
         string node = 2;
     }
 
-    string key = 10;
+    uint32 key = 10;
     bytes val = 11;
 }

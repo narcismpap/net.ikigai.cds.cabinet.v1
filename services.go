@@ -7,7 +7,7 @@
 package main
 
 import(
-	pb "cds.ikigai.net/cabinet.v1/cds_go"
+	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"log"

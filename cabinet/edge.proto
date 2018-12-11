@@ -9,8 +9,8 @@ package cds.cabinet.v1;
 
 message Edge{
     string subject = 1;
-    string predicate = 2;
+    uint32 predicate = 2;
     string target = 3;
 
-    map<int32, bytes> prop = 4;
+    map<uint32, bytes> prop = 4;
 }

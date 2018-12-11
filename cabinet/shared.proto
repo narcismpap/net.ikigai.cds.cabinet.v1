@@ -27,7 +27,7 @@ enum RetrieveMode {
 message ListOptions{
     RetrieveMode mode = 1;
     string resume_at = 2;
-    int32 page_size = 3;
+    uint32 page_size = 3;
 }
 
 message MutationResponse{

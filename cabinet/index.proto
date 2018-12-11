@@ -8,10 +8,11 @@ syntax = "proto3";
 package cds.cabinet.v1;
 
 message Index{
-    string type = 1;
-    string field = 2;
+    uint32 type = 1;
+    uint32 field = 2;
+
     string node = 3;
     string value = 4;
 
-    map<int32, bytes> prop = 5;
+    map<uint32, bytes> prop = 5;
 }

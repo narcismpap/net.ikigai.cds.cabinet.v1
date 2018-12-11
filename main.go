@@ -15,7 +15,7 @@ import (
 	"log"
 	"net"
 
-	pb "cds.ikigai.net/cabinet.v1/cds_go"
+	pb "cds.ikigai.net/cabinet.v1/rpc"
 )
 
 var (
