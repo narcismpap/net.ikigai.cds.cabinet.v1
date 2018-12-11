@@ -8,14 +8,17 @@
 package main
 
 import (
+	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"flag"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"google.golang.org/grpc"
 	"log"
 	"net"
-
-	pb "cds.ikigai.net/cabinet.v1/rpc"
+	"strconv"
 )
 
 var (
@@ -24,22 +27,78 @@ var (
 
 type CDSCabinetServer struct{
 	version int32
-	fdb fdb.Transactor
+
+	fDb fdb.Transactor
+	dbContainer directory.DirectorySubspace
+
+	dbNode subspace.Subspace
+	dbEdge subspace.Subspace
+	dbIndex subspace.Subspace
+	dbMeta subspace.Subspace
+	dbCnt subspace.Subspace
+	dbSeq subspace.Subspace
 }
 
 func newCDSServer() *CDSCabinetServer {
-	// Different API versions may expose different runtime behaviors.
 	fdb.MustAPIVersion(600)
-
-	// Open the default database from the system cluster
 	db := fdb.MustOpenDefault()
 
-	s := &CDSCabinetServer{
-		version:1,
-		fdb:db,
+	var activeContainer = "test"
+	container, err := directory.CreateOrOpen(db, []string{activeContainer}, nil)
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
+	s := &CDSCabinetServer{
+		version: 1,
+		fDb: db,
+		dbContainer: container,
+
+		dbNode: container.Sub("n"),
+		dbEdge: container.Sub("e"),
+		dbIndex: container.Sub("i"),
+		dbMeta: container.Sub("m"),
+		dbCnt: container.Sub("c"),
+		dbSeq: container.Sub("s"),
+	}
+
+	// install db
+	var coreSeq = []string{
+		"n", "e", "i", "m", "c",
+	}
+
+	_, err = s.fDb.Transact(func (tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(s.dbContainer)
+
+		for i := range coreSeq {
+			tr.Set(s.dbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
+		}
+
+		log.Printf("Container is now initialized: %s", activeContainer)
+		return nil, nil
+	})
+
 	return s
+}
+
+const (
+	CDSErrFieldInvalid = iota
+	CDSErrorFieldRequired
+	CDSErrorFieldUnexpected
+
+	CDSErrorNotFound
+	CDSErrorPermission
+)
+
+type CabinetError struct {
+	err  	string
+	code 	int16
+	field 	string
+}
+
+func (e *CabinetError) Error() string {
+	return fmt.Sprintf("Cabinet Error #%d on %s: %s", e.code, e.field, e.err)
 }
 
 func main(){

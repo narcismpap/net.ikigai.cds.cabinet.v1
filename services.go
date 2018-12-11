@@ -6,26 +6,16 @@
 
 package main
 
-import(
+import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
-	"github.com/apple/foundationdb/bindings/go/src/fdb"
-	"log"
 )
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
 	//val := pb.CounterValueResponse{Value:1}
 	//return &val, nil
 
-	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, e error) {
-		tr.Set(fdb.Key("hello"), []byte("world"))
-		return
-	})
-
-	if err != nil {
-		log.Fatalf("Unable to set FDB database value (%v)", err)
-	}
-
+	// IRI Reference
 	return nil, nil
 }
 
@@ -72,22 +62,3 @@ func (s *CDSCabinetServer) ReadCheck(ctx context.Context, readRq *pb.ReadCheckRe
 	return nil, nil
 }
 
-func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (*pb.Sequential, error){
-	return nil, nil
-}
-
-func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
-	return nil, nil
-}
-
-func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
-	return nil, nil
-}
-
-func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential) (*pb.Sequential, error){
-	return nil, nil
-}
-
-func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
-	return nil
-}
