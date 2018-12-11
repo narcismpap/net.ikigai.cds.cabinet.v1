@@ -15,7 +15,7 @@ import (
 )
 
 func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error){
-	vldError := validateSequentialRequest(seq, []string{"t", "n"})
+	vldError := validateSequentialRequest(seq, []string{"t", "n"}, []string{"s"})
 
 	if vldError != nil{
 		return nil, vldError
@@ -23,14 +23,21 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 	newId, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		var lastKey = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), "l"})
+		var lastNum = tr.Get(lastKey).MustGet()
+		var lastInt32 uint32
 
-		lastInt, err := strconv.ParseUint(string(tr.Get(lastKey).MustGet()), 10, 32)
+		if lastNum == nil{
+			lastInt32 = uint32(1)
+		}else {
+			lastInt, err := strconv.ParseUint(string(lastNum), 10, 32)
 
-		if err != nil{
-			return nil, err
+
+			if err != nil {
+				return nil, err
+			}
+
+			lastInt32 = uint32(lastInt)
 		}
-
-		lastInt32 := uint32(lastInt)
 
 		tr.Set(s.dbSeq.Pack(tuple.Tuple{seq.GetType(), strconv.FormatUint(uint64(lastInt32),10)}), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
@@ -46,7 +53,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 }
 
 func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
-	vldError := validateSequentialRequest(seq, []string{"t", "s", "n"})
+	vldError := validateSequentialRequest(seq, []string{"t", "s", "n"}, []string{})
 
 	if vldError != nil{
 		return nil, vldError
@@ -67,7 +74,7 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 }
 
 func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
-	vldError := validateSequentialRequest(seq, []string{"t", "s"})
+	vldError := validateSequentialRequest(seq, []string{"t", "s"}, []string{"n"})
 
 	if vldError != nil{
 		return nil, vldError
@@ -84,13 +91,11 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 		return &pb.MutationResponse{Status: pb.MutationStatus_PROCESSING_FAILURE}, err
 	}
 
-	return &pb.MutationResponse{
-		Status: pb.MutationStatus_SUCCESS,
-	}, nil
+	return &pb.MutationResponse{Status: pb.MutationStatus_SUCCESS}, nil
 }
 
 func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential) (*pb.Sequential, error){
-	vldError := validateSequentialRequest(seq, []string{"t", "s"})
+	vldError := validateSequentialRequest(seq, []string{"t", "s"}, []string{"n"})
 
 	if vldError != nil{
 		return nil, vldError
@@ -118,14 +123,24 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 	return nil
 }
 
-func validateSequentialRequest(seq *pb.Sequential, checklist []string) error{
-	for i := range checklist{
-		if checklist[i] == "t" && len(seq.GetType()) == 0 {
+func validateSequentialRequest(seq *pb.Sequential, required []string, unexpected []string) error{
+	for i := range required {
+		if required[i] == "t" && len(seq.GetType()) == 0 {
 			return &CabinetError{code: CDSErrorFieldRequired, field: "type"}
-		}else if checklist[i] == "n" && len(seq.GetNode()) == 0 {
+		}else if required[i] == "n" && len(seq.GetNode()) == 0 {
 			return &CabinetError{code: CDSErrorFieldRequired, field: "node"}
-		}else if checklist[i] == "s" && seq.GetSeqid() == 0 {
+		}else if required[i] == "s" && seq.GetSeqid() == 0 {
 			return &CabinetError{code: CDSErrorFieldRequired, field: "seqId"}
+		}
+	}
+
+	for i := range unexpected {
+		if unexpected[i] == "t" && len(seq.GetType()) > 0 {
+			return &CabinetError{code: CDSErrorFieldUnexpected, field: "type"}
+		}else if unexpected[i] == "n" && len(seq.GetNode()) > 0 {
+			return &CabinetError{code: CDSErrorFieldUnexpected, field: "node"}
+		}else if unexpected[i] == "s" && seq.GetSeqid() != 0 {
+			return &CabinetError{code: CDSErrorFieldUnexpected, field: "seqId"}
 		}
 	}
 

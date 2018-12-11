@@ -75,7 +75,7 @@ func newCDSServer() *CDSCabinetServer {
 			tr.Set(s.dbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
 		}
 
-		log.Printf("Container is now initialized: %s", activeContainer)
+		log.Printf("[I] Container [%s] is now initialized", activeContainer)
 		return nil, nil
 	})
 
@@ -106,10 +106,10 @@ func main(){
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 
 	if err != nil {
-		log.Fatalf("Failed to bind on :%d: %v", *port, err)
+		log.Fatalf("[E] Failed to bind on :%d: %v", *port, err)
 	}
 
-	log.Printf("I am running! on port %d", *port)
+	log.Printf("[I] net.ikigai.cds.cabinet.v1 running on port %d", *port)
 
 	var opts []grpc.ServerOption
 
@@ -119,6 +119,6 @@ func main(){
 	err = grpcServer.Serve(lis)
 
 	if err != nil{
-		log.Fatalf("Error during gRPC execution: %v", err)
+		log.Fatalf("[E] Error during gRPC execution: %v", err)
 	}
 }

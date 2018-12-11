@@ -33,6 +33,7 @@ message TransactionAction{
     oneof action{
         Counter counter_increment = 1;
         Counter counter_delete = 2;
+        Counter counter_register = 3;
 
         Edge edge_create = 10;
         Edge edge_update = 11;
