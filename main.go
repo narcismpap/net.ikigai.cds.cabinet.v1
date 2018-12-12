@@ -89,6 +89,8 @@ const (
 
 	CDSErrorNotFound
 	CDSErrorPermission
+
+	CDSListNoPagination
 )
 
 type CabinetError struct {

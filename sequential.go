@@ -9,10 +9,17 @@ package main
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
+	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"strconv"
+	"strings"
 )
+
+func utilSeqMakeKey(n uint32) string{
+	return fmt.Sprintf("%05d", n)
+	//  strconv.FormatUint(uint64(lastInt32),10)
+}
 
 func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error){
 	vldError := validateSequentialRequest(seq, []string{"t", "n"}, []string{"s"})
@@ -22,7 +29,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 	}
 
 	newId, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var lastKey = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), "l"})
+		var lastKey = s.dbSeq.Pack(tuple.Tuple{"l", seq.GetType()})
 		var lastNum = tr.Get(lastKey).MustGet()
 		var lastInt32 uint32
 
@@ -39,7 +46,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 			lastInt32 = uint32(lastInt)
 		}
 
-		tr.Set(s.dbSeq.Pack(tuple.Tuple{seq.GetType(), strconv.FormatUint(uint64(lastInt32),10)}), []byte(seq.GetNode()))
+		tr.Set(s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(lastInt32)}), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
 
 		return lastInt32, nil
@@ -60,7 +67,7 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), strconv.FormatUint(uint64(seq.GetSeqid()),10)})
+		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
 		tr.Set(key, []byte(seq.GetNode()))
 
 		return nil, nil
@@ -81,7 +88,7 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), strconv.FormatUint(uint64(seq.GetSeqid()),10)})
+		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
 		tr.Clear(key)
 
 		return nil, nil
@@ -102,7 +109,7 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 	}
 
 	nodeId, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), strconv.FormatUint(uint64(seq.GetSeqid()),10)})
+		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
 		sVal := rtr.Get(key).MustGet()
 
 		if sVal == nil{
@@ -120,7 +127,48 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 }
 
 func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
-	return nil
+	if len(seq.GetType()) == 0 {
+		return &CabinetError{code: CDSErrorFieldRequired, field: "type"}
+	}else if seq.Opt.GetPageSize() == 0{
+		return &CabinetError{code: CDSListNoPagination, field: "opt.page_size"}
+	}
+
+	_, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+		var readRange = s.dbSeq.Sub(seq.GetType())
+
+		ri := rtr.GetRange(readRange, fdb.RangeOptions{
+			Limit: int(seq.Opt.PageSize),
+		}).Iterator()
+
+		for ri.Advance() {
+			kv := ri.MustGet()
+			sqO, err := s.dbSeq.Unpack(kv.Key) // {Type, SeqID} = kv.Value
+
+			if err != nil {
+				return nil, err
+			}
+
+			seqID, err := strconv.ParseUint(strings.TrimLeft(sqO[1].(string), "0"), 10, 32)
+
+			if err != nil {
+				return nil, err
+			}
+
+			obj := &pb.Sequential{
+				Type: seq.Type,
+				Node: string(kv.Value),
+				Seqid: uint32(seqID),
+			}
+
+			if err := stream.Send(obj); err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+
+	return err
 }
 
 func validateSequentialRequest(seq *pb.Sequential, required []string, unexpected []string) error{
