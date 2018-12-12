@@ -9,17 +9,10 @@ package main
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
-	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
-	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"strconv"
 	"strings"
 )
-
-func utilSeqMakeKey(n uint32) string{
-	return fmt.Sprintf("%05d", n)
-	//  strconv.FormatUint(uint64(lastInt32),10)
-}
 
 func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error){
 	vldError := validateSequentialRequest(seq, []string{"t", "n"}, []string{"s"})
@@ -29,7 +22,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 	}
 
 	newId, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var lastKey = s.dbSeq.Pack(tuple.Tuple{"l", seq.GetType()})
+		var lastKey = (&IRISequential{Type: seq.Type}).getIncrementKey(s)
 		var lastNum = tr.Get(lastKey).MustGet()
 		var lastInt32 uint32
 
@@ -46,7 +39,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 			lastInt32 = uint32(lastInt)
 		}
 
-		tr.Set(s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(lastInt32)}), []byte(seq.GetNode()))
+		tr.Set((&IRISequential{Type: seq.Type, SeqID: lastInt32}).getKey(s), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
 
 		return lastInt32, nil
@@ -67,8 +60,7 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
-		tr.Set(key, []byte(seq.GetNode()))
+		tr.Set((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s), []byte(seq.GetNode()))
 
 		return nil, nil
 	})
@@ -88,8 +80,7 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
-		tr.Clear(key)
+		tr.Clear((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s))
 
 		return nil, nil
 	})
@@ -109,8 +100,7 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 	}
 
 	nodeId, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		var key = s.dbSeq.Pack(tuple.Tuple{seq.GetType(), utilSeqMakeKey(seq.GetSeqid())})
-		sVal := rtr.Get(key).MustGet()
+		sVal := rtr.Get((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s)).MustGet()
 
 		if sVal == nil{
 			return nil, &CabinetError{code: CDSErrorNotFound}
