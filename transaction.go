@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
-	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
 	"io"
 )
@@ -86,7 +85,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Node
 				case *pb.TransactionAction_NodeCreate:
-					new_id, err := ksuid.New().MarshalBinary()
+					newID, err := ksuid.New().MarshalText()
 
 					if err != nil{
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -96,18 +95,32 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						})
 					}
 
-					ob_key := s.dbNode.Sub(tOpr.NodeCreate.Type).Pack(tuple.Tuple{new_id})
-					fmt.Print(ob_key)
+					nodeIRI := &IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: string(newID)}
+					tr.Set(nodeIRI.getKey(s), nil)
 
-					break
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+						Response: &pb.TransactionActionResponse_NodeCreate{NodeCreate: &pb.NodeCreateResponse{Id: nodeIRI.Id}},
+					})
 
 				case *pb.TransactionAction_NodeUpdate:
-					// tOpr.NodeUpdate
-					break
+					nodeIRI := &IRINode{Type: uint16(tOpr.NodeUpdate.Type), Id: tOpr.NodeUpdate.Id}
+					tr.Set(nodeIRI.getKey(s), nil)
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
 
 				case *pb.TransactionAction_NodeDelete:
-					// tOpr.NodeDelete
-					break
+					nodeIRI := &IRINode{Type: uint16(tOpr.NodeDelete.Type), Id: tOpr.NodeDelete.Id}
+					tr.Clear(nodeIRI.getKey(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
 
 				// ReadCheck
 				case *pb.TransactionAction_ReadCheck:
