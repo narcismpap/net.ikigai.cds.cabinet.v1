@@ -35,15 +35,12 @@ message TransactionAction{
         Counter counter_delete = 2;
         Counter counter_register = 3;
 
-        Edge edge_create = 10;
         Edge edge_update = 11;
         Edge edge_delete = 12;
 
-        Index index_create = 20;
         Index index_update = 21;
         Index index_delete = 22;
 
-        Meta meta_create = 30;
         Meta meta_update = 31;
         Meta meta_delete = 32;
 
@@ -63,7 +60,6 @@ message TransactionActionResponse{
     string error = 3;
 
     oneof response {
-        MutationResponse mutation_generic = 10;
         NodeCreateResponse node_create = 20;
         ReadCheckResponse read_check = 30;
     }

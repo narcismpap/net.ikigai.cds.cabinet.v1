@@ -7,12 +7,18 @@
 package main
 
 import (
+	"bytes"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/segmentio/ksuid"
 	"io"
+	"log"
+	"math/rand"
+	"time"
 )
 
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error{
@@ -22,7 +28,6 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 			if err == io.EOF {
 				return nil, bStream.Send(&pb.TransactionActionResponse{})
-
 			}else if err != nil {
 				return nil, err
 			}
@@ -31,57 +36,189 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Counter
 				case *pb.TransactionAction_CounterIncrement:
-					// tOpr.CounterIncrement
-					break
+					iriCnt, err := resolveCounterIRI(tOpr.CounterIncrement)
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					incVal, err := intToBytes(int64(tOpr.CounterIncrement.Value))
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unable to build increment",
+						})
+					}
+
+					rand.Seed(time.Now().UnixNano())
+
+					// increment a random position in the counter
+					tr.Add(iriCnt.getKey(s, CounterKeys[rand.Intn(16)]), incVal)
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_CounterDelete:
-					// tOpr.CounterDelete
-					break
+					iriCnt, err := resolveCounterIRI(tOpr.CounterDelete)
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					tr.ClearRange(iriCnt.getKeyRange(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_CounterRegister:
-					// tOpr.CounterRegister
-					break
+					iriCnt, err := resolveCounterIRI(tOpr.CounterRegister)
 
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					incVal, err := intToBytes(int64(0))
+
+					if err != nil{
+						log.Fatalf("Unable to intToBytes from known value: 0")
+					}
+
+					for x := range CounterKeys{
+						tr.Set(iriCnt.getKey(s, CounterKeys[x]), incVal)
+					}
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				// Edge
-				case *pb.TransactionAction_EdgeCreate:
-					// tOpr.EdgeCreate
-					break
-
 				case *pb.TransactionAction_EdgeUpdate:
-					// tOpr.EdgeUpdate
-					break
+					iriEdge := &IRIEdge{Subject: tOpr.EdgeUpdate.Subject, Predicate: uint16(tOpr.EdgeUpdate.Predicate), Target: tOpr.EdgeUpdate.Target}
+					tr.Set(iriEdge.getKey(s), nil)
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_EdgeDelete:
-					// tOpr.EdgeDelete
-					break
+					iriEdge := &IRIEdge{Subject: tOpr.EdgeDelete.Subject, Predicate: uint16(tOpr.EdgeDelete.Predicate), Target: tOpr.EdgeDelete.Target}
+					tr.Clear(iriEdge.getKey(s))
 
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
 
-				// Index
-				case *pb.TransactionAction_IndexCreate:
-					// tOpr.IndexCreate
-					break
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_IndexUpdate:
-					// tOpr.IndexUpdate
-					break
+					iriIndex := &IRINodeIndex{Node: tOpr.IndexUpdate.Node, IndexId: uint16(tOpr.IndexUpdate.Field), Value: tOpr.IndexUpdate.Value}
+					tr.Set(iriIndex.getKey(s), nil)
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_IndexDelete:
-					// tOpr.IndexDelete
-					break
+					iriIndex := &IRINodeIndex{Node: tOpr.IndexDelete.Node, IndexId: uint16(tOpr.IndexDelete.Field), Value: tOpr.IndexDelete.Value}
+					tr.Clear(iriIndex.getKey(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				// Meta
-				case *pb.TransactionAction_MetaCreate:
-					// tOpr.MetaCreate
-					break
-
 				case *pb.TransactionAction_MetaUpdate:
-					// tOpr.MetaUpdate
-					break
+					iri, err := resolveMetaIRI(tOpr.MetaUpdate)
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					tr.Set(iri.getKey(s), nil)
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_MetaDelete:
-					// tOpr.MetaDelete
-					break
+					iri, err := resolveMetaIRI(tOpr.MetaDelete)
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					tr.Clear(iri.getKey(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				// Node
 				case *pb.TransactionAction_NodeCreate:
@@ -104,6 +241,10 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Response: &pb.TransactionActionResponse_NodeCreate{NodeCreate: &pb.NodeCreateResponse{Id: nodeIRI.Id}},
 					})
 
+					if err != nil{
+						return nil, err
+					}
+
 				case *pb.TransactionAction_NodeUpdate:
 					nodeIRI := &IRINode{Type: uint16(tOpr.NodeUpdate.Type), Id: tOpr.NodeUpdate.Id}
 					tr.Set(nodeIRI.getKey(s), nil)
@@ -112,6 +253,10 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Status: pb.MutationStatus_SUCCESS,
 						ActionId: tAct.ActionId,
 					})
+
+					if err != nil{
+						return nil, err
+					}
 
 				case *pb.TransactionAction_NodeDelete:
 					nodeIRI := &IRINode{Type: uint16(tOpr.NodeDelete.Type), Id: tOpr.NodeDelete.Id}
@@ -122,17 +267,14 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						ActionId: tAct.ActionId,
 					})
 
+					if err != nil{
+						return nil, err
+					}
+
 				// ReadCheck
 				case *pb.TransactionAction_ReadCheck:
 					// tOpr.ReadCheck
 					break
-
-				case nil:
-					return nil, bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_GENERIC_FAILURE,
-						ActionId: tAct.ActionId,
-						Error: "Missing action",
-					})
 
 				default:
 					return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -157,3 +299,58 @@ func (s *CDSCabinetServer) ReadCheck(ctx context.Context, readRq *pb.ReadCheckRe
 	return nil, nil
 }
 
+
+func resolveMetaIRI(tMeta *pb.Meta) (IRI, error){
+	switch mType := tMeta.Object.(type) {
+
+		case *pb.Meta_Edge:
+			return (&IRIEdgeMeta{
+				Property: 	uint16(tMeta.Key),
+				Subject: 	mType.Edge.Subject,
+				Predicate: 	uint16(mType.Edge.Predicate),
+				Target: 	mType.Edge.Target,
+			}), nil
+
+		case *pb.Meta_Node:
+			return (&IRINodeMeta{
+				Property: 	uint16(tMeta.Key),
+				Node: 		mType.Node,
+			}), nil
+
+		default:
+			return nil, errors.New("bad mType")
+	}
+}
+
+func resolveCounterIRI(tCounter *pb.Counter) (IRICounter, error){
+	switch cType := tCounter.Object.(type) {
+
+	case *pb.Counter_Edge:
+		return (&IRIEdgeCounter{
+			Counter:   uint16(tCounter.Counter),
+			Subject:   cType.Edge.Subject,
+			Predicate: uint16(cType.Edge.Predicate),
+			Target:    cType.Edge.Target,
+		}), nil
+
+	case *pb.Counter_Node:
+		return (&IRINodeCounter{
+			Counter: uint16(tCounter.Counter),
+			Node:    cType.Node,
+		}), nil
+
+	default:
+		return nil, errors.New("bad cType")
+	}
+}
+
+func intToBytes(v int64) ([]byte, error){
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, v)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}

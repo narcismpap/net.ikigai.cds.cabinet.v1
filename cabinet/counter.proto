@@ -17,5 +17,5 @@ message Counter{
     }
 
     uint32 counter = 10;
-    string value = 11;
+    int64 value = 11;
 }
