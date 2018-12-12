@@ -28,6 +28,10 @@ message ListOptions{
     RetrieveMode mode = 1;
     string resume_at = 2;
     uint32 page_size = 3;
+
+    string key_start = 10;
+    string key_end = 11;
+    bool reverse = 12;
 }
 
 message MutationResponse{
