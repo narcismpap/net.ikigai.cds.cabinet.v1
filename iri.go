@@ -15,6 +15,7 @@ import (
 type IRI interface {
 	getPath() string
 	getKey(server *CDSCabinetServer) fdb.Key
+	getClearRange(server *CDSCabinetServer) fdb.ExactRange
 }
 
 type IRISequential struct{
@@ -44,19 +45,22 @@ type IRINode struct{
 	IRI
 	Type uint16
 	Id string
-	Property int
 }
 
 func (n *IRINode) getPath() string{
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
-func (n *IRINode) getPathProperty(prop int) string{
-	return fmt.Sprintf("/n/%d/%s/p/%d", n.Type, n.Id, prop)
-}
-
 func (n *IRINode) getKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbNode.Sub(n.Type).Pack(tuple.Tuple{[]byte(n.Id)})
+}
+
+func (n *IRINode) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+	if n.Id == ""{
+		return server.dbNode.Sub(n.Type)
+	}else{
+		return server.dbEdge.Sub(n.Type).Sub(n.Id)
+	}
 }
 
 type IRIEdge struct{
@@ -80,6 +84,14 @@ func (e *IRIEdge) getKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbEdge.Pack(tuple.Tuple{e.Subject, e.Predicate, e.Target})
 }
 
+func (e *IRIEdge) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+	if e.Predicate == 0{
+		return server.dbEdge.Sub(e.Subject)
+	}else{
+		return server.dbEdge.Sub(e.Subject).Sub(e.Predicate)
+	}
+}
+
 
 type IRINodeIndex struct{
 	IRI
@@ -97,6 +109,10 @@ func (i *IRINodeIndex) getKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbIndex.Pack(tuple.Tuple{i.IndexId, i.Value, i.Node})
 }
 
+func (i *IRINodeIndex) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+	return nil
+}
+
 type IRINodeMeta struct{
 	Node string
 	Property uint16
@@ -110,6 +126,9 @@ func (m *IRINodeMeta) getKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.Property})
 }
 
+func (m *IRINodeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+	return server.dbMeta.Sub("n").Sub(m.Node)
+}
 
 type IRIEdgeMeta struct{
 	IRI
@@ -127,6 +146,18 @@ func (m *IRIEdgeMeta) getPath() string{
 
 func (m *IRIEdgeMeta) getKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.Predicate, m.Target, m.Property})
+}
+
+func (m *IRIEdgeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+	if m.Target != ""{
+		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate).Sub(m.Target)
+	}
+
+	if m.Predicate > 0{
+		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate)
+	}
+
+	return server.dbMeta.Sub("e").Sub(m.Subject)
 }
 
 

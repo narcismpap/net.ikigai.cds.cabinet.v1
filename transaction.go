@@ -145,8 +145,22 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, err
 					}
 
+				case *pb.TransactionAction_EdgeClear:
+					iriEdge := &IRIEdge{Subject: tOpr.EdgeClear.Subject, Predicate: uint16(tOpr.EdgeClear.Predicate)}
+					tr.ClearRange(iriEdge.getClearRange(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
+
+				// Indexes
 				case *pb.TransactionAction_IndexUpdate:
-					iriIndex := &IRINodeIndex{Node: tOpr.IndexUpdate.Node, IndexId: uint16(tOpr.IndexUpdate.Field), Value: tOpr.IndexUpdate.Value}
+					iriIndex := &IRINodeIndex{Node: tOpr.IndexUpdate.Node, IndexId: uint16(tOpr.IndexUpdate.Type), Value: tOpr.IndexUpdate.Value}
 					tr.Set(iriIndex.getKey(s), prepareProperties(tOpr.IndexUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -159,7 +173,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_IndexDelete:
-					iriIndex := &IRINodeIndex{Node: tOpr.IndexDelete.Node, IndexId: uint16(tOpr.IndexDelete.Field), Value: tOpr.IndexDelete.Value}
+					iriIndex := &IRINodeIndex{Node: tOpr.IndexDelete.Node, IndexId: uint16(tOpr.IndexDelete.Type), Value: tOpr.IndexDelete.Value}
 					tr.Clear(iriIndex.getKey(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -206,6 +220,28 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 					tr.Clear(iri.getKey(s))
+
+					err = bStream.Send(&pb.TransactionActionResponse{
+						Status: pb.MutationStatus_SUCCESS,
+						ActionId: tAct.ActionId,
+					})
+
+					if err != nil{
+						return nil, err
+					}
+
+				case *pb.TransactionAction_MetaClear:
+					iri, err := resolveMetaIRI(tOpr.MetaClear)
+
+					if err != nil {
+						return nil, bStream.Send(&pb.TransactionActionResponse{
+							Status:   pb.MutationStatus_GENERIC_FAILURE,
+							ActionId: tAct.ActionId,
+							Error:    "Unknown object for Meta",
+						})
+					}
+
+					tr.ClearRange(iri.getClearRange(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,

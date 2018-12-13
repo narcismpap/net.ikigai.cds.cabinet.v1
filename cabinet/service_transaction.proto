@@ -41,7 +41,7 @@ message TransactionAction{
 
         Index index_update = 21;
         Index index_delete = 22;
-        Index index_clear = 23;
+        // index clearing is the app's responsibility using *.index_delete
 
         Meta meta_update = 31;
         Meta meta_delete = 32;

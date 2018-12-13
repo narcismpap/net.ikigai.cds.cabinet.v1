@@ -15,7 +15,7 @@ import (
 func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRequest) (*pb.Index, error){
 	indexProp, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		indexProp := rtr.Get((&IRINodeIndex{
-			Node: indexGet.Index.Subject,
+			Node: indexGet.Index.Node,
 			IndexId: uint16(indexGet.Index.Type),
 			Value: indexGet.Index.Value,
 		}).getKey(s)).MustGet()
