@@ -9,6 +9,7 @@ package main
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"errors"
+	"log"
 	"strings"
 )
 
@@ -62,6 +63,8 @@ func nodeResolveId(nID string, nMap *map[string]string) string{
 		if val, ok := (*nMap)[strings.TrimLeft(nID, "tmp:")]; ok {
 			return val
 		}
+
+		log.Panicf("unable to map %s in %v", nID, *nMap)
 	}
 
 	return nID

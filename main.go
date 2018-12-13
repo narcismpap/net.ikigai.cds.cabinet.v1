@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	ServerPort = 8888
+	ServerPort          = 8888
+	DebugServerRequests = true
 )
 
 func main(){

@@ -9,6 +9,7 @@ package main
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
+	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"strconv"
 	"strings"
@@ -22,15 +23,16 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 	}
 
 	newId, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		var lastKey = (&IRISequential{Type: seq.Type}).getIncrementKey(s)
-		var lastNum = tr.Get(lastKey).MustGet()
+		baseSeqIRI := &IRISequential{Type: seq.Type}
+		lastKey := baseSeqIRI.getIncrementKey(s)
+		lastNum := tr.Get(lastKey).MustGet()
+
 		var lastInt32 uint32
 
 		if lastNum == nil{
 			lastInt32 = uint32(1)
 		}else {
 			lastInt, err := strconv.ParseUint(string(lastNum), 10, 32)
-
 
 			if err != nil {
 				return nil, err
@@ -39,8 +41,14 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 			lastInt32 = uint32(lastInt)
 		}
 
-		tr.Set((&IRISequential{Type: seq.Type, SeqID: lastInt32}).getKey(s), []byte(seq.GetNode()))
+		seqIRI := &IRISequential{Type: seq.Type, SeqID: lastInt32}
+
+		tr.Set(seqIRI.getKey(s), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialCreate(%v) = %v", seq, seqIRI.getPath()))
+		}
 
 		return lastInt32, nil
 	})
@@ -60,7 +68,12 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s), []byte(seq.GetNode()))
+		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+		tr.Set(seqIRI.getKey(s), []byte(seq.GetNode()))
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialUpdate(%v) = %v", seq, seqIRI.getPath()))
+		}
 
 		return nil, nil
 	})
@@ -80,7 +93,12 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 	}
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Clear((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s))
+		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+		tr.Clear(seqIRI.getKey(s))
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialDelete(%v) = %v", seq, seqIRI.getPath()))
+		}
 
 		return nil, nil
 	})
@@ -100,7 +118,12 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 	}
 
 	nodeId, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		sVal := rtr.Get((&IRISequential{Type: seq.Type, SeqID: seq.Seqid}).getKey(s)).MustGet()
+		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+		sVal := rtr.Get(seqIRI.getKey(s)).MustGet()
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialGet(%v) = %v", seq, seqIRI.getPath()))
+		}
 
 		if sVal == nil{
 			return nil, &CabinetError{code: CDSErrorNotFound}
@@ -125,6 +148,10 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 
 	_, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
 		var readRange = s.dbSeq.Sub(seq.GetType())
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
+		}
 
 		ri := rtr.GetRange(readRange, fdb.RangeOptions{
 			Limit: int(seq.Opt.PageSize),

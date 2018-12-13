@@ -7,6 +7,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -28,6 +29,11 @@ type CDSCabinetServer struct{
 	dbCnt subspace.Subspace
 	dbSeq subspace.Subspace
 }
+
+func (s *CDSCabinetServer) logEvent(e string){
+	fmt.Println(e)
+}
+
 
 func newCDSServer() *CDSCabinetServer {
 	fdb.MustAPIVersion(600)
