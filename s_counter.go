@@ -14,7 +14,7 @@ import (
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
 	total, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		iri, err := resolveCounterIRI(counter)
+		iri, err := resolveCounterIRI(counter, nil)
 		var total int64
 
 		if err != nil {

@@ -29,14 +29,18 @@ func (e *IRIEdge) getPathProperty(prop int) string{
 	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }
 
+func (e *IRIEdge) getPredicateK() string{
+	return intToKeyElement(e.Predicate)
+}
+
 func (e *IRIEdge) getKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbEdge.Pack(tuple.Tuple{e.Subject, e.Predicate, e.Target})
+	return server.dbEdge.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
 }
 
 func (e *IRIEdge) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	if e.Predicate == 0{
 		return server.dbEdge.Sub(e.Subject)
 	}else{
-		return server.dbEdge.Sub(e.Subject).Sub(e.Predicate)
+		return server.dbEdge.Sub(e.Subject).Sub(e.getPredicateK())
 	}
 }

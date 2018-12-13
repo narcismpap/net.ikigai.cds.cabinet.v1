@@ -14,7 +14,7 @@ import (
 
 func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error){
 	metaValue, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		iri, err := resolveMetaIRI(meta)
+		iri, err := resolveMetaIRI(meta, nil)
 
 		if err != nil {
 			return nil, &CabinetError{code: CDSErrFieldInvalid}

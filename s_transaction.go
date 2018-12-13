@@ -20,6 +20,8 @@ import (
 
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error{
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+		idMap := make(map[string]string)
+
 		for {
 			tAct, err := bStream.Recv()
 
@@ -33,7 +35,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Counter
 				case *pb.TransactionAction_CounterIncrement:
-					iriCnt, err := resolveCounterIRI(tOpr.CounterIncrement)
+					iriCnt, err := resolveCounterIRI(tOpr.CounterIncrement, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -67,7 +69,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_CounterDelete:
-					iriCnt, err := resolveCounterIRI(tOpr.CounterDelete)
+					iriCnt, err := resolveCounterIRI(tOpr.CounterDelete, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -89,7 +91,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_CounterRegister:
-					iriCnt, err := resolveCounterIRI(tOpr.CounterRegister)
+					iriCnt, err := resolveCounterIRI(tOpr.CounterRegister, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -120,7 +122,12 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Edge
 				case *pb.TransactionAction_EdgeUpdate:
-					iriEdge := &IRIEdge{Subject: tOpr.EdgeUpdate.Subject, Predicate: uint16(tOpr.EdgeUpdate.Predicate), Target: tOpr.EdgeUpdate.Target}
+					iriEdge := &IRIEdge{
+						Subject: nodeResolveId(tOpr.EdgeUpdate.Subject, &idMap),
+						Predicate: uint16(tOpr.EdgeUpdate.Predicate),
+						Target: nodeResolveId(tOpr.EdgeUpdate.Target, &idMap),
+					}
+
 					tr.Set(iriEdge.getKey(s), prepareProperties(tOpr.EdgeUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -133,7 +140,12 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_EdgeDelete:
-					iriEdge := &IRIEdge{Subject: tOpr.EdgeDelete.Subject, Predicate: uint16(tOpr.EdgeDelete.Predicate), Target: tOpr.EdgeDelete.Target}
+					iriEdge := &IRIEdge{
+						Subject: nodeResolveId(tOpr.EdgeDelete.Subject, &idMap),
+						Predicate: uint16(tOpr.EdgeDelete.Predicate),
+						Target: nodeResolveId(tOpr.EdgeDelete.Target, &idMap),
+					}
+
 					tr.Clear(iriEdge.getKey(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -146,7 +158,11 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_EdgeClear:
-					iriEdge := &IRIEdge{Subject: tOpr.EdgeClear.Subject, Predicate: uint16(tOpr.EdgeClear.Predicate)}
+					iriEdge := &IRIEdge{
+						Subject: nodeResolveId(tOpr.EdgeClear.Subject, &idMap),
+						Predicate: uint16(tOpr.EdgeClear.Predicate),
+					}
+
 					tr.ClearRange(iriEdge.getClearRange(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -160,7 +176,12 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Indexes
 				case *pb.TransactionAction_IndexUpdate:
-					iriIndex := &IRINodeIndex{Node: tOpr.IndexUpdate.Node, IndexId: uint16(tOpr.IndexUpdate.Type), Value: tOpr.IndexUpdate.Value}
+					iriIndex := &IRINodeIndex{
+						Node: nodeResolveId(tOpr.IndexUpdate.Node, &idMap),
+						IndexId: uint16(tOpr.IndexUpdate.Type),
+						Value: tOpr.IndexUpdate.Value,
+					}
+
 					tr.Set(iriIndex.getKey(s), prepareProperties(tOpr.IndexUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -173,7 +194,12 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_IndexDelete:
-					iriIndex := &IRINodeIndex{Node: tOpr.IndexDelete.Node, IndexId: uint16(tOpr.IndexDelete.Type), Value: tOpr.IndexDelete.Value}
+					iriIndex := &IRINodeIndex{
+						Node: nodeResolveId(tOpr.IndexDelete.Node, &idMap),
+						IndexId: uint16(tOpr.IndexDelete.Type),
+						Value: tOpr.IndexDelete.Value,
+					}
+
 					tr.Clear(iriIndex.getKey(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -187,7 +213,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Meta
 				case *pb.TransactionAction_MetaUpdate:
-					iri, err := resolveMetaIRI(tOpr.MetaUpdate)
+					iri, err := resolveMetaIRI(tOpr.MetaUpdate, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -209,7 +235,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_MetaDelete:
-					iri, err := resolveMetaIRI(tOpr.MetaDelete)
+					iri, err := resolveMetaIRI(tOpr.MetaDelete, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -231,7 +257,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_MetaClear:
-					iri, err := resolveMetaIRI(tOpr.MetaClear)
+					iri, err := resolveMetaIRI(tOpr.MetaClear, &idMap)
 
 					if err != nil {
 						return nil, bStream.Send(&pb.TransactionActionResponse{
@@ -277,8 +303,14 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, err
 					}
 
+					idMap[tOpr.NodeCreate.Id] = string(newID)
+
 				case *pb.TransactionAction_NodeUpdate:
-					nodeIRI := &IRINode{Type: uint16(tOpr.NodeUpdate.Type), Id: tOpr.NodeUpdate.Id}
+					nodeIRI := &IRINode{
+						Type: uint16(tOpr.NodeUpdate.Type),
+						Id: nodeResolveId(tOpr.NodeUpdate.Id, &idMap),
+					}
+
 					tr.Set(nodeIRI.getKey(s), prepareProperties(tOpr.NodeUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -291,7 +323,11 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_NodeDelete:
-					nodeIRI := &IRINode{Type: uint16(tOpr.NodeDelete.Type), Id: tOpr.NodeDelete.Id}
+					nodeIRI := &IRINode{
+						Type: uint16(tOpr.NodeDelete.Type),
+						Id: nodeResolveId(tOpr.NodeDelete.Id, &idMap),
+					}
+
 					tr.Clear(nodeIRI.getKey(s))
 
 					err = bStream.Send(&pb.TransactionActionResponse{

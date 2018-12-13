@@ -27,13 +27,21 @@ func (m *IRIEdgeMeta) getPath() string{
 	return fmt.Sprintf("/m/e/%s/%d/%s/%d", m.Subject, m.Predicate, m.Target, m.Property)
 }
 
+func (m *IRIEdgeMeta) getPropertyK() string{
+	return intToKeyElement(m.Property)
+}
+
+func (m *IRIEdgeMeta) getPredicateK() string{
+	return intToKeyElement(m.Predicate)
+}
+
 func (m *IRIEdgeMeta) getKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.Predicate, m.Target, m.Property})
+	return server.dbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
 }
 
 func (m *IRIEdgeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	if m.Target != ""{
-		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate).Sub(m.Target)
+		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 	}
 
 	if m.Predicate > 0{
@@ -53,8 +61,12 @@ func (m *IRINodeMeta) getPath() string{
 	return fmt.Sprintf("/m/n/%s/%d", m.Node, m.Property)
 }
 
+func (m *IRINodeMeta) getPropertyK() string{
+	return intToKeyElement(m.Property)
+}
+
 func (m *IRINodeMeta) getKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.Property})
+	return server.dbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
 }
 
 func (m *IRINodeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{

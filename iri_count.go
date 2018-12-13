@@ -33,14 +33,18 @@ func (c *IRIEdgeCounter) getPath() string{
 	return fmt.Sprintf("/c/e/%d/%s/%d/%s", c.Counter, c.Subject, c.Predicate, c.Target)
 }
 
+func (c *IRIEdgeCounter) getCounterK() string{
+	return intToKeyElement(c.Counter)
+}
+
 func (c *IRIEdgeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.Counter, c.Subject, c.Predicate, c.Target, cntGroup})
+	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, cntGroup})
 }
 
 func (c *IRIEdgeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
 	return fdb.KeyRange{
-		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.Counter, c.Subject, c.Predicate, c.Target, "0"}),
-		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.Counter, c.Subject, c.Predicate, c.Target, "f"}),
+		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, "0"}),
+		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, "f"}),
 	}
 }
 
@@ -56,13 +60,17 @@ func (c *IRINodeCounter) getPath() string{
 	return fmt.Sprintf("/c/n/%d/%s", c.Counter, c.Node)
 }
 
+func (c *IRINodeCounter) getCounterK() string{
+	return intToKeyElement(c.Counter)
+}
+
 func (c *IRINodeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.dbCnt.Sub("n").Pack(tuple.Tuple{c.Counter, c.Node, cntGroup})
+	return server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, cntGroup})
 }
 
 func (c *IRINodeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
 	return fdb.ExactRange(fdb.KeyRange{
-		Begin: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.Counter, c.Node, "0"}),
-		End: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.Counter, c.Node, "f"}),
+		Begin: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "0"}),
+		End: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "f"}),
 	})
 }

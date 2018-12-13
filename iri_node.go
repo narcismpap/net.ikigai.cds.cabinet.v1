@@ -18,18 +18,22 @@ type IRINode struct{
 	Id string
 }
 
+func (n *IRINode) getTypeK() string{
+	return intToKeyElement(n.Type)
+}
+
 func (n *IRINode) getPath() string{
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
 func (n *IRINode) getKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbNode.Sub(n.Type).Pack(tuple.Tuple{[]byte(n.Id)})
+	return server.dbNode.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
 }
 
 func (n *IRINode) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	if n.Id == ""{
-		return server.dbNode.Sub(n.Type)
+		return server.dbNode.Sub(n.getTypeK())
 	}else{
-		return server.dbEdge.Sub(n.Type).Sub(n.Id)
+		return server.dbEdge.Sub(n.getTypeK()).Sub(n.Id)
 	}
 }

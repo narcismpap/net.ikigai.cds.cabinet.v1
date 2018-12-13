@@ -10,6 +10,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"strconv"
 )
 
 func intToBytes(v int64) ([]byte, error){
@@ -37,4 +38,19 @@ func prepareProperties(src []byte) (prop []byte){
 	}
 
 	return
+}
+
+
+func intToKeyElement(v uint16) string{
+	return strconv.FormatUint(uint64(v), 36)
+}
+
+func KeyElementToInt(k string) (uint16, error){
+	v, e := strconv.ParseUint(k, 36, 32)
+
+	if e != nil{
+		return 0, e
+	}
+
+	return uint16(v), nil
 }
