@@ -22,6 +22,7 @@ import (
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error{
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		idMap := make(map[string]string)
+		usedAction := make(map[uint32]bool)
 
 		for {
 			tAct, err := bStream.Recv()
@@ -30,6 +31,16 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 				return nil, nil
 			}else if err != nil {
 				return nil, err
+			}
+
+			if _, ok := usedAction[tAct.ActionId]; ok {
+				return nil, bStream.Send(&pb.TransactionActionResponse{
+					Status:   pb.MutationStatus_PROCESSING_FAILURE,
+					ActionId: tAct.ActionId,
+					Error:    "repeat actionId found in stream",
+				})
+			}else{
+				usedAction[tAct.ActionId] = true
 			}
 
 			switch tOpr := tAct.Action.(type) {
