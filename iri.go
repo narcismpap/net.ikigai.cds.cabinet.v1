@@ -12,25 +12,6 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
-var CounterKeys = map[int]string{
-	0: "0",
-	1: "1",
-	2: "2",
-	3: "3",
-	4: "4",
-	5: "5",
-	6: "6",
-	7: "7",
-	8: "8",
-	9: "9",
-	10: "a",
-	11: "b",
-	12: "c",
-	13: "d",
-	14: "e",
-	15: "f",
-}
-
 type IRI interface {
 	getPath() string
 	getKey(server *CDSCabinetServer) fdb.Key
@@ -196,8 +177,8 @@ func (c *IRINodeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.K
 }
 
 func (c *IRINodeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
-	return fdb.KeyRange{
+	return fdb.ExactRange(fdb.KeyRange{
 		Begin: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.Counter, c.Node, "0"}),
 		End: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.Counter, c.Node, "f"}),
-	}
+	})
 }

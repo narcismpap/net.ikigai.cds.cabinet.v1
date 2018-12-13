@@ -15,5 +15,5 @@ message Node{
     uint32 created = 4;
     uint32 updated = 5;
 
-    map<uint32, bytes> prop = 6;
+    bytes properties = 10;
 }

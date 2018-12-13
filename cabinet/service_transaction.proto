@@ -37,12 +37,15 @@ message TransactionAction{
 
         Edge edge_update = 11;
         Edge edge_delete = 12;
+        Edge edge_clear = 13;
 
         Index index_update = 21;
         Index index_delete = 22;
+        Index index_clear = 23;
 
         Meta meta_update = 31;
         Meta meta_delete = 32;
+        Meta meta_clear = 33;
 
         Node node_create = 40;
         Node node_update = 41;

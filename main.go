@@ -89,6 +89,7 @@ const (
 
 	CDSErrorNotFound
 	CDSErrorPermission
+	CDSErrorBadRecord
 
 	CDSListNoPagination
 )

@@ -9,10 +9,8 @@ package cds.cabinet.v1;
 
 message Index{
     uint32 type = 1;
-    uint32 field = 2;
-
     string node = 3;
     string value = 4;
 
-    map<uint32, bytes> prop = 5;
+    bytes properties = 10;
 }

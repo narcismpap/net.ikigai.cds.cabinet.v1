@@ -7,11 +7,8 @@
 package main
 
 import (
-	"bytes"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
-	"encoding/binary"
-	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/segmentio/ksuid"
@@ -27,7 +24,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 			tAct, err := bStream.Recv()
 
 			if err == io.EOF {
-				return nil, bStream.Send(&pb.TransactionActionResponse{})
+				return nil, nil
 			}else if err != nil {
 				return nil, err
 			}
@@ -42,7 +39,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, bStream.Send(&pb.TransactionActionResponse{
 							Status:   pb.MutationStatus_GENERIC_FAILURE,
 							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
+							Error:    "Unknown object as Counter Type",
 						})
 					}
 
@@ -56,9 +53,8 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						})
 					}
 
-					rand.Seed(time.Now().UnixNano())
-
 					// increment a random position in the counter
+					rand.Seed(time.Now().UnixNano())
 					tr.Add(iriCnt.getKey(s, CounterKeys[rand.Intn(16)]), incVal)
 
 					err = bStream.Send(&pb.TransactionActionResponse{
@@ -77,7 +73,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, bStream.Send(&pb.TransactionActionResponse{
 							Status:   pb.MutationStatus_GENERIC_FAILURE,
 							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
+							Error:    "Unknown object as Counter Type",
 						})
 					}
 
@@ -99,7 +95,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, bStream.Send(&pb.TransactionActionResponse{
 							Status:   pb.MutationStatus_GENERIC_FAILURE,
 							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
+								Error:    "Unknown object as Counter Type",
 						})
 					}
 
@@ -125,7 +121,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 				// Edge
 				case *pb.TransactionAction_EdgeUpdate:
 					iriEdge := &IRIEdge{Subject: tOpr.EdgeUpdate.Subject, Predicate: uint16(tOpr.EdgeUpdate.Predicate), Target: tOpr.EdgeUpdate.Target}
-					tr.Set(iriEdge.getKey(s), nil)
+					tr.Set(iriEdge.getKey(s), prepareProperties(tOpr.EdgeUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,
@@ -151,7 +147,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				case *pb.TransactionAction_IndexUpdate:
 					iriIndex := &IRINodeIndex{Node: tOpr.IndexUpdate.Node, IndexId: uint16(tOpr.IndexUpdate.Field), Value: tOpr.IndexUpdate.Value}
-					tr.Set(iriIndex.getKey(s), nil)
+					tr.Set(iriIndex.getKey(s), prepareProperties(tOpr.IndexUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,
@@ -187,7 +183,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						})
 					}
 
-					tr.Set(iri.getKey(s), nil)
+					tr.Set(iri.getKey(s), prepareProperties(tOpr.MetaUpdate.Val))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,
@@ -233,7 +229,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 					nodeIRI := &IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: string(newID)}
-					tr.Set(nodeIRI.getKey(s), nil)
+					tr.Set(nodeIRI.getKey(s), prepareProperties(tOpr.NodeCreate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,
@@ -247,7 +243,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				case *pb.TransactionAction_NodeUpdate:
 					nodeIRI := &IRINode{Type: uint16(tOpr.NodeUpdate.Type), Id: tOpr.NodeUpdate.Id}
-					tr.Set(nodeIRI.getKey(s), nil)
+					tr.Set(nodeIRI.getKey(s), prepareProperties(tOpr.NodeUpdate.Properties))
 
 					err = bStream.Send(&pb.TransactionActionResponse{
 						Status: pb.MutationStatus_SUCCESS,
@@ -283,8 +279,6 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Error: fmt.Sprintf("Unknown trx action %s", tAct.Action),
 					})
 			}
-
-
 		}
 	})
 
@@ -297,60 +291,4 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 func (s *CDSCabinetServer) ReadCheck(ctx context.Context, readRq *pb.ReadCheckRequest) (*pb.ReadCheckResponse, error){
 	return nil, nil
-}
-
-
-func resolveMetaIRI(tMeta *pb.Meta) (IRI, error){
-	switch mType := tMeta.Object.(type) {
-
-		case *pb.Meta_Edge:
-			return (&IRIEdgeMeta{
-				Property: 	uint16(tMeta.Key),
-				Subject: 	mType.Edge.Subject,
-				Predicate: 	uint16(mType.Edge.Predicate),
-				Target: 	mType.Edge.Target,
-			}), nil
-
-		case *pb.Meta_Node:
-			return (&IRINodeMeta{
-				Property: 	uint16(tMeta.Key),
-				Node: 		mType.Node,
-			}), nil
-
-		default:
-			return nil, errors.New("bad mType")
-	}
-}
-
-func resolveCounterIRI(tCounter *pb.Counter) (IRICounter, error){
-	switch cType := tCounter.Object.(type) {
-
-	case *pb.Counter_Edge:
-		return (&IRIEdgeCounter{
-			Counter:   uint16(tCounter.Counter),
-			Subject:   cType.Edge.Subject,
-			Predicate: uint16(cType.Edge.Predicate),
-			Target:    cType.Edge.Target,
-		}), nil
-
-	case *pb.Counter_Node:
-		return (&IRINodeCounter{
-			Counter: uint16(tCounter.Counter),
-			Node:    cType.Node,
-		}), nil
-
-	default:
-		return nil, errors.New("bad cType")
-	}
-}
-
-func intToBytes(v int64) ([]byte, error){
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, v)
-
-	if err != nil{
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
 }

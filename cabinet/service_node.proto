@@ -27,7 +27,9 @@ message NodeCreateResponse{
 
 message NodeGetRequest {
     RetrieveMode mode = 1;
+
     string id = 2;
+    uint32 node_type = 3;
 }
 
 message NodeListRequest {

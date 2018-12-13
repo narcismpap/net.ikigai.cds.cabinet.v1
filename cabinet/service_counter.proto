@@ -20,5 +20,5 @@ import "shared.proto";
 // Edge: ./c/e/{COUNT_ID}/{SUBJECT}/{PREDICATE}/{TARGET}
 
 message CounterValueResponse{
-    uint32 value = 1;
+    int64 value = 1;
 }
