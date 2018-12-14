@@ -26,6 +26,8 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 			Limit: 16,
 		}).Iterator()
 
+		keysSeen := uint8(0)
+
 		for ri.Advance() {
 			kv := ri.MustGet()
 
@@ -40,6 +42,11 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 			}
 
 			total += cVal
+			keysSeen += 1
+		}
+
+		if keysSeen == 0{
+			return nil, &CabinetError{code: CDSErrorNotFound}
 		}
 
 		return total, nil

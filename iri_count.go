@@ -37,14 +37,18 @@ func (c *IRIEdgeCounter) getCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
+func (c *IRIEdgeCounter) getPredicateK() string{
+	return intToKeyElement(c.Predicate)
+}
+
 func (c *IRIEdgeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, cntGroup})
+	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, cntGroup})
 }
 
 func (c *IRIEdgeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
 	return fdb.KeyRange{
-		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, "0"}),
-		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.Predicate, c.Target, "f"}),
+		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "0"}),
+		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "f"}),
 	}
 }
 

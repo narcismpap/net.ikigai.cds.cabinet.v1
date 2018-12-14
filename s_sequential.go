@@ -94,7 +94,9 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 
 	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+
 		tr.Clear(seqIRI.getKey(s))
+		tr.Clear(seqIRI.getIncrementKey(s))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialDelete(%v) = %v", seq, seqIRI.getPath()))
