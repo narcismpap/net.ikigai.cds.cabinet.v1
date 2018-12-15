@@ -17,7 +17,7 @@ import (
 )
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
-	total, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	total, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		iri, err := iri.ResolveCounterIRI(counter, nil)
 		var total int64
 
@@ -26,7 +26,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 		}
 
 		// simple SUM(IRI/0-f); real-time counting w/ good scalability
-		ri := rtr.GetRange(iri.GetKeyRange(s.DbCnt), fdb.RangeOptions{
+		ri := rtr.GetRange(iri.GetKeyRange(s.dbCount), fdb.RangeOptions{
 			Limit: len(CounterKeys),
 		}).Iterator()
 

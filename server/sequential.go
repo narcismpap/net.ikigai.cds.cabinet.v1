@@ -25,9 +25,9 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	newId, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	newId, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		baseSeqIRI := &iri.Sequence{Type: seq.Type}
-		lastKey := baseSeqIRI.GetIncrementKey(s.DbSeq)
+		lastKey := baseSeqIRI.GetIncrementKey(s.dbSequence)
 		lastNum := tr.Get(lastKey).MustGet()
 
 		var lastInt32 uint32
@@ -46,7 +46,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 		seqIRI := &iri.Sequence{Type: seq.Type, SeqID: lastInt32}
 
-		tr.Set(seqIRI.GetKey(s.DbSeq), []byte(seq.GetNode()))
+		tr.Set(seqIRI.GetKey(s.dbSequence), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
 
 		if DebugServerRequests {
@@ -70,9 +70,9 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid}
-		tr.Set(seqIRI.GetKey(s.DbSeq), []byte(seq.GetNode()))
+		tr.Set(seqIRI.GetKey(s.dbSequence), []byte(seq.GetNode()))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialUpdate(%v) = %v", seq, seqIRI.GetPath()))
@@ -95,11 +95,11 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid}
 
-		tr.Clear(seqIRI.GetKey(s.DbSeq))
-		tr.Clear(seqIRI.GetIncrementKey(s.DbSeq))
+		tr.Clear(seqIRI.GetKey(s.dbSequence))
+		tr.Clear(seqIRI.GetIncrementKey(s.dbSequence))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialDelete(%v) = %v", seq, seqIRI.GetPath()))
@@ -122,9 +122,9 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 		return nil, vldError
 	}
 
-	nodeId, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	nodeId, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid}
-		sVal := rtr.Get(seqIRI.GetKey(s.DbSeq)).MustGet()
+		sVal := rtr.Get(seqIRI.GetKey(s.dbSequence)).MustGet()
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialGet(%v) = %v", seq, seqIRI.GetPath()))
@@ -151,8 +151,8 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
 	}
 
-	_, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
-		var readRange = s.DbSeq.Sub(seq.GetType())
+	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+		var readRange = s.dbSequence.Sub(seq.GetType())
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
@@ -164,7 +164,7 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			sqO, err := s.DbSeq.Unpack(kv.Key) // {Type, SeqID} = kv.Value
+			sqO, err := s.dbSequence.Unpack(kv.Key) // {Type, SeqID} = kv.Value
 
 			if err != nil {
 				return nil, err

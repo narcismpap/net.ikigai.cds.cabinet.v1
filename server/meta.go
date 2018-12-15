@@ -16,14 +16,14 @@ import (
 )
 
 func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error){
-	metaValue, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	metaValue, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		iri, err := iri.ResolveMetaIRI(meta, nil)
 
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 		}
 
-		metaValue := rtr.Get(iri.GetKey(s.DbMeta)).MustGet()
+		metaValue := rtr.Get(iri.GetKey(s.dbMeta)).MustGet()
 
 		if metaValue == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

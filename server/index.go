@@ -16,12 +16,12 @@ import (
 )
 
 func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRequest) (*pb.Index, error){
-	indexProp, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	indexProp, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		indexProp := rtr.Get((&iri.NodeIndex{
 			Node: indexGet.Index.Node,
 			IndexId: uint16(indexGet.Index.Type),
 			Value: indexGet.Index.Value,
-		}).GetKey(s.DbIndex)).MustGet()
+		}).GetKey(s.dbIndex)).MustGet()
 
 		if indexProp == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

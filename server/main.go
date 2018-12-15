@@ -19,15 +19,15 @@ import (
 type CDSCabinetServer struct{
 	Version int32
 
-	FdbConn fdb.Transactor
-	DbContainer directory.DirectorySubspace
+	fdb         fdb.Transactor
+	dbContainer directory.DirectorySubspace
 
-	DbNode subspace.Subspace
-	DbEdge subspace.Subspace
-	DbIndex subspace.Subspace
-	DbMeta subspace.Subspace
-	DbCnt subspace.Subspace
-	DbSeq subspace.Subspace
+	dbNode     subspace.Subspace
+	dbEdge     subspace.Subspace
+	dbIndex    subspace.Subspace
+	dbMeta     subspace.Subspace
+	dbCount    subspace.Subspace
+	dbSequence subspace.Subspace
 }
 
 func (s *CDSCabinetServer) logEvent(e string){
@@ -47,16 +47,16 @@ func StartServer() *CDSCabinetServer {
 	}
 
 	server := &CDSCabinetServer{
-		Version: 	 1,
-		FdbConn: 	 db,
-		DbContainer: container,
+		Version:     1,
+		fdb:         db,
+		dbContainer: container,
 
-		DbNode: 	container.Sub("n"),
-		DbEdge: 	container.Sub("e"),
-		DbIndex: 	container.Sub("i"),
-		DbMeta: 	container.Sub("m"),
-		DbCnt: 		container.Sub("c"),
-		DbSeq: 		container.Sub("server"),
+		dbNode:     container.Sub("n"),
+		dbEdge:     container.Sub("e"),
+		dbIndex:    container.Sub("i"),
+		dbMeta:     container.Sub("m"),
+		dbCount:    container.Sub("c"),
+		dbSequence: container.Sub("server"),
 	}
 
 	// install db
@@ -64,11 +64,11 @@ func StartServer() *CDSCabinetServer {
 		"n", "e", "i", "m", "c",
 	}
 
-	_, err = server.FdbConn.Transact(func (tr fdb.Transaction) (interface{}, error) {
-		tr.ClearRange(server.DbContainer)
+	_, err = server.fdb.Transact(func (tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(server.dbContainer)
 
 		for i := range coreSeq {
-			tr.Set(server.DbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
+			tr.Set(server.dbSequence.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
 		}
 
 		log.Printf("[I] Container [%server] is now initialized", activeContainer)
