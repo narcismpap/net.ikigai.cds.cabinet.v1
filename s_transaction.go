@@ -12,8 +12,9 @@ import (
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/segmentio/ksuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
-	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -34,11 +35,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 			}
 
 			if _, ok := usedAction[tAct.ActionId]; ok {
-				return nil, bStream.Send(&pb.TransactionActionResponse{
-					Status:   pb.MutationStatus_PROCESSING_FAILURE,
-					ActionId: tAct.ActionId,
-					Error:    "repeat actionId found in stream",
-				})
+				return nil, status.Error(codes.Unimplemented, RPCErrorRepeatAction)
 			}else{
 				usedAction[tAct.ActionId] = true
 			}
@@ -50,21 +47,14 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					cntIRI, err := resolveCounterIRI(tOpr.CounterIncrement, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unknown object as Counter Type",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					incVal, err := intToBytes(int64(tOpr.CounterIncrement.Value))
 
+
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unable to build increment",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorArgumentInvalid)
 					}
 
 					// increment a random position in the counter
@@ -90,11 +80,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					cntIRI, err := resolveCounterIRI(tOpr.CounterDelete, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unknown object as Counter Type",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					tr.ClearRange(cntIRI.getKeyRange(s))
@@ -116,18 +102,11 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					cntIRI, err := resolveCounterIRI(tOpr.CounterRegister, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-								Error:    "Unknown object as Counter Type",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					incVal, err := intToBytes(int64(0))
-
-					if err != nil{
-						log.Fatalf("Unable to intToBytes from known value: 0")
-					}
+					CheckFatalError(err)
 
 					for x := range CounterKeys{
 						tr.Set(cntIRI.getKey(s, CounterKeys[x]), incVal)
@@ -262,11 +241,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					metaIRI, err := resolveMetaIRI(tOpr.MetaUpdate, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					tr.Set(metaIRI.getKey(s), prepareProperties(tOpr.MetaUpdate.Val))
@@ -288,11 +263,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					metaIRI, err := resolveMetaIRI(tOpr.MetaDelete, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					tr.Clear(metaIRI.getKey(s))
@@ -314,11 +285,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					metaIRI, err := resolveMetaIRI(tOpr.MetaClear, &idMap)
 
 					if err != nil {
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status:   pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error:    "Unknown object for Meta",
-						})
+						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
 					tr.ClearRange(metaIRI.getClearRange(s))
@@ -339,14 +306,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 				// Node
 				case *pb.TransactionAction_NodeCreate:
 					newIDBytes, err := ksuid.New().MarshalText()
-
-					if err != nil{
-						return nil, bStream.Send(&pb.TransactionActionResponse{
-							Status: pb.MutationStatus_GENERIC_FAILURE,
-							ActionId: tAct.ActionId,
-							Error: "cannot create node ID",
-						})
-					}
+					CheckFatalError(err)
 
 					newID := string(newIDBytes)
 					nodeIRI := &IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: newID}
@@ -416,11 +376,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					break
 
 				default:
-					return nil, bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_GENERIC_FAILURE,
-						ActionId: tAct.ActionId,
-						Error: fmt.Sprintf("Unknown trx action %s", tAct.Action),
-					})
+					return nil, status.Error(codes.Unimplemented, RPCErrorInvalidAction)
 			}
 		}
 	})
