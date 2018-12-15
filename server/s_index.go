@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -15,8 +16,8 @@ import (
 )
 
 func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRequest) (*pb.Index, error){
-	indexProp, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		indexProp := rtr.Get((&IRINodeIndex{
+	indexProp, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+		indexProp := rtr.Get((&iri.IRINodeIndex{
 			Node: indexGet.Index.Node,
 			IndexId: uint16(indexGet.Index.Type),
 			Value: indexGet.Index.Value,

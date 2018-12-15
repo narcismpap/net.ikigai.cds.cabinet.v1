@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -15,8 +16,8 @@ import (
 )
 
 func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest) (*pb.Edge, error){
-	edgeProp, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		edgeProp := rtr.Get((&IRIEdge{
+	edgeProp, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+		edgeProp := rtr.Get((&iri.IRIEdge{
 			Subject: edge.Edge.Subject,
 			Predicate: uint16(edge.Edge.Predicate),
 			Target: edge.Edge.Target,
@@ -39,7 +40,4 @@ func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest)
 func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCabinet_EdgeListServer) error{
 	return nil
 }
-
-
-
 

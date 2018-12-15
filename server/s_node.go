@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -16,8 +17,8 @@ import (
 )
 
 func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetRequest) (*pb.Node, error){
-	nodeProp, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		nodeIRI := &IRINode{Type: uint16(nodeRq.NodeType), Id: nodeRq.Id}
+	nodeProp, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+		nodeIRI := &iri.IRINode{Type: uint16(nodeRq.NodeType), Id: nodeRq.Id}
 		nodeProp := rtr.Get(nodeIRI.GetKey(s)).MustGet()
 
 		if DebugServerRequests {

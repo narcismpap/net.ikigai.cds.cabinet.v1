@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package iri
 
 import (
+	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -35,20 +36,20 @@ func (m *IRIEdgeMeta) getPredicateK() string{
 	return intToKeyElement(m.Predicate)
 }
 
-func (m *IRIEdgeMeta) GetKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
+func (m *IRIEdgeMeta) GetKey(server *cds.CDSCabinetServer) fdb.Key{
+	return server.DbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
 }
 
-func (m *IRIEdgeMeta) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
+func (m *IRIEdgeMeta) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
 	if m.Target != ""{
-		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
+		return server.DbMeta.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 	}
 
 	if m.Predicate > 0{
-		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate)
+		return server.DbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate)
 	}
 
-	return server.dbMeta.Sub("e").Sub(m.Subject)
+	return server.DbMeta.Sub("e").Sub(m.Subject)
 }
 
 func (e *IRIEdgeMeta) ValidateIRI() error{
@@ -74,12 +75,12 @@ func (m *IRINodeMeta) getPropertyK() string{
 	return intToKeyElement(m.Property)
 }
 
-func (m *IRINodeMeta) GetKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
+func (m *IRINodeMeta) GetKey(server *cds.CDSCabinetServer) fdb.Key{
+	return server.DbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
 }
 
-func (m *IRINodeMeta) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
-	return server.dbMeta.Sub("n").Sub(m.Node)
+func (m *IRINodeMeta) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+	return server.DbMeta.Sub("n").Sub(m.Node)
 }
 
 func (e *IRINodeMeta) ValidateIRI() error{

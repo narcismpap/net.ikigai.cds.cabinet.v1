@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package iri
 
 import (
+	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -33,15 +34,15 @@ func (e *IRIEdge) getPredicateK() string{
 	return intToKeyElement(e.Predicate)
 }
 
-func (e *IRIEdge) GetKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbEdge.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
+func (e *IRIEdge) GetKey(server *cds.CDSCabinetServer) fdb.Key{
+	return server.DbEdge.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
 }
 
-func (e *IRIEdge) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
+func (e *IRIEdge) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
 	if e.Predicate == 0{
-		return server.dbEdge.Sub(e.Subject)
+		return server.DbEdge.Sub(e.Subject)
 	}else{
-		return server.dbEdge.Sub(e.Subject).Sub(e.getPredicateK())
+		return server.DbEdge.Sub(e.Subject).Sub(e.getPredicateK())
 	}
 }
 

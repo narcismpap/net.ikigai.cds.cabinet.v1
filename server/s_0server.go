@@ -4,7 +4,7 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
 	"fmt"
@@ -17,17 +17,17 @@ import (
 )
 
 type CDSCabinetServer struct{
-	version int32
+	Version int32
 
-	fDb fdb.Transactor
-	dbContainer directory.DirectorySubspace
+	FdbConn fdb.Transactor
+	DbContainer directory.DirectorySubspace
 
-	dbNode subspace.Subspace
-	dbEdge subspace.Subspace
-	dbIndex subspace.Subspace
-	dbMeta subspace.Subspace
-	dbCnt subspace.Subspace
-	dbSeq subspace.Subspace
+	DbNode subspace.Subspace
+	DbEdge subspace.Subspace
+	DbIndex subspace.Subspace
+	DbMeta subspace.Subspace
+	DbCnt subspace.Subspace
+	DbSeq subspace.Subspace
 }
 
 func (s *CDSCabinetServer) logEvent(e string){
@@ -35,7 +35,7 @@ func (s *CDSCabinetServer) logEvent(e string){
 }
 
 
-func newCDSServer() *CDSCabinetServer {
+func StartServer() *CDSCabinetServer {
 	fdb.MustAPIVersion(600)
 	db := fdb.MustOpenDefault()
 
@@ -47,16 +47,16 @@ func newCDSServer() *CDSCabinetServer {
 	}
 
 	server := &CDSCabinetServer{
-		version: 	 1,
-		fDb: 		 db,
-		dbContainer: container,
+		Version: 	 1,
+		FdbConn: 	 db,
+		DbContainer: container,
 
-		dbNode: 	container.Sub("n"),
-		dbEdge: 	container.Sub("e"),
-		dbIndex: 	container.Sub("i"),
-		dbMeta: 	container.Sub("m"),
-		dbCnt: 		container.Sub("c"),
-		dbSeq: 		container.Sub("server"),
+		DbNode: 	container.Sub("n"),
+		DbEdge: 	container.Sub("e"),
+		DbIndex: 	container.Sub("i"),
+		DbMeta: 	container.Sub("m"),
+		DbCnt: 		container.Sub("c"),
+		DbSeq: 		container.Sub("server"),
 	}
 
 	// install db
@@ -64,11 +64,11 @@ func newCDSServer() *CDSCabinetServer {
 		"n", "e", "i", "m", "c",
 	}
 
-	_, err = server.fDb.Transact(func (tr fdb.Transaction) (interface{}, error) {
-		tr.ClearRange(server.dbContainer)
+	_, err = server.FdbConn.Transact(func (tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(server.DbContainer)
 
 		for i := range coreSeq {
-			tr.Set(server.dbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
+			tr.Set(server.DbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
 		}
 
 		log.Printf("[I] Container [%server] is now initialized", activeContainer)

@@ -8,6 +8,7 @@ package main
 
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
+	cdsServer "cds.ikigai.net/cabinet.v1/server"
 	"flag"
 	"fmt"
 	"google.golang.org/grpc"
@@ -17,7 +18,6 @@ import (
 
 var (
 	ServerPort          = 8888
-	DebugServerRequests = true
 )
 
 func main(){
@@ -34,7 +34,7 @@ func main(){
 
 	grpcServer := grpc.NewServer(opts...)
 
-	pb.RegisterCDSCabinetServer(grpcServer, newCDSServer())
+	pb.RegisterCDSCabinetServer(grpcServer, cdsServer.StartServer())
 	err = grpcServer.Serve(lis)
 
 	if err != nil{

@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -24,8 +25,8 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	newId, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		baseSeqIRI := &IRISequential{Type: seq.Type}
+	newId, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+		baseSeqIRI := &iri.IRISequential{Type: seq.Type}
 		lastKey := baseSeqIRI.GetIncrementKey(s)
 		lastNum := tr.Get(lastKey).MustGet()
 
@@ -43,7 +44,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 			lastInt32 = uint32(lastInt)
 		}
 
-		seqIRI := &IRISequential{Type: seq.Type, SeqID: lastInt32}
+		seqIRI := &iri.IRISequential{Type: seq.Type, SeqID: lastInt32}
 
 		tr.Set(seqIRI.GetKey(s), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
@@ -69,8 +70,8 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
 		tr.Set(seqIRI.GetKey(s), []byte(seq.GetNode()))
 
 		if DebugServerRequests {
@@ -94,8 +95,8 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 		return nil, vldError
 	}
 
-	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
 
 		tr.Clear(seqIRI.GetKey(s))
 		tr.Clear(seqIRI.GetIncrementKey(s))
@@ -121,8 +122,8 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 		return nil, vldError
 	}
 
-	nodeId, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		seqIRI := IRISequential{Type: seq.Type, SeqID: seq.Seqid}
+	nodeId, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
 		sVal := rtr.Get(seqIRI.GetKey(s)).MustGet()
 
 		if DebugServerRequests {
@@ -150,8 +151,8 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
 	}
 
-	_, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
-		var readRange = s.dbSeq.Sub(seq.GetType())
+	_, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+		var readRange = s.DbSeq.Sub(seq.GetType())
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
@@ -163,7 +164,7 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			sqO, err := s.dbSeq.Unpack(kv.Key) // {Type, SeqID} = kv.Value
+			sqO, err := s.DbSeq.Unpack(kv.Key) // {Type, SeqID} = kv.Value
 
 			if err != nil {
 				return nil, err

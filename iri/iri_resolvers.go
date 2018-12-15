@@ -4,7 +4,7 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package iri
 
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
@@ -13,21 +13,21 @@ import (
 	"strings"
 )
 
-func resolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
+func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
 	switch mType := tMeta.Object.(type) {
 
 	case *pb.Meta_Edge:
 		return (&IRIEdgeMeta{
 			Property: 	uint16(tMeta.Key),
-			Subject: 	nodeResolveId(mType.Edge.Subject, nMap),
+			Subject: 	NodeResolveId(mType.Edge.Subject, nMap),
 			Predicate: 	uint16(mType.Edge.Predicate),
-			Target: 	nodeResolveId(mType.Edge.Target, nMap),
+			Target: 	NodeResolveId(mType.Edge.Target, nMap),
 		}), nil
 
 	case *pb.Meta_Node:
 		return (&IRINodeMeta{
 			Property: 	uint16(tMeta.Key),
-			Node: 		nodeResolveId(mType.Node, nMap),
+			Node: 		NodeResolveId(mType.Node, nMap),
 		}), nil
 
 	default:
@@ -35,21 +35,21 @@ func resolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
 	}
 }
 
-func resolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (IRICounter, error){
+func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (IRICounter, error){
 	switch cType := tCounter.Object.(type) {
 
 	case *pb.Counter_Edge:
 		return (&IRIEdgeCounter{
 			Counter:   uint16(tCounter.Counter),
-			Subject:   nodeResolveId(cType.Edge.Subject, nMap),
+			Subject:   NodeResolveId(cType.Edge.Subject, nMap),
 			Predicate: uint16(cType.Edge.Predicate),
-			Target:    nodeResolveId(cType.Edge.Target, nMap),
+			Target:    NodeResolveId(cType.Edge.Target, nMap),
 		}), nil
 
 	case *pb.Counter_Node:
 		return (&IRINodeCounter{
 			Counter: uint16(tCounter.Counter),
-			Node:    nodeResolveId(cType.Node, nMap),
+			Node:    NodeResolveId(cType.Node, nMap),
 		}), nil
 
 	default:
@@ -58,7 +58,7 @@ func resolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (IRICounte
 }
 
 
-func nodeResolveId(nID string, nMap *map[string]string) string{
+func NodeResolveId(nID string, nMap *map[string]string) string{
 	if strings.HasPrefix(nID, "tmp:") {
 		if val, ok := (*nMap)[strings.TrimLeft(nID, "tmp:")]; ok {
 			return val

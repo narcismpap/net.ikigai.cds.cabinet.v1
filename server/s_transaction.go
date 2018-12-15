@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -21,7 +22,7 @@ import (
 )
 
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error{
-	_, err := s.fDb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		idMap := make(map[string]string)
 		usedAction := make(map[uint32]bool)
 
@@ -44,13 +45,13 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Counter
 				case *pb.TransactionAction_CounterIncrement:
-					cntIRI, err := resolveCounterIRI(tOpr.CounterIncrement, &idMap)
+					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterIncrement, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					incVal, err := intToBytes(int64(tOpr.CounterIncrement.Value))
+					incVal, err := Int64ToBytes(int64(tOpr.CounterIncrement.Value))
 
 
 					if err != nil {
@@ -77,7 +78,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_CounterDelete:
-					cntIRI, err := resolveCounterIRI(tOpr.CounterDelete, &idMap)
+					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterDelete, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
@@ -99,13 +100,13 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_CounterRegister:
-					cntIRI, err := resolveCounterIRI(tOpr.CounterRegister, &idMap)
+					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterRegister, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					incVal, err := intToBytes(int64(0))
+					incVal, err := Int64ToBytes(int64(0))
 					CheckFatalError(err)
 
 					for x := range CounterKeys{
@@ -127,13 +128,13 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Edge
 				case *pb.TransactionAction_EdgeUpdate:
-					edgeIRI := &IRIEdge{
-						Subject: nodeResolveId(tOpr.EdgeUpdate.Subject, &idMap),
+					edgeIRI := &iri.IRIEdge{
+						Subject: iri.NodeResolveId(tOpr.EdgeUpdate.Subject, &idMap),
 						Predicate: uint16(tOpr.EdgeUpdate.Predicate),
-						Target: nodeResolveId(tOpr.EdgeUpdate.Target, &idMap),
+						Target: iri.NodeResolveId(tOpr.EdgeUpdate.Target, &idMap),
 					}
 
-					tr.Set(edgeIRI.GetKey(s), prepareProperties(tOpr.EdgeUpdate.Properties))
+					tr.Set(edgeIRI.GetKey(s), PreparePayload(tOpr.EdgeUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.EdgeUpdate(%v) = %v", tAct, edgeIRI.GetPath()))
@@ -149,10 +150,10 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_EdgeDelete:
-					edgeIRI := &IRIEdge{
-						Subject: nodeResolveId(tOpr.EdgeDelete.Subject, &idMap),
+					edgeIRI := &iri.IRIEdge{
+						Subject: iri.NodeResolveId(tOpr.EdgeDelete.Subject, &idMap),
 						Predicate: uint16(tOpr.EdgeDelete.Predicate),
-						Target: nodeResolveId(tOpr.EdgeDelete.Target, &idMap),
+						Target: iri.NodeResolveId(tOpr.EdgeDelete.Target, &idMap),
 					}
 
 					tr.Clear(edgeIRI.GetKey(s))
@@ -171,8 +172,8 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_EdgeClear:
-					edgeIRI := &IRIEdge{
-						Subject: nodeResolveId(tOpr.EdgeClear.Subject, &idMap),
+					edgeIRI := &iri.IRIEdge{
+						Subject: iri.NodeResolveId(tOpr.EdgeClear.Subject, &idMap),
 						Predicate: uint16(tOpr.EdgeClear.Predicate),
 					}
 
@@ -193,13 +194,13 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Indexes
 				case *pb.TransactionAction_IndexUpdate:
-					indexIRI := &IRINodeIndex{
-						Node: nodeResolveId(tOpr.IndexUpdate.Node, &idMap),
+					indexIRI := &iri.IRINodeIndex{
+						Node: iri.NodeResolveId(tOpr.IndexUpdate.Node, &idMap),
 						IndexId: uint16(tOpr.IndexUpdate.Type),
 						Value: tOpr.IndexUpdate.Value,
 					}
 
-					tr.Set(indexIRI.GetKey(s), prepareProperties(tOpr.IndexUpdate.Properties))
+					tr.Set(indexIRI.GetKey(s), PreparePayload(tOpr.IndexUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.IndexUpdate(%v) = %v", tAct, indexIRI.GetPath()))
@@ -215,8 +216,8 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_IndexDelete:
-					indexIRI := &IRINodeIndex{
-						Node: nodeResolveId(tOpr.IndexDelete.Node, &idMap),
+					indexIRI := &iri.IRINodeIndex{
+						Node: iri.NodeResolveId(tOpr.IndexDelete.Node, &idMap),
 						IndexId: uint16(tOpr.IndexDelete.Type),
 						Value: tOpr.IndexDelete.Value,
 					}
@@ -238,13 +239,13 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 				// Meta
 				case *pb.TransactionAction_MetaUpdate:
-					metaIRI, err := resolveMetaIRI(tOpr.MetaUpdate, &idMap)
+					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaUpdate, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					tr.Set(metaIRI.GetKey(s), prepareProperties(tOpr.MetaUpdate.Val))
+					tr.Set(metaIRI.GetKey(s), PreparePayload(tOpr.MetaUpdate.Val))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v", tAct, metaIRI.GetPath()))
@@ -260,7 +261,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_MetaDelete:
-					metaIRI, err := resolveMetaIRI(tOpr.MetaDelete, &idMap)
+					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaDelete, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
@@ -282,7 +283,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_MetaClear:
-					metaIRI, err := resolveMetaIRI(tOpr.MetaClear, &idMap)
+					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaClear, &idMap)
 
 					if err != nil {
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
@@ -309,8 +310,8 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					CheckFatalError(err)
 
 					newID := string(newIDBytes)
-					nodeIRI := &IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: newID}
-					tr.Set(nodeIRI.GetKey(s), prepareProperties(tOpr.NodeCreate.Properties))
+					nodeIRI := &iri.IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: newID}
+					tr.Set(nodeIRI.GetKey(s), PreparePayload(tOpr.NodeCreate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.NodeCreate(%v) = %v", tAct, nodeIRI.GetPath()))
@@ -329,12 +330,12 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					idMap[strings.TrimLeft(tOpr.NodeCreate.Id, "tmp:")] = newID
 
 				case *pb.TransactionAction_NodeUpdate:
-					nodeIRI := &IRINode{
+					nodeIRI := &iri.IRINode{
 						Type: uint16(tOpr.NodeUpdate.Type),
-						Id: nodeResolveId(tOpr.NodeUpdate.Id, &idMap),
+						Id: iri.NodeResolveId(tOpr.NodeUpdate.Id, &idMap),
 					}
 
-					tr.Set(nodeIRI.GetKey(s), prepareProperties(tOpr.NodeUpdate.Properties))
+					tr.Set(nodeIRI.GetKey(s), PreparePayload(tOpr.NodeUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.NodeUpdate(%v) = %v", tAct, nodeIRI.GetPath()))
@@ -350,9 +351,9 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					}
 
 				case *pb.TransactionAction_NodeDelete:
-					nodeIRI := &IRINode{
+					nodeIRI := &iri.IRINode{
 						Type: uint16(tOpr.NodeDelete.Type),
-						Id: nodeResolveId(tOpr.NodeDelete.Id, &idMap),
+						Id: iri.NodeResolveId(tOpr.NodeDelete.Id, &idMap),
 					}
 
 					tr.Clear(nodeIRI.GetKey(s))

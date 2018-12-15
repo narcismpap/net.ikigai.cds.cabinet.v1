@@ -4,9 +4,10 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package iri
 
 import (
+	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -26,15 +27,15 @@ func (n *IRINode) GetPath() string{
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
-func (n *IRINode) GetKey(server *CDSCabinetServer) fdb.Key{
-	return server.dbNode.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
+func (n *IRINode) GetKey(server *cds.CDSCabinetServer) fdb.Key{
+	return server.DbNode.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
 }
 
-func (n *IRINode) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
+func (n *IRINode) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
 	if n.Id == ""{
-		return server.dbNode.Sub(n.getTypeK())
+		return server.DbNode.Sub(n.getTypeK())
 	}else{
-		return server.dbEdge.Sub(n.getTypeK()).Sub(n.Id)
+		return server.DbEdge.Sub(n.getTypeK()).Sub(n.Id)
 	}
 }
 

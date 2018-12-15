@@ -5,15 +5,14 @@
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
 
-package main
+package server
 
 import (
 	"bytes"
 	"encoding/binary"
-	"strconv"
 )
 
-func intToBytes(v int64) ([]byte, error){
+func Int64ToBytes(v int64) ([]byte, error){
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, v)
 
@@ -30,7 +29,7 @@ func BytesToInt(data []byte) (ret int64, err error){
 	return ret, err
 }
 
-func prepareProperties(src []byte) (prop []byte){
+func PreparePayload(src []byte) (prop []byte){
 	if src == nil{
 		prop = []byte("")
 	}else{
@@ -38,19 +37,4 @@ func prepareProperties(src []byte) (prop []byte){
 	}
 
 	return
-}
-
-
-func intToKeyElement(v uint16) string{
-	return strconv.FormatUint(uint64(v), 36)
-}
-
-func KeyElementToInt(k string) (uint16, error){
-	v, e := strconv.ParseUint(k, 36, 32)
-
-	if e != nil{
-		return 0, e
-	}
-
-	return uint16(v), nil
 }

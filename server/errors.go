@@ -4,7 +4,11 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package main
+package server
+
+const(
+	DebugServerRequests = true
+)
 
 // RPC Errors
 // Returned by gRPC, standardized on E(0xYYY)
