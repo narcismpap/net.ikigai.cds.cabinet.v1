@@ -11,8 +11,11 @@ import (
 )
 
 type IRI interface {
-	getPath() string
-	getKey(server *CDSCabinetServer) fdb.Key
-	getClearRange(server *CDSCabinetServer) fdb.ExactRange
+	GetPath() string
+	GetKey(server *CDSCabinetServer) fdb.Key
+	GetClearRange(server *CDSCabinetServer) fdb.ExactRange
+
+	ValidateIRI() error
+	ValidatePermission() error
 }
 

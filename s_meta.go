@@ -22,7 +22,7 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 		}
 
-		metaValue := rtr.Get(iri.getKey(s)).MustGet()
+		metaValue := rtr.Get(iri.GetKey(s)).MustGet()
 
 		if metaValue == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

@@ -18,10 +18,10 @@ import (
 func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetRequest) (*pb.Node, error){
 	nodeProp, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		nodeIRI := &IRINode{Type: uint16(nodeRq.NodeType), Id: nodeRq.Id}
-		nodeProp := rtr.Get(nodeIRI.getKey(s)).MustGet()
+		nodeProp := rtr.Get(nodeIRI.GetKey(s)).MustGet()
 
 		if DebugServerRequests {
-			s.logEvent(fmt.Sprintf("NodeGet(%v) = %v", nodeRq, nodeIRI.getPath()))
+			s.logEvent(fmt.Sprintf("NodeGet(%v) = %v", nodeRq, nodeIRI.GetPath()))
 		}
 
 		if nodeProp == nil{

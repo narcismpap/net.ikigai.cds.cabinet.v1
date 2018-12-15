@@ -22,14 +22,14 @@ func (s *IRISequential) dbSeqID() string{
 	return fmt.Sprintf("%05d", s.SeqID)
 }
 
-func (s *IRISequential) getPath() string{
+func (s *IRISequential) GetPath() string{
 	return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
 }
 
-func (s *IRISequential) getKey(server *CDSCabinetServer) fdb.Key{
+func (s *IRISequential) GetKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbSeq.Pack(tuple.Tuple{s.Type, s.dbSeqID()})
 }
 
-func (s *IRISequential) getIncrementKey(server *CDSCabinetServer) fdb.Key{
+func (s *IRISequential) GetIncrementKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbSeq.Pack(tuple.Tuple{"l", s.Type})
 }

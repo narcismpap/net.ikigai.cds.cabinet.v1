@@ -20,7 +20,7 @@ func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRe
 			Node: indexGet.Index.Node,
 			IndexId: uint16(indexGet.Index.Type),
 			Value: indexGet.Index.Value,
-		}).getKey(s)).MustGet()
+		}).GetKey(s)).MustGet()
 
 		if indexProp == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

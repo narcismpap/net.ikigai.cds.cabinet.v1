@@ -25,7 +25,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 		}
 
 		// simple SUM(IRI/0-f); real-time counting w/ good scalability
-		ri := rtr.GetRange(iri.getKeyRange(s), fdb.RangeOptions{
+		ri := rtr.GetRange(iri.GetKeyRange(s), fdb.RangeOptions{
 			Limit: len(CounterKeys),
 		}).Iterator()
 

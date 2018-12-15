@@ -23,7 +23,7 @@ type IRIEdgeMeta struct{
 	Property uint16
 }
 
-func (m *IRIEdgeMeta) getPath() string{
+func (m *IRIEdgeMeta) GetPath() string{
 	return fmt.Sprintf("/m/e/%s/%d/%s/%d", m.Subject, m.Predicate, m.Target, m.Property)
 }
 
@@ -35,11 +35,11 @@ func (m *IRIEdgeMeta) getPredicateK() string{
 	return intToKeyElement(m.Predicate)
 }
 
-func (m *IRIEdgeMeta) getKey(server *CDSCabinetServer) fdb.Key{
+func (m *IRIEdgeMeta) GetKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
 }
 
-func (m *IRIEdgeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+func (m *IRIEdgeMeta) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	if m.Target != ""{
 		return server.dbMeta.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 	}
@@ -51,13 +51,22 @@ func (m *IRIEdgeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	return server.dbMeta.Sub("e").Sub(m.Subject)
 }
 
+func (e *IRIEdgeMeta) ValidateIRI() error{
+	return nil
+}
+
+func (e *IRIEdgeMeta) ValidatePermission() error{
+	return nil
+}
+
+
 /* Nodes */
 type IRINodeMeta struct{
 	Node string
 	Property uint16
 }
 
-func (m *IRINodeMeta) getPath() string{
+func (m *IRINodeMeta) GetPath() string{
 	return fmt.Sprintf("/m/n/%s/%d", m.Node, m.Property)
 }
 
@@ -65,10 +74,18 @@ func (m *IRINodeMeta) getPropertyK() string{
 	return intToKeyElement(m.Property)
 }
 
-func (m *IRINodeMeta) getKey(server *CDSCabinetServer) fdb.Key{
+func (m *IRINodeMeta) GetKey(server *CDSCabinetServer) fdb.Key{
 	return server.dbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
 }
 
-func (m *IRINodeMeta) getClearRange(server *CDSCabinetServer) fdb.ExactRange{
+func (m *IRINodeMeta) GetClearRange(server *CDSCabinetServer) fdb.ExactRange{
 	return server.dbMeta.Sub("n").Sub(m.Node)
+}
+
+func (e *IRINodeMeta) ValidateIRI() error{
+	return nil
+}
+
+func (e *IRINodeMeta) ValidatePermission() error{
+	return nil
 }

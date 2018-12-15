@@ -13,9 +13,12 @@ import (
 )
 
 type IRICounter interface {
-	getPath() string
-	getKey(server *CDSCabinetServer, cntGroup string) fdb.Key
-	getKeyRange(server *CDSCabinetServer) fdb.ExactRange
+	GetPath() string
+	GetKey(server *CDSCabinetServer, cntGroup string) fdb.Key
+	GetKeyRange(server *CDSCabinetServer) fdb.ExactRange
+
+	ValidateIRI() error
+	ValidatePermission() error
 }
 
 /* Edges */
@@ -29,28 +32,37 @@ type IRIEdgeCounter struct{
 	Counter uint16
 }
 
-func (c *IRIEdgeCounter) getPath() string{
+func (c *IRIEdgeCounter) GetPath() string{
 	return fmt.Sprintf("/c/e/%d/%s/%d/%s", c.Counter, c.Subject, c.Predicate, c.Target)
 }
 
-func (c *IRIEdgeCounter) getCounterK() string{
+func (c *IRIEdgeCounter) GetCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
-func (c *IRIEdgeCounter) getPredicateK() string{
+func (c *IRIEdgeCounter) GetPredicateK() string{
 	return intToKeyElement(c.Predicate)
 }
 
-func (c *IRIEdgeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, cntGroup})
+func (c *IRIEdgeCounter) GetKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
+	return server.dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, cntGroup})
 }
 
-func (c *IRIEdgeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
+func (c *IRIEdgeCounter) GetKeyRange(server *CDSCabinetServer) fdb.ExactRange{
 	return fdb.KeyRange{
-		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "0"}),
-		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "f"}),
+		Begin: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "0"}),
+		End: server.dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "f"}),
 	}
 }
+
+func (e *IRIEdgeCounter) ValidateIRI() error{
+	return nil
+}
+
+func (e *IRIEdgeCounter) ValidatePermission() error{
+	return nil
+}
+
 
 /* Nodes */
 type IRINodeCounter struct{
@@ -60,7 +72,7 @@ type IRINodeCounter struct{
 	Node string
 }
 
-func (c *IRINodeCounter) getPath() string{
+func (c *IRINodeCounter) GetPath() string{
 	return fmt.Sprintf("/c/n/%d/%s", c.Counter, c.Node)
 }
 
@@ -68,13 +80,21 @@ func (c *IRINodeCounter) getCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
-func (c *IRINodeCounter) getKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
+func (c *IRINodeCounter) GetKey(server *CDSCabinetServer, cntGroup string) fdb.Key{
 	return server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, cntGroup})
 }
 
-func (c *IRINodeCounter) getKeyRange(server *CDSCabinetServer) fdb.ExactRange{
+func (c *IRINodeCounter) GetKeyRange(server *CDSCabinetServer) fdb.ExactRange{
 	return fdb.ExactRange(fdb.KeyRange{
 		Begin: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "0"}),
 		End: server.dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "f"}),
 	})
+}
+
+func (e *IRINodeCounter) ValidateIRI() error{
+	return nil
+}
+
+func (e *IRINodeCounter) ValidatePermission() error{
+	return nil
 }

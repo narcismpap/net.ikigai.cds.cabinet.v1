@@ -46,17 +46,17 @@ func newCDSServer() *CDSCabinetServer {
 		log.Fatal(err)
 	}
 
-	s := &CDSCabinetServer{
-		version: 1,
-		fDb: db,
+	server := &CDSCabinetServer{
+		version: 	 1,
+		fDb: 		 db,
 		dbContainer: container,
 
-		dbNode: container.Sub("n"),
-		dbEdge: container.Sub("e"),
-		dbIndex: container.Sub("i"),
-		dbMeta: container.Sub("m"),
-		dbCnt: container.Sub("c"),
-		dbSeq: container.Sub("s"),
+		dbNode: 	container.Sub("n"),
+		dbEdge: 	container.Sub("e"),
+		dbIndex: 	container.Sub("i"),
+		dbMeta: 	container.Sub("m"),
+		dbCnt: 		container.Sub("c"),
+		dbSeq: 		container.Sub("server"),
 	}
 
 	// install db
@@ -64,16 +64,16 @@ func newCDSServer() *CDSCabinetServer {
 		"n", "e", "i", "m", "c",
 	}
 
-	_, err = s.fDb.Transact(func (tr fdb.Transaction) (interface{}, error) {
-		tr.ClearRange(s.dbContainer)
+	_, err = server.fDb.Transact(func (tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(server.dbContainer)
 
 		for i := range coreSeq {
-			tr.Set(s.dbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
+			tr.Set(server.dbSeq.Pack(tuple.Tuple{coreSeq[i], "l"}), []byte(strconv.FormatUint(uint64(1), 10)))
 		}
 
-		log.Printf("[I] Container [%s] is now initialized", activeContainer)
+		log.Printf("[I] Container [%server] is now initialized", activeContainer)
 		return nil, nil
 	})
 
-	return s
+	return server
 }
