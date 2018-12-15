@@ -20,4 +20,3 @@ type TransactionOperation struct{
 	tr fdb.Transaction
 	server *CDSCabinetServer
 }
-
