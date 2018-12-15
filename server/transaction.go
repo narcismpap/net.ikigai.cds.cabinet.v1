@@ -7,27 +7,27 @@
 package server
 
 import (
-	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
-	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
-	"github.com/segmentio/ksuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
-	"math/rand"
-	"strings"
-	"time"
 )
 
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error{
 	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		idMap := make(map[string]string)
-		usedAction := make(map[uint32]bool)
+
+		trx := TransactionOperation{
+			IdMap: make(map[string]string),
+			UsedActions: make(map[uint32]bool),
+			stream: bStream,
+			tr: tr,
+			server: s,
+		}
 
 		for {
-			tAct, err := bStream.Recv()
+			trx.action, err = bStream.Recv()
 
 			if err == io.EOF {
 				return nil, nil
@@ -35,349 +35,75 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 				return nil, err
 			}
 
-			if _, ok := usedAction[tAct.ActionId]; ok {
+			if _, ok := trx.UsedActions[trx.action.ActionId]; ok {
 				return nil, status.Error(codes.Unimplemented, RPCErrorRepeatAction)
 			}else{
-				usedAction[tAct.ActionId] = true
+				trx.UsedActions[trx.action.ActionId] = true
 			}
 
-			switch tOpr := tAct.Action.(type) {
-
+			switch tOpr := trx.action.Action.(type) {
 				// Counter
 				case *pb.TransactionAction_CounterIncrement:
-					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterIncrement, &idMap)
-
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					incVal, err := Int64ToBytes(int64(tOpr.CounterIncrement.Value))
-
-
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorArgumentInvalid)
-					}
-
-					// increment a random position in the counter
-					rand.Seed(time.Now().UnixNano())
-					cKey := cntIRI.GetKey(s.dbCount, CounterKeys[rand.Intn(16)])
-
-					tr.Add(cKey, incVal)
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.CounterIncrement(%v) = %v", tAct, cntIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.CounterIncrement(tOpr.CounterIncrement)
 
 				case *pb.TransactionAction_CounterDelete:
-					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterDelete, &idMap)
-
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					tr.ClearRange(cntIRI.GetKeyRange(s.dbCount))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.CounterDelete(%v) = %v", tAct, cntIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.CounterDelete(tOpr.CounterDelete)
 
 				case *pb.TransactionAction_CounterRegister:
-					cntIRI, err := iri.ResolveCounterIRI(tOpr.CounterRegister, &idMap)
+					err = trx.CounterRegister(tOpr.CounterRegister)
 
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					incVal, err := Int64ToBytes(int64(0))
-					CheckFatalError(err)
-
-					for x := range CounterKeys{
-						tr.Set(cntIRI.GetKey(s.dbCount, CounterKeys[x]), incVal)
-					}
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.CounterRegister(%v) = %v", tAct, cntIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
 
 				// Edge
 				case *pb.TransactionAction_EdgeUpdate:
-					edgeIRI := &iri.Edge{
-						Subject: iri.NodeResolveId(tOpr.EdgeUpdate.Subject, &idMap),
-						Predicate: uint16(tOpr.EdgeUpdate.Predicate),
-						Target: iri.NodeResolveId(tOpr.EdgeUpdate.Target, &idMap),
-					}
-
-					tr.Set(edgeIRI.GetKey(s.dbEdge), PreparePayload(tOpr.EdgeUpdate.Properties))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.EdgeUpdate(%v) = %v", tAct, edgeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.EdgeUpdate(tOpr.EdgeUpdate)
 
 				case *pb.TransactionAction_EdgeDelete:
-					edgeIRI := &iri.Edge{
-						Subject: iri.NodeResolveId(tOpr.EdgeDelete.Subject, &idMap),
-						Predicate: uint16(tOpr.EdgeDelete.Predicate),
-						Target: iri.NodeResolveId(tOpr.EdgeDelete.Target, &idMap),
-					}
-
-					tr.Clear(edgeIRI.GetKey(s.dbEdge))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.EdgeDelete(%v) = %v", tAct, edgeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.EdgeDelete(tOpr.EdgeDelete)
 
 				case *pb.TransactionAction_EdgeClear:
-					edgeIRI := &iri.Edge{
-						Subject: iri.NodeResolveId(tOpr.EdgeClear.Subject, &idMap),
-						Predicate: uint16(tOpr.EdgeClear.Predicate),
-					}
+					err = trx.EdgeClear(tOpr.EdgeClear)
 
-					tr.ClearRange(edgeIRI.GetClearRange(s.dbEdge))
 
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.EdgeClear(%v) = %v", tAct, edgeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
-
-				// Indexes
+				// Index
 				case *pb.TransactionAction_IndexUpdate:
-					indexIRI := &iri.NodeIndex{
-						Node: iri.NodeResolveId(tOpr.IndexUpdate.Node, &idMap),
-						IndexId: uint16(tOpr.IndexUpdate.Type),
-						Value: tOpr.IndexUpdate.Value,
-					}
-
-					tr.Set(indexIRI.GetKey(s.dbIndex), PreparePayload(tOpr.IndexUpdate.Properties))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.IndexUpdate(%v) = %v", tAct, indexIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.IndexUpdate(tOpr.IndexUpdate)
 
 				case *pb.TransactionAction_IndexDelete:
-					indexIRI := &iri.NodeIndex{
-						Node: iri.NodeResolveId(tOpr.IndexDelete.Node, &idMap),
-						IndexId: uint16(tOpr.IndexDelete.Type),
-						Value: tOpr.IndexDelete.Value,
-					}
+					err = trx.IndexDelete(tOpr.IndexDelete)
 
-					tr.Clear(indexIRI.GetKey(s.dbIndex))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.IndexDelete(%v) = %v", tAct, indexIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
 
 				// Meta
 				case *pb.TransactionAction_MetaUpdate:
-					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaUpdate, &idMap)
-
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					tr.Set(metaIRI.GetKey(s.dbMeta), PreparePayload(tOpr.MetaUpdate.Val))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v", tAct, metaIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.MetaUpdate(tOpr.MetaUpdate)
 
 				case *pb.TransactionAction_MetaDelete:
-					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaDelete, &idMap)
-
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					tr.Clear(metaIRI.GetKey(s.dbMeta))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.MetaDelete(%v) = %v", tAct, metaIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.MetaDelete(tOpr.MetaDelete)
 
 				case *pb.TransactionAction_MetaClear:
-					metaIRI, err := iri.ResolveMetaIRI(tOpr.MetaClear, &idMap)
+					err = trx.MetaClear(tOpr.MetaClear)
 
-					if err != nil {
-						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
-					}
-
-					tr.ClearRange(metaIRI.GetClearRange(s.dbMeta))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.MetaClear(%v) = %v", tAct, metaIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
 
 				// Node
 				case *pb.TransactionAction_NodeCreate:
-					newIDBytes, err := ksuid.New().MarshalText()
-					CheckFatalError(err)
-
-					newID := string(newIDBytes)
-					nodeIRI := &iri.Node{Type: uint16(tOpr.NodeCreate.Type), Id: newID}
-					tr.Set(nodeIRI.GetKey(s.dbNode), PreparePayload(tOpr.NodeCreate.Properties))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.NodeCreate(%v) = %v", tAct, nodeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-						Response: &pb.TransactionActionResponse_NodeCreate{NodeCreate: &pb.NodeCreateResponse{Id: nodeIRI.Id}},
-					})
-
-					if err != nil{
-						return nil, err
-					}
-
-					idMap[strings.TrimLeft(tOpr.NodeCreate.Id, "tmp:")] = newID
+					err = trx.NodeCreate(tOpr.NodeCreate)
 
 				case *pb.TransactionAction_NodeUpdate:
-					nodeIRI := &iri.Node{
-						Type: uint16(tOpr.NodeUpdate.Type),
-						Id: iri.NodeResolveId(tOpr.NodeUpdate.Id, &idMap),
-					}
-
-					tr.Set(nodeIRI.GetKey(s.dbNode), PreparePayload(tOpr.NodeUpdate.Properties))
-
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.NodeUpdate(%v) = %v", tAct, nodeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
+					err = trx.NodeUpdate(tOpr.NodeUpdate)
 
 				case *pb.TransactionAction_NodeDelete:
-					nodeIRI := &iri.Node{
-						Type: uint16(tOpr.NodeDelete.Type),
-						Id: iri.NodeResolveId(tOpr.NodeDelete.Id, &idMap),
-					}
+					err = trx.NodeDelete(tOpr.NodeDelete)
 
-					tr.Clear(nodeIRI.GetKey(s.dbNode))
 
-					if DebugServerRequests {
-						s.logEvent(fmt.Sprintf("T.NodeDelete(%v) = %v", tAct, nodeIRI.GetPath()))
-					}
-
-					err = bStream.Send(&pb.TransactionActionResponse{
-						Status: pb.MutationStatus_SUCCESS,
-						ActionId: tAct.ActionId,
-					})
-
-					if err != nil{
-						return nil, err
-					}
-
-				// ReadCheck
+				// Read Check
 				case *pb.TransactionAction_ReadCheck:
-					// tOpr.ReadCheck
-					break
+					err = trx.ReadCheck(tOpr.ReadCheck)
 
 				default:
 					return nil, status.Error(codes.Unimplemented, RPCErrorInvalidAction)
+			}
+
+			if err != nil{
+				return nil, err
 			}
 		}
 	})
