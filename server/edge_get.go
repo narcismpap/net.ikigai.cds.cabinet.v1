@@ -36,8 +36,3 @@ func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest)
 
 	return &pb.Edge{Properties: edgeProp.([]byte)}, nil
 }
-
-func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCabinet_EdgeListServer) error{
-	return nil
-}
-

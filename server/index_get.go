@@ -37,7 +37,3 @@ func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRe
 	return &pb.Index{Properties: indexProp.([]byte)}, nil
 }
 
-
-func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDSCabinet_IndexListServer) error{
-	return nil
-}

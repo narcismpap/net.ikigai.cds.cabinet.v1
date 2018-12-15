@@ -1,0 +1,66 @@
+// Package: net.ikigai.cds
+// Module: cabinet.services
+//
+// Author: Narcis M. PAP
+// Copyright (c) 2018 Ikigai Cloud. All rights reserved.
+
+package server
+
+import (
+	pb "cds.ikigai.net/cabinet.v1/rpc"
+	"fmt"
+	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"strconv"
+	"strings"
+)
+
+func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
+	if len(seq.GetType()) == 0 {
+		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, ".type"))
+	}else if seq.Opt.GetPageSize() == 0{
+		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
+	}
+
+	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+		var readRange = s.dbSequence.Sub(seq.GetType())
+
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
+		}
+
+		ri := rtr.GetRange(readRange, fdb.RangeOptions{
+			Limit: int(seq.Opt.PageSize),
+		}).Iterator()
+
+		for ri.Advance() {
+			kv := ri.MustGet()
+			sqO, err := s.dbSequence.Unpack(kv.Key) // {Type, SeqID} = kv.Value
+
+			if err != nil {
+				return nil, err
+			}
+
+			seqID, err := strconv.ParseUint(strings.TrimLeft(sqO[1].(string), "0"), 10, 32)
+
+			if err != nil {
+				return nil, err
+			}
+
+			obj := &pb.Sequential{
+				Type: seq.Type,
+				Node: string(kv.Value),
+				Seqid: uint32(seqID),
+			}
+
+			if err := stream.Send(obj); err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+
+	return err
+}

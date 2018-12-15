@@ -38,7 +38,3 @@ func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetReques
 
 	return &pb.Node{Properties: nodeProp.([]byte), Id: nodeRq.Id}, nil
 }
-
-func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCabinet_NodeListServer) error{
-	return nil
-}

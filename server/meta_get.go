@@ -38,7 +38,3 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 
 	return &pb.MetaGetResponse{Val: metaValue.([]byte)}, nil
 }
-
-func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCabinet_MetaListServer) error{
-	return nil
-}
