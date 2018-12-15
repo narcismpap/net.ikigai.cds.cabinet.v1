@@ -6,44 +6,23 @@
 
 package main
 
-import (
-	"fmt"
-	"log"
-)
-
-const (
-	CDSErrFieldInvalid = iota
-	CDSErrorFieldRequired
-	CDSErrorFieldUnexpected
-
-	CDSErrorNotFound
-	CDSErrorPermission
-	CDSErrorBadRecord
-
-	CDSListNoPagination
-)
-
+// RPC Errors
+// Returned by gRPC, standardized on E(0xYYY)
 const (
 	//RPCError
 	RPCErrorInvalidAction 	= "E(0x001) Unknown TransactionAction"
 	RPCErrorRepeatAction	= "E(0x002) Repeat actionId in transaction"
-	RPCErrorArgumentInvalid	= "E(0x003) One or more arguments are invalid"
+	RPCErrorArgumentInvalid	= "E(0x003) One or more arguments are invalid (generic)"
 	RPCErrorInvalidIRI 		= "E(0x004) Invalid IRI"
+	RPCErrorNotFound		= "E(0x005) Requested record not found"
+	RPCErrorFieldRequired	= "E(0x006) Field %s is required"
+	RPCErrorFieldUnexpected	= "E(0x007) Field %s is unexpected"
+	RPCErrorFieldSpecific	= "E(0x008) Error %s on %s"
+	RPCErrorDataCorrupted	= "E(0x008) Data is corrupted on %s"
 )
-
-type CabinetError struct {
-	err  	string
-	code 	int16
-	field 	string
-}
-
-func (e *CabinetError) Error() string {
-	return fmt.Sprintf("Cabinet Error #%d on %s: %s", e.code, e.field, e.err)
-}
 
 func CheckFatalError(err error){
 	if err != nil{
-		log.Fatal(err)
 		panic(err)
 	}
 }

@@ -10,6 +10,8 @@ import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error){
@@ -17,13 +19,13 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 		iri, err := resolveMetaIRI(meta, nil)
 
 		if err != nil {
-			return nil, &CabinetError{code: CDSErrFieldInvalid}
+			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 		}
 
 		metaValue := rtr.Get(iri.getKey(s)).MustGet()
 
 		if metaValue == nil{
-			return nil, &CabinetError{code: CDSErrorNotFound}
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return metaValue, nil

@@ -10,6 +10,8 @@ import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRequest) (*pb.Index, error){
@@ -21,7 +23,7 @@ func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRe
 		}).getKey(s)).MustGet()
 
 		if indexProp == nil{
-			return nil, &CabinetError{code: CDSErrorNotFound}
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return indexProp, nil

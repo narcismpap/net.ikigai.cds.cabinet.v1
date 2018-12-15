@@ -9,7 +9,10 @@ package main
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
+	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
@@ -18,12 +21,12 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 		var total int64
 
 		if err != nil {
-			return nil, &CabinetError{code: CDSErrFieldInvalid}
+			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 		}
 
 		// simple SUM(IRI/0-f); real-time counting w/ good scalability
 		ri := rtr.GetRange(iri.getKeyRange(s), fdb.RangeOptions{
-			Limit: 16,
+			Limit: len(CounterKeys),
 		}).Iterator()
 
 		keysSeen := uint8(0)
@@ -38,7 +41,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 			cVal, err := BytesToInt(kv.Value)
 
 			if err != nil {
-				return nil, &CabinetError{code: CDSErrorBadRecord, err: "Expected int64, unable to parse"}
+				return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "counter.slice"))
 			}
 
 			total += cVal
@@ -46,7 +49,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 		}
 
 		if keysSeen == 0{
-			return nil, &CabinetError{code: CDSErrorNotFound}
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return total, nil

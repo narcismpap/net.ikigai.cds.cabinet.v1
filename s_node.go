@@ -11,6 +11,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetRequest) (*pb.Node, error){
@@ -23,7 +25,7 @@ func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetReques
 		}
 
 		if nodeProp == nil{
-			return nil, &CabinetError{code: CDSErrorNotFound}
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return nodeProp, nil

@@ -11,6 +11,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strconv"
 	"strings"
 )
@@ -128,7 +130,7 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 		}
 
 		if sVal == nil{
-			return nil, &CabinetError{code: CDSErrorNotFound}
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return string(sVal), nil
@@ -143,9 +145,9 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 
 func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
 	if len(seq.GetType()) == 0 {
-		return &CabinetError{code: CDSErrorFieldRequired, field: "type"}
+		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, ".type"))
 	}else if seq.Opt.GetPageSize() == 0{
-		return &CabinetError{code: CDSListNoPagination, field: "opt.page_size"}
+		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
 	}
 
 	_, err := s.fDb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
@@ -193,21 +195,21 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 func validateSequentialRequest(seq *pb.Sequential, required []string, unexpected []string) error{
 	for i := range required {
 		if required[i] == "t" && len(seq.GetType()) == 0 {
-			return &CabinetError{code: CDSErrorFieldRequired, field: "type"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.type"))
 		}else if required[i] == "n" && len(seq.GetNode()) == 0 {
-			return &CabinetError{code: CDSErrorFieldRequired, field: "node"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.node"))
 		}else if required[i] == "s" && seq.GetSeqid() == 0 {
-			return &CabinetError{code: CDSErrorFieldRequired, field: "seqId"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.seqId"))
 		}
 	}
 
 	for i := range unexpected {
 		if unexpected[i] == "t" && len(seq.GetType()) > 0 {
-			return &CabinetError{code: CDSErrorFieldUnexpected, field: "type"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.type"))
 		}else if unexpected[i] == "n" && len(seq.GetNode()) > 0 {
-			return &CabinetError{code: CDSErrorFieldUnexpected, field: "node"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.node"))
 		}else if unexpected[i] == "s" && seq.GetSeqid() != 0 {
-			return &CabinetError{code: CDSErrorFieldUnexpected, field: "seqId"}
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.seqId"))
 		}
 	}
 
