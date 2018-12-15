@@ -17,7 +17,7 @@ import (
 
 func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest) (*pb.Edge, error){
 	edgeProp, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		edgeProp := rtr.Get((&iri.IRIEdge{
+		edgeProp := rtr.Get((&iri.Edge{
 			Subject: edge.Edge.Subject,
 			Predicate: uint16(edge.Edge.Predicate),
 			Target: edge.Edge.Target,

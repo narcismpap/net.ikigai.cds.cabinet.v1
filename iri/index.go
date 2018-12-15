@@ -13,7 +13,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
-type IRINodeIndex struct{
+type NodeIndex struct{
 	IRI
 
 	Node string
@@ -21,26 +21,26 @@ type IRINodeIndex struct{
 	Value string
 }
 
-func (i *IRINodeIndex) GetPath() string{
+func (i *NodeIndex) GetPath() string{
 	return fmt.Sprintf("/i/%d/%s/%s", i.IndexId, i.Value, i.Node)
 }
 
-func (m *IRINodeIndex) getIndexK() string{
+func (m *NodeIndex) getIndexK() string{
 	return intToKeyElement(m.IndexId)
 }
 
-func (i *IRINodeIndex) GetKey(db subspace.Subspace) fdb.Key{
+func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value, i.Node})
 }
 
-func (i *IRINodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	return nil
 }
 
-func (e *IRINodeIndex) ValidateIRI() error{
+func (e *NodeIndex) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRINodeIndex) ValidatePermission() error{
+func (e *NodeIndex) ValidatePermission() error{
 	return nil
 }

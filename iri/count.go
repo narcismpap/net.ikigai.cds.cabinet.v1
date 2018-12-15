@@ -13,7 +13,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
-type IRICounter interface {
+type BaseCounter interface {
 	GetPath() string
 	GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key
 	GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange
@@ -23,8 +23,8 @@ type IRICounter interface {
 }
 
 /* Edges */
-type IRIEdgeCounter struct{
-	IRICounter
+type EdgeCounter struct{
+	BaseCounter
 
 	Subject string
 	Predicate uint16
@@ -33,69 +33,69 @@ type IRIEdgeCounter struct{
 	Counter uint16
 }
 
-func (c *IRIEdgeCounter) GetPath() string{
+func (c *EdgeCounter) GetPath() string{
 	return fmt.Sprintf("/c/e/%d/%s/%d/%s", c.Counter, c.Subject, c.Predicate, c.Target)
 }
 
-func (c *IRIEdgeCounter) GetCounterK() string{
+func (c *EdgeCounter) GetCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
-func (c *IRIEdgeCounter) GetPredicateK() string{
+func (c *EdgeCounter) GetPredicateK() string{
 	return intToKeyElement(c.Predicate)
 }
 
-func (c *IRIEdgeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
+func (c *EdgeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
 	return dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, cntGroup})
 }
 
-func (c *IRIEdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
+func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	return fdb.KeyRange{
 		Begin: dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "0"}),
 		End: dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "f"}),
 	}
 }
 
-func (e *IRIEdgeCounter) ValidateIRI() error{
+func (e *EdgeCounter) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRIEdgeCounter) ValidatePermission() error{
+func (e *EdgeCounter) ValidatePermission() error{
 	return nil
 }
 
 
 /* Nodes */
-type IRINodeCounter struct{
-	IRICounter
+type NodeCounter struct{
+	BaseCounter
 	Counter uint16
 
 	Node string
 }
 
-func (c *IRINodeCounter) GetPath() string{
+func (c *NodeCounter) GetPath() string{
 	return fmt.Sprintf("/c/n/%d/%s", c.Counter, c.Node)
 }
 
-func (c *IRINodeCounter) getCounterK() string{
+func (c *NodeCounter) getCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
-func (c *IRINodeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
+func (c *NodeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
 	return dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, cntGroup})
 }
 
-func (c *IRINodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
+func (c *NodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	return fdb.ExactRange(fdb.KeyRange{
 		Begin: dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "0"}),
 		End: dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "f"}),
 	})
 }
 
-func (e *IRINodeCounter) ValidateIRI() error{
+func (e *NodeCounter) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRINodeCounter) ValidatePermission() error{
+func (e *NodeCounter) ValidatePermission() error{
 	return nil
 }

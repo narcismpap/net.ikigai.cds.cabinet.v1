@@ -13,7 +13,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
-type IRIEdge struct{
+type Edge struct{
 	IRI
 
 	Subject string
@@ -22,23 +22,23 @@ type IRIEdge struct{
 	Property int
 }
 
-func (e *IRIEdge) GetPath() string{
+func (e *Edge) GetPath() string{
 	return fmt.Sprintf("/e/%s/%d/%s", e.Subject, e.Predicate, e.Target)
 }
 
-func (e *IRIEdge) GetPathProperty(prop int) string{
+func (e *Edge) GetPathProperty(prop int) string{
 	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }
 
-func (e *IRIEdge) getPredicateK() string{
+func (e *Edge) getPredicateK() string{
 	return intToKeyElement(e.Predicate)
 }
 
-func (e *IRIEdge) GetKey(db subspace.Subspace) fdb.Key{
+func (e *Edge) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
 }
 
-func (e *IRIEdge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	if e.Predicate == 0{
 		return db.Sub(e.Subject)
 	}else{
@@ -46,10 +46,10 @@ func (e *IRIEdge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *IRIEdge) ValidateIRI() error{
+func (e *Edge) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRIEdge) ValidatePermission() error{
+func (e *Edge) ValidatePermission() error{
 	return nil
 }

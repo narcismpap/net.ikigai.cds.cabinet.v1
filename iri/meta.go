@@ -14,7 +14,7 @@ import (
 )
 
 /* Edges*/
-type IRIEdgeMeta struct{
+type EdgeMeta struct{
 	IRI
 
 	Subject string
@@ -24,23 +24,23 @@ type IRIEdgeMeta struct{
 	Property uint16
 }
 
-func (m *IRIEdgeMeta) GetPath() string{
+func (m *EdgeMeta) GetPath() string{
 	return fmt.Sprintf("/m/e/%s/%d/%s/%d", m.Subject, m.Predicate, m.Target, m.Property)
 }
 
-func (m *IRIEdgeMeta) getPropertyK() string{
+func (m *EdgeMeta) getPropertyK() string{
 	return intToKeyElement(m.Property)
 }
 
-func (m *IRIEdgeMeta) getPredicateK() string{
+func (m *EdgeMeta) getPredicateK() string{
 	return intToKeyElement(m.Predicate)
 }
 
-func (m *IRIEdgeMeta) GetKey(db subspace.Subspace) fdb.Key{
+func (m *EdgeMeta) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
 }
 
-func (m *IRIEdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+func (m *EdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	if m.Target != ""{
 		return db.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 	}
@@ -52,41 +52,41 @@ func (m *IRIEdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	return db.Sub("e").Sub(m.Subject)
 }
 
-func (e *IRIEdgeMeta) ValidateIRI() error{
+func (e *EdgeMeta) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRIEdgeMeta) ValidatePermission() error{
+func (e *EdgeMeta) ValidatePermission() error{
 	return nil
 }
 
 
 /* Nodes */
-type IRINodeMeta struct{
+type NodeMeta struct{
 	Node string
 	Property uint16
 }
 
-func (m *IRINodeMeta) GetPath() string{
+func (m *NodeMeta) GetPath() string{
 	return fmt.Sprintf("/m/n/%s/%d", m.Node, m.Property)
 }
 
-func (m *IRINodeMeta) getPropertyK() string{
+func (m *NodeMeta) getPropertyK() string{
 	return intToKeyElement(m.Property)
 }
 
-func (m *IRINodeMeta) GetKey(db subspace.Subspace) fdb.Key{
+func (m *NodeMeta) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
 }
 
-func (m *IRINodeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+func (m *NodeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	return db.Sub("n").Sub(m.Node)
 }
 
-func (e *IRINodeMeta) ValidateIRI() error{
+func (e *NodeMeta) ValidateIRI() error{
 	return nil
 }
 
-func (e *IRINodeMeta) ValidatePermission() error{
+func (e *NodeMeta) ValidatePermission() error{
 	return nil
 }

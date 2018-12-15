@@ -13,24 +13,24 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
-type IRISequential struct{
+type Sequence struct{
 	IRI
 	Type string
 	SeqID uint32
 }
 
-func (s *IRISequential) DbSeqID() string{
+func (s *Sequence) DbSeqID() string{
 	return fmt.Sprintf("%05d", s.SeqID)
 }
 
-func (s *IRISequential) GetPath() string{
+func (s *Sequence) GetPath() string{
 	return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
 }
 
-func (s *IRISequential) GetKey(db subspace.Subspace) fdb.Key{
+func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{s.Type, s.DbSeqID()})
 }
 
-func (s *IRISequential) GetIncrementKey(db subspace.Subspace) fdb.Key{
+func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{"l", s.Type})
 }
