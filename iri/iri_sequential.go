@@ -7,9 +7,9 @@
 package iri
 
 import (
-	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
@@ -27,10 +27,10 @@ func (s *IRISequential) GetPath() string{
 	return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
 }
 
-func (s *IRISequential) GetKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbSeq.Pack(tuple.Tuple{s.Type, s.DbSeqID()})
+func (s *IRISequential) GetKey(db subspace.Subspace) fdb.Key{
+	return db.Pack(tuple.Tuple{s.Type, s.DbSeqID()})
 }
 
-func (s *IRISequential) GetIncrementKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbSeq.Pack(tuple.Tuple{"l", s.Type})
+func (s *IRISequential) GetIncrementKey(db subspace.Subspace) fdb.Key{
+	return db.Pack(tuple.Tuple{"l", s.Type})
 }

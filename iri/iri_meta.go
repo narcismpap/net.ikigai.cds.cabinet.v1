@@ -7,9 +7,9 @@
 package iri
 
 import (
-	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
@@ -36,20 +36,20 @@ func (m *IRIEdgeMeta) getPredicateK() string{
 	return intToKeyElement(m.Predicate)
 }
 
-func (m *IRIEdgeMeta) GetKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbMeta.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
+func (m *IRIEdgeMeta) GetKey(db subspace.Subspace) fdb.Key{
+	return db.Sub("e").Pack(tuple.Tuple{m.Subject, m.getPredicateK(), m.Target, m.getPropertyK()})
 }
 
-func (m *IRIEdgeMeta) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+func (m *IRIEdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	if m.Target != ""{
-		return server.DbMeta.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
+		return db.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 	}
 
 	if m.Predicate > 0{
-		return server.DbMeta.Sub("e").Sub(m.Subject).Sub(m.Predicate)
+		return db.Sub("e").Sub(m.Subject).Sub(m.Predicate)
 	}
 
-	return server.DbMeta.Sub("e").Sub(m.Subject)
+	return db.Sub("e").Sub(m.Subject)
 }
 
 func (e *IRIEdgeMeta) ValidateIRI() error{
@@ -75,12 +75,12 @@ func (m *IRINodeMeta) getPropertyK() string{
 	return intToKeyElement(m.Property)
 }
 
-func (m *IRINodeMeta) GetKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbMeta.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
+func (m *IRINodeMeta) GetKey(db subspace.Subspace) fdb.Key{
+	return db.Sub("n").Pack(tuple.Tuple{m.Node, m.getPropertyK()})
 }
 
-func (m *IRINodeMeta) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
-	return server.DbMeta.Sub("n").Sub(m.Node)
+func (m *IRINodeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+	return db.Sub("n").Sub(m.Node)
 }
 
 func (e *IRINodeMeta) ValidateIRI() error{

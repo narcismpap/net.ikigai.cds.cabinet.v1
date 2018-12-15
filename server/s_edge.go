@@ -21,7 +21,7 @@ func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest)
 			Subject: edge.Edge.Subject,
 			Predicate: uint16(edge.Edge.Predicate),
 			Target: edge.Edge.Target,
-		}).GetKey(s)).MustGet()
+		}).GetKey(s.DbEdge)).MustGet()
 
 		if edgeProp == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

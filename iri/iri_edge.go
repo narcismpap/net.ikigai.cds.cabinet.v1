@@ -7,9 +7,9 @@
 package iri
 
 import (
-	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
@@ -34,15 +34,15 @@ func (e *IRIEdge) getPredicateK() string{
 	return intToKeyElement(e.Predicate)
 }
 
-func (e *IRIEdge) GetKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbEdge.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
+func (e *IRIEdge) GetKey(db subspace.Subspace) fdb.Key{
+	return db.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
 }
 
-func (e *IRIEdge) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+func (e *IRIEdge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	if e.Predicate == 0{
-		return server.DbEdge.Sub(e.Subject)
+		return db.Sub(e.Subject)
 	}else{
-		return server.DbEdge.Sub(e.Subject).Sub(e.getPredicateK())
+		return db.Sub(e.Subject).Sub(e.getPredicateK())
 	}
 }
 

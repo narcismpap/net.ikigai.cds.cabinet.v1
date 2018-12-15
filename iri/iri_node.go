@@ -7,9 +7,9 @@
 package iri
 
 import (
-	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
@@ -27,15 +27,15 @@ func (n *IRINode) GetPath() string{
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
-func (n *IRINode) GetKey(server *cds.CDSCabinetServer) fdb.Key{
-	return server.DbNode.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
+func (n *IRINode) GetKey(db subspace.Subspace) fdb.Key{
+	return db.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
 }
 
-func (n *IRINode) GetClearRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+func (n *IRINode) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	if n.Id == ""{
-		return server.DbNode.Sub(n.getTypeK())
+		return db.Sub(n.getTypeK())
 	}else{
-		return server.DbEdge.Sub(n.getTypeK()).Sub(n.Id)
+		return db.Sub(n.getTypeK()).Sub(n.Id)
 	}
 }
 

@@ -27,7 +27,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 	newId, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		baseSeqIRI := &iri.IRISequential{Type: seq.Type}
-		lastKey := baseSeqIRI.GetIncrementKey(s)
+		lastKey := baseSeqIRI.GetIncrementKey(s.DbSeq)
 		lastNum := tr.Get(lastKey).MustGet()
 
 		var lastInt32 uint32
@@ -46,7 +46,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 		seqIRI := &iri.IRISequential{Type: seq.Type, SeqID: lastInt32}
 
-		tr.Set(seqIRI.GetKey(s), []byte(seq.GetNode()))
+		tr.Set(seqIRI.GetKey(s.DbSeq), []byte(seq.GetNode()))
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
 
 		if DebugServerRequests {
@@ -72,7 +72,7 @@ func (s *CDSCabinetServer) SequentialUpdate(ctx context.Context, seq *pb.Sequent
 
 	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
-		tr.Set(seqIRI.GetKey(s), []byte(seq.GetNode()))
+		tr.Set(seqIRI.GetKey(s.DbSeq), []byte(seq.GetNode()))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialUpdate(%v) = %v", seq, seqIRI.GetPath()))
@@ -98,8 +98,8 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 	_, err := s.FdbConn.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
 
-		tr.Clear(seqIRI.GetKey(s))
-		tr.Clear(seqIRI.GetIncrementKey(s))
+		tr.Clear(seqIRI.GetKey(s.DbSeq))
+		tr.Clear(seqIRI.GetIncrementKey(s.DbSeq))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialDelete(%v) = %v", seq, seqIRI.GetPath()))
@@ -124,7 +124,7 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 
 	nodeId, err := s.FdbConn.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		seqIRI := iri.IRISequential{Type: seq.Type, SeqID: seq.Seqid}
-		sVal := rtr.Get(seqIRI.GetKey(s)).MustGet()
+		sVal := rtr.Get(seqIRI.GetKey(s.DbSeq)).MustGet()
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialGet(%v) = %v", seq, seqIRI.GetPath()))

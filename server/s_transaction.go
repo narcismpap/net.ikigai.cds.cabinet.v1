@@ -60,7 +60,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 					// increment a random position in the counter
 					rand.Seed(time.Now().UnixNano())
-					cKey := cntIRI.GetKey(s, CounterKeys[rand.Intn(16)])
+					cKey := cntIRI.GetKey(s.DbCnt, CounterKeys[rand.Intn(16)])
 
 					tr.Add(cKey, incVal)
 
@@ -84,7 +84,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					tr.ClearRange(cntIRI.GetKeyRange(s))
+					tr.ClearRange(cntIRI.GetKeyRange(s.DbCnt))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.CounterDelete(%v) = %v", tAct, cntIRI.GetPath()))
@@ -110,7 +110,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 					CheckFatalError(err)
 
 					for x := range CounterKeys{
-						tr.Set(cntIRI.GetKey(s, CounterKeys[x]), incVal)
+						tr.Set(cntIRI.GetKey(s.DbCnt, CounterKeys[x]), incVal)
 					}
 
 					if DebugServerRequests {
@@ -134,7 +134,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Target: iri.NodeResolveId(tOpr.EdgeUpdate.Target, &idMap),
 					}
 
-					tr.Set(edgeIRI.GetKey(s), PreparePayload(tOpr.EdgeUpdate.Properties))
+					tr.Set(edgeIRI.GetKey(s.DbEdge), PreparePayload(tOpr.EdgeUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.EdgeUpdate(%v) = %v", tAct, edgeIRI.GetPath()))
@@ -156,7 +156,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Target: iri.NodeResolveId(tOpr.EdgeDelete.Target, &idMap),
 					}
 
-					tr.Clear(edgeIRI.GetKey(s))
+					tr.Clear(edgeIRI.GetKey(s.DbEdge))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.EdgeDelete(%v) = %v", tAct, edgeIRI.GetPath()))
@@ -177,7 +177,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Predicate: uint16(tOpr.EdgeClear.Predicate),
 					}
 
-					tr.ClearRange(edgeIRI.GetClearRange(s))
+					tr.ClearRange(edgeIRI.GetClearRange(s.DbEdge))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.EdgeClear(%v) = %v", tAct, edgeIRI.GetPath()))
@@ -200,7 +200,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Value: tOpr.IndexUpdate.Value,
 					}
 
-					tr.Set(indexIRI.GetKey(s), PreparePayload(tOpr.IndexUpdate.Properties))
+					tr.Set(indexIRI.GetKey(s.DbIndex), PreparePayload(tOpr.IndexUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.IndexUpdate(%v) = %v", tAct, indexIRI.GetPath()))
@@ -222,7 +222,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Value: tOpr.IndexDelete.Value,
 					}
 
-					tr.Clear(indexIRI.GetKey(s))
+					tr.Clear(indexIRI.GetKey(s.DbIndex))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.IndexDelete(%v) = %v", tAct, indexIRI.GetPath()))
@@ -245,7 +245,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					tr.Set(metaIRI.GetKey(s), PreparePayload(tOpr.MetaUpdate.Val))
+					tr.Set(metaIRI.GetKey(s.DbMeta), PreparePayload(tOpr.MetaUpdate.Val))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v", tAct, metaIRI.GetPath()))
@@ -267,7 +267,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					tr.Clear(metaIRI.GetKey(s))
+					tr.Clear(metaIRI.GetKey(s.DbMeta))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.MetaDelete(%v) = %v", tAct, metaIRI.GetPath()))
@@ -289,7 +289,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
 					}
 
-					tr.ClearRange(metaIRI.GetClearRange(s))
+					tr.ClearRange(metaIRI.GetClearRange(s.DbMeta))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.MetaClear(%v) = %v", tAct, metaIRI.GetPath()))
@@ -311,7 +311,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 
 					newID := string(newIDBytes)
 					nodeIRI := &iri.IRINode{Type: uint16(tOpr.NodeCreate.Type), Id: newID}
-					tr.Set(nodeIRI.GetKey(s), PreparePayload(tOpr.NodeCreate.Properties))
+					tr.Set(nodeIRI.GetKey(s.DbNode), PreparePayload(tOpr.NodeCreate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.NodeCreate(%v) = %v", tAct, nodeIRI.GetPath()))
@@ -335,7 +335,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Id: iri.NodeResolveId(tOpr.NodeUpdate.Id, &idMap),
 					}
 
-					tr.Set(nodeIRI.GetKey(s), PreparePayload(tOpr.NodeUpdate.Properties))
+					tr.Set(nodeIRI.GetKey(s.DbNode), PreparePayload(tOpr.NodeUpdate.Properties))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.NodeUpdate(%v) = %v", tAct, nodeIRI.GetPath()))
@@ -356,7 +356,7 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 						Id: iri.NodeResolveId(tOpr.NodeDelete.Id, &idMap),
 					}
 
-					tr.Clear(nodeIRI.GetKey(s))
+					tr.Clear(nodeIRI.GetKey(s.DbNode))
 
 					if DebugServerRequests {
 						s.logEvent(fmt.Sprintf("T.NodeDelete(%v) = %v", tAct, nodeIRI.GetPath()))

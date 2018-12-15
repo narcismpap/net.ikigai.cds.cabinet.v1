@@ -7,16 +7,16 @@
 package iri
 
 import (
-	cds "cds.ikigai.net/cabinet.v1/server"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 )
 
 type IRICounter interface {
 	GetPath() string
-	GetKey(server *cds.CDSCabinetServer, cntGroup string) fdb.Key
-	GetKeyRange(server *cds.CDSCabinetServer) fdb.ExactRange
+	GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key
+	GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange
 
 	ValidateIRI() error
 	ValidatePermission() error
@@ -45,14 +45,14 @@ func (c *IRIEdgeCounter) GetPredicateK() string{
 	return intToKeyElement(c.Predicate)
 }
 
-func (c *IRIEdgeCounter) GetKey(server *cds.CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.DbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, cntGroup})
+func (c *IRIEdgeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
+	return dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, cntGroup})
 }
 
-func (c *IRIEdgeCounter) GetKeyRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+func (c *IRIEdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	return fdb.KeyRange{
-		Begin: server.DbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "0"}),
-		End: server.DbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "f"}),
+		Begin: dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "0"}),
+		End: dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "f"}),
 	}
 }
 
@@ -81,14 +81,14 @@ func (c *IRINodeCounter) getCounterK() string{
 	return intToKeyElement(c.Counter)
 }
 
-func (c *IRINodeCounter) GetKey(server *cds.CDSCabinetServer, cntGroup string) fdb.Key{
-	return server.DbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, cntGroup})
+func (c *IRINodeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
+	return dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, cntGroup})
 }
 
-func (c *IRINodeCounter) GetKeyRange(server *cds.CDSCabinetServer) fdb.ExactRange{
+func (c *IRINodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	return fdb.ExactRange(fdb.KeyRange{
-		Begin: server.DbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "0"}),
-		End: server.DbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "f"}),
+		Begin: dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "0"}),
+		End: dbCnt.Sub("n").Pack(tuple.Tuple{c.getCounterK(), c.Node, "f"}),
 	})
 }
 
