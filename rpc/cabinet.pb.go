@@ -69,51 +69,20 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CDSCabinetClient interface {
-	// @required: node_id|Edge, value
-	// @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
 	CounterGet(ctx context.Context, in *Counter, opts ...grpc.CallOption) (*CounterValueResponse, error)
-	// @required: edge.subject, edge.target, edge.predicate
-	// @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
 	EdgeGet(ctx context.Context, in *EdgeGetRequest, opts ...grpc.CallOption) (*Edge, error)
-	// @required: edge.subject
-	// @optional: edge.predicate, edge.resume_from, edge.page_size, edge.mode
-	// @throws: ListNoPagination, EdgeInvalidSubject, EdgeInvalidPredicate
 	EdgeList(ctx context.Context, in *EdgeListRequest, opts ...grpc.CallOption) (CDSCabinet_EdgeListClient, error)
-	// @required: index.type, index.field, index.node
-	// @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
 	IndexGet(ctx context.Context, in *IndexGetRequest, opts ...grpc.CallOption) (*Index, error)
-	// @required: index.type, index.field
-	// @throws: IndexInvalidID
 	IndexList(ctx context.Context, in *IndexListRequest, opts ...grpc.CallOption) (CDSCabinet_IndexListClient, error)
-	// @required: field.edge|field.node_id, key
-	// @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
 	MetaGet(ctx context.Context, in *Meta, opts ...grpc.CallOption) (*MetaGetResponse, error)
-	// @required: field.edge|field.node_id
-	// @throws: MetaInvalidObject, MetaInvalidKey
 	MetaList(ctx context.Context, in *MetaListRequest, opts ...grpc.CallOption) (CDSCabinet_MetaListClient, error)
-	// @required: id, type
-	// @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
 	NodeGet(ctx context.Context, in *NodeGetRequest, opts ...grpc.CallOption) (*Node, error)
-	// List node with pagination
-	// @required: type, per_page
 	NodeList(ctx context.Context, in *NodeListRequest, opts ...grpc.CallOption) (CDSCabinet_NodeListClient, error)
-	// @required: <action.*>, retry_mode
-	// @throws: TransactionInvalidAction, TransactionSyntaxError
 	Transaction(ctx context.Context, opts ...grpc.CallOption) (CDSCabinet_TransactionClient, error)
-	// @required: source, operator, target
-	// @throws: @ReadCheckNaN
 	ReadCheck(ctx context.Context, in *ReadCheckRequest, opts ...grpc.CallOption) (*ReadCheckResponse, error)
-	// @required: type, node
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialCreate(ctx context.Context, in *Sequential, opts ...grpc.CallOption) (*Sequential, error)
-	// @required: type, seqid, node
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialDelete(ctx context.Context, in *Sequential, opts ...grpc.CallOption) (*MutationResponse, error)
-	// @required: type, seqid
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialGet(ctx context.Context, in *Sequential, opts ...grpc.CallOption) (*Sequential, error)
-	// @required: type, per_page
-	// @throws: SequentialInvalidType
 	SequentialList(ctx context.Context, in *SequentialListRequest, opts ...grpc.CallOption) (CDSCabinet_SequentialListClient, error)
 }
 
@@ -399,51 +368,20 @@ func (x *cDSCabinetSequentialListClient) Recv() (*Sequential, error) {
 
 // CDSCabinetServer is the server API for CDSCabinet service.
 type CDSCabinetServer interface {
-	// @required: node_id|Edge, value
-	// @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
 	CounterGet(context.Context, *Counter) (*CounterValueResponse, error)
-	// @required: edge.subject, edge.target, edge.predicate
-	// @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
 	EdgeGet(context.Context, *EdgeGetRequest) (*Edge, error)
-	// @required: edge.subject
-	// @optional: edge.predicate, edge.resume_from, edge.page_size, edge.mode
-	// @throws: ListNoPagination, EdgeInvalidSubject, EdgeInvalidPredicate
 	EdgeList(*EdgeListRequest, CDSCabinet_EdgeListServer) error
-	// @required: index.type, index.field, index.node
-	// @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
 	IndexGet(context.Context, *IndexGetRequest) (*Index, error)
-	// @required: index.type, index.field
-	// @throws: IndexInvalidID
 	IndexList(*IndexListRequest, CDSCabinet_IndexListServer) error
-	// @required: field.edge|field.node_id, key
-	// @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
 	MetaGet(context.Context, *Meta) (*MetaGetResponse, error)
-	// @required: field.edge|field.node_id
-	// @throws: MetaInvalidObject, MetaInvalidKey
 	MetaList(*MetaListRequest, CDSCabinet_MetaListServer) error
-	// @required: id, type
-	// @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
 	NodeGet(context.Context, *NodeGetRequest) (*Node, error)
-	// List node with pagination
-	// @required: type, per_page
 	NodeList(*NodeListRequest, CDSCabinet_NodeListServer) error
-	// @required: <action.*>, retry_mode
-	// @throws: TransactionInvalidAction, TransactionSyntaxError
 	Transaction(CDSCabinet_TransactionServer) error
-	// @required: source, operator, target
-	// @throws: @ReadCheckNaN
 	ReadCheck(context.Context, *ReadCheckRequest) (*ReadCheckResponse, error)
-	// @required: type, node
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialCreate(context.Context, *Sequential) (*Sequential, error)
-	// @required: type, seqid, node
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialDelete(context.Context, *Sequential) (*MutationResponse, error)
-	// @required: type, seqid
-	// @throws: NodeNotFound, SequentialInvalidType
 	SequentialGet(context.Context, *Sequential) (*Sequential, error)
-	// @required: type, per_page
-	// @throws: SequentialInvalidType
 	SequentialList(*SequentialListRequest, CDSCabinet_SequentialListServer) error
 }
 

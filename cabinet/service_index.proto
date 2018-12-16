@@ -21,7 +21,6 @@ import "index.proto";
 
 message IndexGetRequest{
     Index index = 1;
-    RetrieveMode mode = 2;
 }
 
 message IndexListRequest{
@@ -29,4 +28,9 @@ message IndexListRequest{
 
     uint32 index = 10;
     string value = 11;
+
+    bool include_index = 20;
+    bool include_value = 21;
+    bool include_prop = 22;
+    bool include_node = 23;
 }

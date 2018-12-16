@@ -25,4 +25,8 @@ message SequentialListRequest{
     ListOptions opt = 1;
 
     string type = 10;
+
+    bool include_type = 20;
+    bool include_seqid = 21;
+    bool include_uuid = 22;
 }

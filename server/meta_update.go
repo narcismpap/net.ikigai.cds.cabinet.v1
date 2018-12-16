@@ -26,7 +26,7 @@ func (o *TransactionOperation) MetaUpdate(meta *pb.Meta) error{
 	o.tr.Set(metaIRI.GetKey(o.server.dbMeta), PreparePayload(meta.Val))
 
 	if DebugServerRequests {
-		o.server.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v\n\n", o.action, metaIRI.GetPath()))
+		o.server.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v", o.action, metaIRI.GetPath()))
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{

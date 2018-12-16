@@ -26,8 +26,6 @@ message NodeCreateResponse{
 }
 
 message NodeGetRequest {
-    RetrieveMode mode = 1;
-
     string id = 2;
     uint32 node_type = 3;
 }
@@ -35,5 +33,9 @@ message NodeGetRequest {
 message NodeListRequest {
     ListOptions opt = 1;
     uint32 node_type = 2;
+
+    bool include_type = 20;
+    bool include_id = 21;
+    bool include_prop = 22;
 }
 

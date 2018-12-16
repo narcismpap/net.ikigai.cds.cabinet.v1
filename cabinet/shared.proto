@@ -17,17 +17,16 @@ enum MutationStatus{
     MUTATION_FAILURE = 14;
 }
 
-enum RetrieveMode {
-    ALL = 0;    // return the whole associated record(s)
-    PROP = 2;   // returns just map<k:v> properties
-    IDS = 3;    // return list<IDS>
+enum ListRange{
+    UNDEFINED = 0;
+    ALL = 1;
+    EXACT_RANGE = 2;
+    START_WITH = 3;
 }
 
-
 message ListOptions{
-    RetrieveMode mode = 1;
-    string resume_at = 2;
     uint32 page_size = 3;
+    ListRange mode = 4;
 
     string key_start = 10;
     string key_end = 11;

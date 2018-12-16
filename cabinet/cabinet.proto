@@ -32,136 +32,25 @@ import "shared.proto";
 // Mutation Operators, outside of Sequential* are only available in the Transaction RPC
 
 service CDSCabinet {
-
-    // **** Counters *****
-
-    // @required: node_id|Edge, value
-    // @throws: CounterInvalidIncrement, NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    // rpc CounterIncrement(Counter) returns(MutationResponse);
-
-    // @required: node_id|Edge, value
-    // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    // rpc CounterDelete(Counter) returns(MutationResponse);
-
-    // @required: node_id|Edge, value
-    // @throws: NodeInvalidID, EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
     rpc CounterGet(Counter) returns(CounterValueResponse);
 
-    // **** Edges *****
-
-    // @required: edge.subject, edge.target, edge.predicate
-    // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate
-    //rpc EdgeCreate(Edge) returns(MutationResponse);
-
-    // @required: edge.subject, edge.target, edge.predicate
-    // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    //rpc EdgeUpdate(Edge) returns(MutationResponse);
-
-    // @required: edge.subject, edge.target, edge.predicate
-    // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
-    //rpc EdgeDelete(Edge) returns(MutationResponse);
-
-    // @required: edge.subject, edge.target, edge.predicate
-    // @throws: EdgeInvalidSubject, EdgeInvalidTarget, EdgeInvalidPredicate, EdgeNotFound
     rpc EdgeGet(EdgeGetRequest) returns(Edge);
-
-    // @required: edge.subject
-    // @optional: edge.predicate, edge.resume_from, edge.page_size, edge.mode
-    // @throws: ListNoPagination, EdgeInvalidSubject, EdgeInvalidPredicate
     rpc EdgeList(EdgeListRequest) returns(stream Edge);
 
-    // **** Indexes *****
-
-    // @required: index.type, index.field, index.node, index.value
-    // @throws: IndexInvalidQuery, IndexInvalidID
-    //rpc IndexCreate(Index) returns(MutationResponse);
-
-    // @required: index.type, index.field, index.node, index.value
-    // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    //rpc IndexUpdate(Index) returns(MutationResponse);
-
-    // @required: index.type, index.field, index.node
-    // @throws: IndexNotFound, IndexInvalidQuery, IndexInvalidID
-    //rpc IndexDelete(Index) returns(MutationResponse);
-
-    // @required: index.type, index.field, index.node
-    // @throws: IndexNotFound, IndexInvalidID, IndexInvalidQuery
     rpc IndexGet(IndexGetRequest) returns(Index);
-
-    // @required: index.type, index.field
-    // @throws: IndexInvalidID
     rpc IndexList(IndexListRequest) returns(stream Index);
 
-    // **** Meta *****
-
-    // @required: field.edge|field.node_id, meta
-    // @throws: MetaInvalidObject, MetaInvalidKey
-    //rpc MetaCreate(Meta) returns(MutationResponse);
-
-    // @required: field.edge|field.node_id, meta
-    // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    //rpc MetaUpdate(Meta) returns(MutationResponse);
-
-    // @required: field.edge|field.node_id, meta
-    // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
-    //rpc MetaDelete(Meta) returns(MutationResponse);
-
-    // @required: field.edge|field.node_id, key
-    // @throws: MetaNotFound, MetaInvalidObject, MetaInvalidKey
     rpc MetaGet(Meta) returns(MetaGetResponse);
-
-    // @required: field.edge|field.node_id
-    // @throws: MetaInvalidObject, MetaInvalidKey
     rpc MetaList(MetaListRequest) returns(stream Meta);
 
-    // **** Node *****
-
-    // @required: node.type, node.id
-    // @throws: NodeInvalidID, NodeInvalidType
-    //rpc NodeCreate(Node) returns(NodeCreateResponse);
-
-    // @required: node.type, node.id
-    // @throws: NodeNotFound, NodeIllegalUpdate
-    //rpc NodeUpdate(Node) returns(MutationResponse);
-
-    // @required: node.type, node.id
-    // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
-    //rpc NodeDelete(Node) returns(MutationResponse);
-
-    // @required: id, type
-    // @throws: NodeNotFound, NodeInvalidID, NodeInvalidType
     rpc NodeGet(NodeGetRequest) returns(Node);
-
-    // List node with pagination
-    // @required: type, per_page
     rpc NodeList(NodeListRequest) returns(stream Node);
 
-    // **** Transaction *****
-
-    // @required: <action.*>, retry_mode
-    // @throws: TransactionInvalidAction, TransactionSyntaxError
     rpc Transaction(stream TransactionAction) returns(stream TransactionActionResponse);
-
-    // @required: source, operator, target
-    // @throws: @ReadCheckNaN
     rpc ReadCheck(ReadCheckRequest) returns(ReadCheckResponse);
 
-    // **** Sequences *****
-
-    // @required: type, node
-    // @throws: NodeNotFound, SequentialInvalidType
     rpc SequentialCreate(Sequential) returns(Sequential);
-
-    // @required: type, seqid, node
-    // @throws: NodeNotFound, SequentialInvalidType
     rpc SequentialDelete(Sequential) returns(MutationResponse);
-
-    // @required: type, seqid
-    // @throws: NodeNotFound, SequentialInvalidType
     rpc SequentialGet(Sequential) returns(Sequential);
-
-    // @required: type, per_page
-    // @throws: SequentialInvalidType
     rpc SequentialList(SequentialListRequest) returns(stream Sequential);
-
 }

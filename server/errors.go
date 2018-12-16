@@ -25,6 +25,7 @@ const (
 	RPCErrorDataCorrupted   = "E(0x009) Data is corrupted on %s"
 	RPCErrorDuplicateRecord = "E(0x010) Requested record already exists"
 	RPCErrorIRISpecific     = "E(0x011) IRI: %s"
+	RPCErrorListIterator    = "E(0x012) List iteration failed"
 )
 
 func CheckFatalError(err error){

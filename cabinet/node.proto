@@ -7,6 +7,7 @@
 syntax = "proto3";
 package cds.cabinet.v1;
 
+
 message Node{
     uint32 type = 1;
     string id = 2;

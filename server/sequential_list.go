@@ -39,7 +39,7 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 			sqO, err := s.dbSequence.Unpack(kv.Key) // {Type, i/u, SeqID} = kv.Value
 
 			if err != nil {
-				return nil, err
+				return nil, status.Error(codes.Unavailable, RPCErrorListIterator)
 			}
 
 			seqID, err := strconv.ParseUint(strings.TrimLeft(sqO[2].(string), "0"), 10, 32)

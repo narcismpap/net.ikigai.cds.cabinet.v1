@@ -24,7 +24,6 @@ import "edge.proto";
 // You can lookup Edges by: {SUBJECT} or {SUBJECT} + {PREDICATE}
 
 message EdgeGetRequest {
-    RetrieveMode mode = 1;
     Edge edge = 2;
 }
 
@@ -33,4 +32,9 @@ message EdgeListRequest {
 
     string subject = 10;
     uint32 predicate = 11;
+
+    bool include_subject = 20;
+    bool include_predicate = 21;
+    bool include_target = 22;
+    bool include_prop = 23;
 }

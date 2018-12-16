@@ -27,4 +27,11 @@ message MetaGetResponse{
 message MetaListRequest{
     ListOptions opt = 1;
     Meta meta = 10;
+
+    bool include_node = 20;
+    bool include_property = 21;
+    bool include_value = 22;
+    bool include_subject = 23;
+    bool include_predicate = 24;
+    bool include_target = 25;
 }
