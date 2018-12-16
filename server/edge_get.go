@@ -17,11 +17,22 @@ import (
 
 func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest) (*pb.Edge, error){
 	edgeProp, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		edgeProp := rtr.Get((&iri.Edge{
+		edgeIRI := &iri.Edge{
 			Subject: edge.Edge.Subject,
 			Predicate: uint16(edge.Edge.Predicate),
 			Target: edge.Edge.Target,
-		}).GetKey(s.dbEdge)).MustGet()
+		}
+
+		edgePerms := &iri.EdgePermissions{
+			AllowTargetWildcard: false,
+			AllowPredicateWildcard: false,
+		}
+
+		if valdErr := edgeIRI.ValidateIRI(edgePerms); valdErr != nil{
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, valdErr)
+		}
+
+		edgeProp := rtr.Get(edgeIRI.GetKey(s.dbEdge)).MustGet()
 
 		if edgeProp == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)

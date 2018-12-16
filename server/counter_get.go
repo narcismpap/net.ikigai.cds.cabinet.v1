@@ -22,7 +22,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 		var total int64
 
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
 
 		// simple SUM(IRI/0-f); real-time counting w/ good scalability

@@ -10,6 +10,8 @@ import (
 	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
@@ -17,6 +19,15 @@ func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
 		Subject: iri.NodeResolveId(edge.Subject, &o.IdMap),
 		Predicate: uint16(edge.Predicate),
 		Target: iri.NodeResolveId(edge.Target, &o.IdMap),
+	}
+
+	edgePerms := &iri.EdgePermissions{
+		AllowTargetWildcard: false,
+		AllowPredicateWildcard: false,
+	}
+
+	if valdErr := edgeIRI.ValidateIRI(edgePerms); valdErr != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, valdErr)
 	}
 
 	o.tr.Set(edgeIRI.GetKey(o.server.dbEdge), PreparePayload(edge.Properties))

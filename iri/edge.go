@@ -49,10 +49,10 @@ func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *Edge) ValidateIRI() error{
+func (e *Edge) ValidateIRI(perms *EdgePermissions) error{
 	var err error
 
-	if !validateSequence(e.Predicate){
+	if !validateSequence(e.Predicate) && !perms.AllowPredicateWildcard{
 		return &ParsingError{msg: "null record", field: "edge.predicate"}
 	}
 
@@ -60,7 +60,9 @@ func (e *Edge) ValidateIRI() error{
 		return &ParsingError{msg: "invalid Node ID", field: "edge.subject"}
 	}
 
-	if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
+	if perms.AllowTargetWildcard && e.Target == "*"{
+
+	}else if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
 		return &ParsingError{msg: "invalid Node ID", field: "edge.target"}
 	}
 

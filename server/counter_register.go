@@ -18,7 +18,7 @@ func (o *TransactionOperation) CounterRegister(counter *pb.Counter) error{
 	cntIRI, err := iri.ResolveCounterIRI(counter, &o.IdMap)
 
 	if err != nil {
-		return status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 	}
 
 	incVal, err := Int64ToBytes(int64(0))
