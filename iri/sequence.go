@@ -8,6 +8,7 @@ package iri
 
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
+	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -34,6 +35,8 @@ func (s *Sequence) GetPath() string{
 	}
 }
 
+
+
 func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{s.Type, "i", s.DbSeqID()})
 }
@@ -46,6 +49,14 @@ func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{"sl", s.Type})
 }
 
+func (s *Sequence) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
+	readRange := db.Sub(s.Type).Sub("i")
+
+	return rtr.GetRange(readRange, fdb.RangeOptions{
+		Limit: 	 int(opt.PageSize),
+		Reverse: opt.Reverse,
+	})
+}
 
 func (s *Sequence) ValidateIRI(p *perms.Sequence) error{
 	var err error

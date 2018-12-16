@@ -7,12 +7,63 @@
 package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
+	"fmt"
+	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 
 func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCabinet_EdgeListServer) error{
-	return nil
+	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+		if DebugServerRequests {
+			s.logEvent(fmt.Sprintf("EdgeList(%v)", edgeRq))
+		}
+
+		listIRI := &iri.Edge{Subject: edgeRq.Subject, Predicate: uint16(edgeRq.Predicate)}
+		ri := listIRI.GetListRange(s.dbEdge, rtr, edgeRq.Opt).Iterator()
+
+		for ri.Advance() {
+			kv := ri.MustGet()
+			edgeKeys, err := s.dbSequence.Unpack(kv.Key) // [subject, predicate, target] = properties
+
+			if err != nil {
+				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node.id")
+			}
+
+			obj := &pb.Edge{}
+
+			if edgeRq.IncludeSubject {
+				obj.Subject = edgeKeys[0].(string)
+			}
+
+			if edgeRq.IncludePredicate {
+				predicate, err := iri.KeyElementToInt(edgeKeys[1].(string))
+
+				if err != nil{
+					return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "edge.predicate")
+				}
+
+				obj.Predicate = uint32(predicate)
+			}
+
+			if edgeRq.IncludeTarget{
+				obj.Target = edgeKeys[2].(string)
+			}
+
+			if edgeRq.IncludeProp{
+				obj.Properties = kv.Value
+			}
+
+			if err := stream.Send(obj); err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+
+	return err
 }
-
-

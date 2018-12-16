@@ -8,6 +8,7 @@ package iri
 
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
+	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -35,7 +36,7 @@ func (e *Edge) GetPathProperty(prop int) string{
 }
 
 func (e *Edge) getPredicateK() string{
-	return intToKeyElement(e.Predicate)
+	return IntToKeyElement(e.Predicate)
 }
 
 func (e *Edge) GetKey(db subspace.Subspace) fdb.Key{
@@ -48,6 +49,19 @@ func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}else{
 		return db.Sub(e.Subject).Sub(e.getPredicateK())
 	}
+}
+
+func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
+	readRange := db.Sub(e.Subject)
+
+	if e.Predicate > 0{
+		readRange = readRange.Sub(e.getPredicateK())
+	}
+
+	return rtr.GetRange(readRange, fdb.RangeOptions{
+		Limit: 	 int(opt.PageSize),
+		Reverse: opt.Reverse,
+	})
 }
 
 func (e *Edge) ValidateIRI(p *perms.Edge) error{

@@ -7,6 +7,7 @@
 package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -16,16 +17,12 @@ import (
 
 func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCabinet_NodeListServer) error{
 	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
-		var readRange = s.dbNode.Sub(nodeRq.NodeType)
-
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("NodeList(%v)", nodeRq))
 		}
 
-		ri := rtr.GetRange(readRange, fdb.RangeOptions{
-			Limit: 		int(nodeRq.Opt.PageSize),
-			Reverse: 	nodeRq.Opt.Reverse,
-		}).Iterator()
+		listIRI := &iri.Node{Type: uint16(nodeRq.NodeType)}
+		ri := listIRI.GetListRange(s.dbNode, rtr, nodeRq.Opt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()
@@ -42,7 +39,13 @@ func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCab
 			}
 
 			if nodeRq.IncludeType {
-				obj.Type = nodeRq.NodeType
+				nType, err := iri.KeyElementToInt(nodeKeys[0].(string))
+
+				if err != nil{
+					return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node.type")
+				}
+
+				obj.Type = uint32(nType)
 			}
 
 			if nodeRq.IncludeProp{

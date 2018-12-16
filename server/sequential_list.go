@@ -7,6 +7,7 @@
 package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -16,23 +17,20 @@ import (
 	"strings"
 )
 
-func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
-	if len(seq.GetType()) == 0 {
+func (s *CDSCabinetServer) SequentialList(seqRq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
+	if len(seqRq.GetType()) == 0 {
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, ".type"))
-	}else if seq.Opt.GetPageSize() == 0{
+	}else if seqRq.Opt.GetPageSize() == 0{
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
 	}
 
 	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
-		var readRange = s.dbSequence.Sub(seq.GetType()).Sub("i")
-
 		if DebugServerRequests {
-			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
+			s.logEvent(fmt.Sprintf("SequentialList(%v)", seqRq))
 		}
 
-		ri := rtr.GetRange(readRange, fdb.RangeOptions{
-			Limit: int(seq.Opt.PageSize),
-		}).Iterator()
+		listIRI := &iri.Sequence{Type: seqRq.Type}
+		ri := listIRI.GetListRange(s.dbSequence, rtr, seqRq.Opt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()
@@ -48,9 +46,18 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 				return nil, err
 			}
 
-			obj := &pb.Sequential{
-				Uuid: string(kv.Value),
-				Seqid: uint32(seqID),
+			obj := &pb.Sequential{}
+
+			if seqRq.IncludeType{
+				obj.Type = seqRq.Type
+			}
+
+			if seqRq.IncludeSeqid{
+				obj.Seqid = uint32(seqID)
+			}
+
+			if seqRq.IncludeUuid{
+				obj.Uuid = string(kv.Value)
 			}
 
 			if err := stream.Send(obj); err != nil {

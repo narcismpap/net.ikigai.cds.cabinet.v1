@@ -40,11 +40,11 @@ func (c *EdgeCounter) GetPath() string{
 }
 
 func (c *EdgeCounter) GetCounterK() string{
-	return intToKeyElement(c.Counter)
+	return IntToKeyElement(c.Counter)
 }
 
 func (c *EdgeCounter) GetPredicateK() string{
-	return intToKeyElement(c.Predicate)
+	return IntToKeyElement(c.Predicate)
 }
 
 func (c *EdgeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
@@ -97,7 +97,7 @@ func (c *NodeCounter) GetPath() string{
 }
 
 func (c *NodeCounter) getCounterK() string{
-	return intToKeyElement(c.Counter)
+	return IntToKeyElement(c.Counter)
 }
 
 func (c *NodeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key{
