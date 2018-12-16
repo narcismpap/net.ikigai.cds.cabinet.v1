@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -16,6 +17,8 @@ import (
 
 func (o *TransactionOperation) NodeUpdate(node *pb.Node) error{
 	nodeId, err := iri.NodeResolveId(node.Id, &o.IdMap)
+	nodePerms := &perms.Node{}
+
 	if err != nil{
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "node.id")
 	}
@@ -25,7 +28,7 @@ func (o *TransactionOperation) NodeUpdate(node *pb.Node) error{
 		Id: nodeId,
 	}
 
-	if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 

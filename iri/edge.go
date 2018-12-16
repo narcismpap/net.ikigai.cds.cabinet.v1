@@ -7,6 +7,7 @@
 package iri
 
 import (
+	"cds.ikigai.net/cabinet.v1/perms"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -49,10 +50,10 @@ func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *Edge) ValidateIRI(perms *EdgePermissions) error{
+func (e *Edge) ValidateIRI(p *perms.Edge) error{
 	var err error
 
-	if !validateSequence(e.Predicate) && !perms.AllowPredicateWildcard{
+	if !validateSequence(e.Predicate) && !p.AllowPredicateWildcard{
 		return &ParsingError{msg: "null record", field: "edge.predicate"}
 	}
 
@@ -60,7 +61,7 @@ func (e *Edge) ValidateIRI(perms *EdgePermissions) error{
 		return &ParsingError{msg: "invalid Node ID", field: "edge.subject"}
 	}
 
-	if perms.AllowTargetWildcard && e.Target == "*"{
+	if p.AllowTargetWildcard && e.Target == "*"{
 
 	}else if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
 		return &ParsingError{msg: "invalid Node ID", field: "edge.target"}
@@ -69,6 +70,6 @@ func (e *Edge) ValidateIRI(perms *EdgePermissions) error{
 	return nil
 }
 
-func (e *Edge) ValidatePermission() error{
+func (e *Edge) ValidatePermission(p *perms.Edge) error{
 	return nil
 }

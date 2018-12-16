@@ -7,6 +7,7 @@
 package iri
 
 import (
+	"cds.ikigai.net/cabinet.v1/perms"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -18,9 +19,6 @@ type BaseCounter interface {
 	GetPath() string
 	GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key
 	GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange
-
-	ValidateIRI() error
-	ValidatePermission() error
 }
 
 /* Edges */
@@ -60,7 +58,7 @@ func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *EdgeCounter) ValidateIRI() error{
+func (e *EdgeCounter) ValidateIRI(p *perms.Count) error{
 	var err error
 
 	if !validateSequence(e.Counter){
@@ -80,7 +78,7 @@ func (e *EdgeCounter) ValidateIRI() error{
 	return nil
 }
 
-func (e *EdgeCounter) ValidatePermission() error{
+func (e *EdgeCounter) ValidatePermission(p perms.Count) error{
 	return nil
 }
 
@@ -113,7 +111,7 @@ func (c *NodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	})
 }
 
-func (c *NodeCounter) ValidateIRI() error{
+func (c *NodeCounter) ValidateIRI(p *perms.Count) error{
 	var err error
 
 	if !validateSequence(c.Counter) {
@@ -127,6 +125,6 @@ func (c *NodeCounter) ValidateIRI() error{
 	return nil
 }
 
-func (e *NodeCounter) ValidatePermission() error{
+func (e *NodeCounter) ValidatePermission(p perms.Count) error{
 	return nil
 }

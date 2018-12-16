@@ -16,9 +16,6 @@ type IRI interface {
 	GetPath() string
 	GetKey(db subspace.Subspace) fdb.Key
 	GetClearRange(db subspace.Subspace) fdb.ExactRange
-
-	ValidateIRI() error
-	ValidatePermission() error
 }
 
 func intToKeyElement(v uint16) string{

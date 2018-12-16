@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -19,8 +20,9 @@ import (
 func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetRequest) (*pb.Node, error){
 	nodeProp, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		nodeIRI := &iri.Node{Type: uint16(nodeRq.NodeType), Id: nodeRq.Id}
+		nodePerms := &perms.Node{}
 
-		if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+		if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 

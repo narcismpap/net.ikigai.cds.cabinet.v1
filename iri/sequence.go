@@ -7,6 +7,7 @@
 package iri
 
 import (
+	"cds.ikigai.net/cabinet.v1/perms"
 	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -46,7 +47,7 @@ func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{
 }
 
 
-func (s *Sequence) ValidateIRI() error{
+func (s *Sequence) ValidateIRI(p *perms.Sequence) error{
 	var err error
 
 	if len(s.Type) == 0{
@@ -74,7 +75,7 @@ func (s *Sequence) ValidateIRI() error{
 	return nil
 }
 
-func (s *Sequence) ValidatePermission() error{
+func (s *Sequence) ValidatePermission(p perms.Sequence) error{
 	return nil
 }
 

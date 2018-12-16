@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -26,7 +27,7 @@ func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error{
 		Target: 	edge.Target,
 	}
 
-	edgePerms := &iri.EdgePermissions{
+	edgePerms := &perms.Edge{
 		AllowTargetWildcard: true,
 		AllowPredicateWildcard: false,
 	}

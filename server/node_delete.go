@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -25,7 +26,9 @@ func (o *TransactionOperation) NodeDelete(node *pb.Node) error{
 		Id: nodeId,
 	}
 
-	if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+	nodePerms := &perms.Node{}
+
+	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 

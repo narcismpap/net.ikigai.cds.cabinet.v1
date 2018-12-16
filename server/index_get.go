@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -23,7 +24,9 @@ func (s *CDSCabinetServer) IndexGet(ctx context.Context, indexGet *pb.IndexGetRe
 			Value: indexGet.Index.Value,
 		}
 
-		if vldErr := indexIRI.ValidateIRI(); vldErr != nil{
+		indexPerms := &perms.Index{}
+
+		if vldErr := indexIRI.ValidateIRI(indexPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 

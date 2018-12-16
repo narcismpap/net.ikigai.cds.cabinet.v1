@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -17,14 +18,14 @@ import (
 
 func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error){
 	metaValue, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		iri, err := iri.ResolveMetaIRI(meta, nil)
+		metaPerms := &perms.Meta{}
 
+		iri, err := iri.ResolveMetaIRI(meta, nil, metaPerms)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
 
 		metaValue := rtr.Get(iri.GetKey(s.dbMeta)).MustGet()
-
 		if metaValue == nil{
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}

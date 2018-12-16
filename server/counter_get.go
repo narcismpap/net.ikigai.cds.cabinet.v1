@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -18,15 +19,17 @@ import (
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
 	total, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
-		iri, err := iri.ResolveCounterIRI(counter, nil)
-		var total int64
+		counterPerms := &perms.Count{}
 
+		cntIRI, err := iri.ResolveCounterIRI(counter, nil, counterPerms)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
 
 		// simple SUM(IRI/0-f); real-time counting w/ good scalability
-		ri := rtr.GetRange(iri.GetKeyRange(s.dbCount), fdb.RangeOptions{
+		var total int64
+
+		ri := rtr.GetRange(cntIRI.GetKeyRange(s.dbCount), fdb.RangeOptions{
 			Limit: len(CounterKeys),
 		}).Iterator()
 

@@ -7,6 +7,7 @@
 package iri
 
 import (
+	"cds.ikigai.net/cabinet.v1/perms"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -42,7 +43,7 @@ func (n *Node) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (n *Node) ValidateIRI() error{
+func (n *Node) ValidateIRI(p *perms.Node) error{
 	var err error
 
 	if !validateSequence(n.Type){
@@ -56,6 +57,6 @@ func (n *Node) ValidateIRI() error{
 	return nil
 }
 
-func (e *Node) ValidatePermission() error{
+func (e *Node) ValidatePermission(p perms.Node) error{
 	return nil
 }

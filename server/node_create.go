@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/segmentio/ksuid"
@@ -22,8 +23,9 @@ func (o *TransactionOperation) NodeCreate(node *pb.Node) error{
 
 	newID := string(newIDBytes)
 	nodeIRI := &iri.Node{Type: uint16(node.Type), Id: newID}
+	nodePerms := &perms.Node{}
 
-	if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 

@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -23,7 +24,7 @@ func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest)
 			Target: edge.Edge.Target,
 		}
 
-		edgePerms := &iri.EdgePermissions{
+		edgePerms := &perms.Edge{
 			AllowTargetWildcard: false,
 			AllowPredicateWildcard: false,
 		}

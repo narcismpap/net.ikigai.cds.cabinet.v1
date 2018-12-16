@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -15,8 +16,9 @@ import (
 )
 
 func (o *TransactionOperation) MetaDelete(meta *pb.Meta) error{
-	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap)
+	metaPerms := &perms.Meta{}
 
+	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap, metaPerms)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 	}

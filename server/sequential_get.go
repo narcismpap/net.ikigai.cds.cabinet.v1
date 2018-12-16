@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -33,8 +34,9 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 
 	seqResponse, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid, UUID: seq.Uuid}
+		seqPerms := &perms.Sequence{}
 
-		if vldErr := seqIRI.ValidateIRI(); vldErr != nil{
+		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 

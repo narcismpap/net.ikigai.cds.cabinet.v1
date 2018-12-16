@@ -7,12 +7,13 @@
 package iri
 
 import (
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"errors"
 	"strings"
 )
 
-func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
+func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI, error){
 	switch mType := tMeta.Object.(type) {
 
 	case *pb.Meta_Edge:
@@ -33,7 +34,7 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
 			Target:    targetID,
 		}
 
-		return meta, meta.ValidateIRI()
+		return meta, meta.ValidateIRI(p)
 
 	case *pb.Meta_Node:
 		nID, err := NodeResolveId(mType.Node, nMap)
@@ -46,14 +47,14 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
 			Node: 		nID,
 		}
 
-		return meta, meta.ValidateIRI()
+		return meta, meta.ValidateIRI(p)
 
 	default:
 		return nil, &ParsingError{msg: "unimplemented object type", field: "meta.object"}
 	}
 }
 
-func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (BaseCounter, error){
+func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.Count) (BaseCounter, error){
 	switch cType := tCounter.Object.(type) {
 
 	case *pb.Counter_Edge:
@@ -74,7 +75,7 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (BaseCount
 			Target:    targetID,
 		}
 
-		return cnt, cnt.ValidateIRI()
+		return cnt, cnt.ValidateIRI(p)
 
 	case *pb.Counter_Node:
 		nID, err := NodeResolveId(cType.Node, nMap)
@@ -87,7 +88,7 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (BaseCount
 			Node:    nID,
 		}
 
-		return cnt, cnt.ValidateIRI()
+		return cnt, cnt.ValidateIRI(p)
 
 	default:
 		return nil, &ParsingError{msg: "unimplemented object type", field: "counter.object"}

@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -17,14 +18,14 @@ import (
 )
 
 func (o *TransactionOperation) CounterIncrement(counter *pb.Counter) error{
-	cntIRI, err := iri.ResolveCounterIRI(counter, &o.IdMap)
+	counterPerms := &perms.Count{}
 
+	cntIRI, err := iri.ResolveCounterIRI(counter, &o.IdMap, counterPerms)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 	}
 
 	incVal, err := Int64ToBytes(int64(counter.Value))
-
 	if err != nil {
 		return status.Error(codes.InvalidArgument, RPCErrorArgumentInvalid)
 	}

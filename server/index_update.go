@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"google.golang.org/grpc/codes"
@@ -26,7 +27,9 @@ func (o *TransactionOperation) IndexUpdate(index *pb.Index) error{
 		Value: index.Value,
 	}
 
-	if vldErr := indexIRI.ValidateIRI(); vldErr != nil{
+	indexPerms := &perms.Index{}
+
+	if vldErr := indexIRI.ValidateIRI(indexPerms); vldErr != nil{
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 

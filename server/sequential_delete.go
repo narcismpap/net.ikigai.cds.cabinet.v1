@@ -8,6 +8,7 @@ package server
 
 import (
 	"cds.ikigai.net/cabinet.v1/iri"
+	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
 	"fmt"
@@ -25,8 +26,9 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 
 	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, UUID: seq.Uuid}
+		seqPerms := &perms.Sequence{}
 
-		if vldErr := seqIRI.ValidateIRI(); vldErr != nil{
+		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
