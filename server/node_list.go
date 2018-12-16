@@ -26,7 +26,7 @@ func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCab
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			nodeKeys, err := s.dbSequence.Unpack(kv.Key) // [node_type, node_id] = properties
+			nodeKeys, err := s.dbNode.Unpack(kv.Key) // [node_type, node_id] = properties
 
 			if err != nil {
 				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node.id")

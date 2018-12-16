@@ -27,7 +27,7 @@ func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDS
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			indexKeys, err := s.dbSequence.Unpack(kv.Key) // [type, value, node] = properties
+			indexKeys, err := s.dbIndex.Unpack(kv.Key) // [type, value, node] = properties
 
 			if err != nil {
 				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node_key")

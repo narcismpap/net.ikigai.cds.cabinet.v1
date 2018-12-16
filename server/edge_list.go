@@ -27,7 +27,7 @@ func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCab
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			edgeKeys, err := s.dbSequence.Unpack(kv.Key) // [subject, predicate, target] = properties
+			edgeKeys, err := s.dbEdge.Unpack(kv.Key) // [subject, predicate, target] = properties
 
 			if err != nil {
 				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node.id")

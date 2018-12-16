@@ -44,7 +44,7 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 
 			// [e, SUBJECT, PREDICATE, TARGET, PROP] = bin
 			// [n, NODE_ID, PROP] = bin
-			metaKeys, err := s.dbSequence.Unpack(kv.Key)
+			metaKeys, err := s.dbMeta.Unpack(kv.Key)
 
 			if err != nil {
 				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "meta_key")
