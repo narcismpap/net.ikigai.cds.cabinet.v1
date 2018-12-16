@@ -11,6 +11,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/segmentio/ksuid"
 )
 
 /* Edges*/
@@ -20,6 +21,9 @@ type EdgeMeta struct{
 	Subject string
 	Predicate uint16
 	Target string
+
+	subjectKSUID ksuid.KSUID
+	targetKSUID ksuid.KSUID
 
 	Property uint16
 }
@@ -52,7 +56,23 @@ func (m *EdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	return db.Sub("e").Sub(m.Subject)
 }
 
-func (e *EdgeMeta) ValidateIRI() error{
+func (m *EdgeMeta) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(m.Property){
+		return &ParsingError{msg: "null record", field: "meta.property"}
+	}else if !validateSequence(m.Predicate){
+		return &ParsingError{msg: "null record", field: "meta.edge.predicate"}
+	}
+
+	if m.subjectKSUID, err = validateNodeID(m.Subject); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "meta.edge.subject"}
+	}
+
+	if m.targetKSUID, err = validateNodeID(m.Target); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "meta.edge.target"}
+	}
+
 	return nil
 }
 
@@ -65,6 +85,8 @@ func (e *EdgeMeta) ValidatePermission() error{
 type NodeMeta struct{
 	Node string
 	Property uint16
+
+	nodeKSUID ksuid.KSUID
 }
 
 func (m *NodeMeta) GetPath() string{
@@ -83,7 +105,17 @@ func (m *NodeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	return db.Sub("n").Sub(m.Node)
 }
 
-func (e *NodeMeta) ValidateIRI() error{
+func (m *NodeMeta) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(m.Property){
+		return &ParsingError{msg: "null record", field: "meta.property"}
+	}
+
+	if m.nodeKSUID, err = validateNodeID(m.Node); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "meta.node"}
+	}
+
 	return nil
 }
 

@@ -7,6 +7,7 @@
 package iri
 
 import (
+	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -43,3 +44,37 @@ func (s *Sequence) GetReverseKey(db subspace.Subspace) fdb.Key{
 func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{"sl", s.Type})
 }
+
+
+func (s *Sequence) ValidateIRI() error{
+	var err error
+
+	if len(s.Type) == 0{
+		return &ParsingError{msg: "null record", field: "seq.type"}
+	}else if len(s.Type) > 10{
+		return &ParsingError{msg: "len > 10", field: "seq.type"}
+	}
+
+	if len(s.UUID) > 0 && s.SeqID > 0{
+		return &ParsingError{msg: "mutually exclusive", field: "seq.uuid,seq.id"}
+	}
+
+	if len(s.UUID) == 0 && s.SeqID == 0{
+		return &ParsingError{msg: "id required", field: "seq.uuid|seq.id"}
+	}
+
+	if len(s.UUID) > 0 {
+		if _, err = validateUUID(s.UUID); err != nil {
+			return &ParsingError{msg: "invalid UUID", field: "seq.uuid"}
+		}
+	}else if s.SeqID == 0{
+		return errors.New("missing seqId")
+	}
+
+	return nil
+}
+
+func (s *Sequence) ValidatePermission() error{
+	return nil
+}
+

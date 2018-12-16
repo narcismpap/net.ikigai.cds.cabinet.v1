@@ -11,6 +11,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/segmentio/ksuid"
 )
 
 type Edge struct{
@@ -19,7 +20,9 @@ type Edge struct{
 	Subject string
 	Predicate uint16
 	Target string
-	Property int
+
+	subjectKSUID ksuid.KSUID
+	targetKSUID ksuid.KSUID
 }
 
 func (e *Edge) GetPath() string{
@@ -47,6 +50,20 @@ func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 }
 
 func (e *Edge) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(e.Predicate){
+		return &ParsingError{msg: "null record", field: "edge.predicate"}
+	}
+
+	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "edge.subject"}
+	}
+
+	if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "edge.target"}
+	}
+
 	return nil
 }
 

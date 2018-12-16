@@ -11,6 +11,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/segmentio/ksuid"
 )
 
 type BaseCounter interface {
@@ -29,6 +30,9 @@ type EdgeCounter struct{
 	Subject string
 	Predicate uint16
 	Target string
+
+	subjectKSUID ksuid.KSUID
+	targetKSUID ksuid.KSUID
 
 	Counter uint16
 }
@@ -57,6 +61,22 @@ func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 }
 
 func (e *EdgeCounter) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(e.Counter){
+		return &ParsingError{msg: "null record", field: "counter.counter"}
+	}else if !validateSequence(e.Predicate){
+		return &ParsingError{msg: "null record", field: "counter.edge.predicate"}
+	}
+
+	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.subject"}
+	}
+
+	if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.target"}
+	}
+
 	return nil
 }
 
@@ -71,6 +91,7 @@ type NodeCounter struct{
 	Counter uint16
 
 	Node string
+	nodeKSUID ksuid.KSUID
 }
 
 func (c *NodeCounter) GetPath() string{
@@ -92,7 +113,17 @@ func (c *NodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	})
 }
 
-func (e *NodeCounter) ValidateIRI() error{
+func (c *NodeCounter) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(c.Counter) {
+		return &ParsingError{msg: "null record", field: "counter.counter"}
+	}
+
+	if c.nodeKSUID, err = validateNodeID(c.Node); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "counter.node"}
+	}
+
 	return nil
 }
 

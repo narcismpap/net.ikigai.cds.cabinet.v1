@@ -11,12 +11,15 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/segmentio/ksuid"
 )
 
 type Node struct{
 	IRI
 	Type uint16
 	Id string
+
+	nodeKSUID ksuid.KSUID
 }
 
 func (n *Node) getTypeK() string{
@@ -39,7 +42,17 @@ func (n *Node) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *Node) ValidateIRI() error{
+func (n *Node) ValidateIRI() error{
+	var err error
+
+	if !validateSequence(n.Type){
+		return &ParsingError{msg: "null record", field: "counter.counter"}
+	}
+
+	if n.nodeKSUID, err = validateNodeID(n.Id); err != nil{
+		return &ParsingError{msg: "invalid Node ID", field: "node.id"}
+	}
+
 	return nil
 }
 
