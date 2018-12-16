@@ -154,10 +154,6 @@ service CDSCabinet {
 
     // @required: type, seqid, node
     // @throws: NodeNotFound, SequentialInvalidType
-    rpc SequentialUpdate(Sequential) returns(MutationResponse);
-
-    // @required: type, seqid, node
-    // @throws: NodeNotFound, SequentialInvalidType
     rpc SequentialDelete(Sequential) returns(MutationResponse);
 
     // @required: type, seqid

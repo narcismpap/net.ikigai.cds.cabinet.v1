@@ -12,5 +12,5 @@ message Sequential{
     string type = 1;
 
     uint32 seqid = 2;
-    string node = 3;
+    string uuid = 4;
 }

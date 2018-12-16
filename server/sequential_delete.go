@@ -12,20 +12,35 @@ import (
 	"context"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
-	vldError := validateSequentialRequest(seq, []string{"t", "s"}, []string{"n"})
+	vldError := validateSequentialRequest(seq, []string{"t", "u"}, []string{"s"})
 
 	if vldError != nil{
 		return nil, vldError
 	}
 
 	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
-		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid}
+		seqIRI := iri.Sequence{Type: seq.Type, UUID: seq.Uuid}
+		dbSeqID := tr.Get(seqIRI.GetReverseKey(s.dbSequence)).MustGet()
+
+		if dbSeqID == nil{
+			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
+		}
+
+		seqID, err := BytesToInt(dbSeqID)
+
+		if err != nil{
+			return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "seqId"))
+		}
+
+		seqIRI.SeqID = uint32(seqID)
 
 		tr.Clear(seqIRI.GetKey(s.dbSequence))
-		tr.Clear(seqIRI.GetIncrementKey(s.dbSequence))
+		tr.Clear(seqIRI.GetReverseKey(s.dbSequence))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialDelete(%v) = %v", seq, seqIRI.GetPath()))
@@ -35,7 +50,7 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 	})
 
 	if err != nil{
-		return &pb.MutationResponse{Status: pb.MutationStatus_PROCESSING_FAILURE}, err
+		return nil, err
 	}
 
 	return &pb.MutationResponse{Status: pb.MutationStatus_SUCCESS}, nil

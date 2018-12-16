@@ -17,8 +17,8 @@ func validateSequentialRequest(seq *pb.Sequential, required []string, unexpected
 	for i := range required {
 		if required[i] == "t" && len(seq.GetType()) == 0 {
 			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.type"))
-		}else if required[i] == "n" && len(seq.GetNode()) == 0 {
-			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.node"))
+		}else if required[i] == "u" && len(seq.GetUuid()) == 0 {
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.uuid"))
 		}else if required[i] == "s" && seq.GetSeqid() == 0 {
 			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "seq.seqId"))
 		}
@@ -27,8 +27,8 @@ func validateSequentialRequest(seq *pb.Sequential, required []string, unexpected
 	for i := range unexpected {
 		if unexpected[i] == "t" && len(seq.GetType()) > 0 {
 			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.type"))
-		}else if unexpected[i] == "n" && len(seq.GetNode()) > 0 {
-			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.node"))
+		}else if unexpected[i] == "u" && len(seq.GetUuid()) > 0 {
+			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.uuid"))
 		}else if unexpected[i] == "s" && seq.GetSeqid() != 0 {
 			return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldUnexpected, "seq.seqId"))
 		}

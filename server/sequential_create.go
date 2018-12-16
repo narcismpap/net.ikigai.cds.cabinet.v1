@@ -16,7 +16,7 @@ import (
 )
 
 func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error){
-	vldError := validateSequentialRequest(seq, []string{"t", "n"}, []string{"s"})
+	vldError := validateSequentialRequest(seq, []string{"t", "u"}, []string{"s"})
 
 	if vldError != nil{
 		return nil, vldError
@@ -41,9 +41,14 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 			lastInt32 = uint32(lastInt)
 		}
 
-		seqIRI := &iri.Sequence{Type: seq.Type, SeqID: lastInt32}
+		seqIRI := &iri.Sequence{Type: seq.Type, SeqID: lastInt32, UUID: seq.Uuid}
+		rVal, err := Int64ToBytes(int64(lastInt32))
+		CheckFatalError(err)
 
-		tr.Set(seqIRI.GetKey(s.dbSequence), []byte(seq.GetNode()))
+		// store as /s/i/{seqId} = {UUID}; /s/u/{UUID} = {seqId}
+		tr.Set(seqIRI.GetKey(s.dbSequence), []byte(seq.Uuid))
+		tr.Set(seqIRI.GetReverseKey(s.dbSequence), rVal)
+
 		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
 
 		if DebugServerRequests {
@@ -57,8 +62,5 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 		return
 	}
 
-	return &pb.Sequential{Seqid: newId.(uint32)}, nil
+	return &pb.Sequential{Seqid: newId.(uint32), Uuid: seq.Uuid}, nil
 }
-
-
-

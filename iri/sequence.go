@@ -17,6 +17,7 @@ type Sequence struct{
 	IRI
 	Type string
 	SeqID uint32
+	UUID string
 }
 
 func (s *Sequence) DbSeqID() string{
@@ -24,11 +25,19 @@ func (s *Sequence) DbSeqID() string{
 }
 
 func (s *Sequence) GetPath() string{
-	return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
+	if s.SeqID > 0 {
+		return fmt.Sprintf("/s/%s/i/%d", s.Type, s.SeqID)
+	}else{
+		return fmt.Sprintf("/s/%s/u/%d", s.Type, s.SeqID)
+	}
 }
 
 func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{
-	return db.Pack(tuple.Tuple{s.Type, s.DbSeqID()})
+	return db.Pack(tuple.Tuple{s.Type, "i", s.DbSeqID()})
+}
+
+func (s *Sequence) GetReverseKey(db subspace.Subspace) fdb.Key{
+	return db.Pack(tuple.Tuple{s.Type, "u", s.UUID})
 }
 
 func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{

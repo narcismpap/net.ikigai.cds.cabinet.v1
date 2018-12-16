@@ -24,7 +24,7 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 	}
 
 	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
-		var readRange = s.dbSequence.Sub(seq.GetType())
+		var readRange = s.dbSequence.Sub(seq.GetType()).Sub("i")
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialList(%v)", seq))
@@ -36,21 +36,20 @@ func (s *CDSCabinetServer) SequentialList(seq *pb.SequentialListRequest, stream 
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			sqO, err := s.dbSequence.Unpack(kv.Key) // {Type, SeqID} = kv.Value
+			sqO, err := s.dbSequence.Unpack(kv.Key) // {Type, i/u, SeqID} = kv.Value
 
 			if err != nil {
 				return nil, err
 			}
 
-			seqID, err := strconv.ParseUint(strings.TrimLeft(sqO[1].(string), "0"), 10, 32)
+			seqID, err := strconv.ParseUint(strings.TrimLeft(sqO[2].(string), "0"), 10, 32)
 
 			if err != nil {
 				return nil, err
 			}
 
 			obj := &pb.Sequential{
-				Type: seq.Type,
-				Node: string(kv.Value),
+				Uuid: string(kv.Value),
 				Seqid: uint32(seqID),
 			}
 
