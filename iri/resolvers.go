@@ -8,7 +8,7 @@ package iri
 
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
-	"log"
+	"errors"
 	"strings"
 )
 
@@ -16,19 +16,34 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string) (IRI, error){
 	switch mType := tMeta.Object.(type) {
 
 	case *pb.Meta_Edge:
+		subjectID, err := NodeResolveId(mType.Edge.Subject, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.subject"}
+		}
+
+		targetID, err := NodeResolveId(mType.Edge.Target, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.target"}
+		}
+
 		meta := &EdgeMeta{
-			Property: 	uint16(tMeta.Key),
-			Subject: 	NodeResolveId(mType.Edge.Subject, nMap),
-			Predicate: 	uint16(mType.Edge.Predicate),
-			Target: 	NodeResolveId(mType.Edge.Target, nMap),
+			Property:  uint16(tMeta.Key),
+			Subject:   subjectID,
+			Predicate: uint16(mType.Edge.Predicate),
+			Target:    targetID,
 		}
 
 		return meta, meta.ValidateIRI()
 
 	case *pb.Meta_Node:
+		nID, err := NodeResolveId(mType.Node, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.node"}
+		}
+
 		meta := &NodeMeta{
 			Property: 	uint16(tMeta.Key),
-			Node: 		NodeResolveId(mType.Node, nMap),
+			Node: 		nID,
 		}
 
 		return meta, meta.ValidateIRI()
@@ -42,19 +57,34 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (BaseCount
 	switch cType := tCounter.Object.(type) {
 
 	case *pb.Counter_Edge:
+		subjectID, err := NodeResolveId(cType.Edge.Subject, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.subject"}
+		}
+
+		targetID, err := NodeResolveId(cType.Edge.Target, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.target"}
+		}
+
 		cnt := &EdgeCounter{
 			Counter:   uint16(tCounter.Counter),
-			Subject:   NodeResolveId(cType.Edge.Subject, nMap),
+			Subject:   subjectID,
 			Predicate: uint16(cType.Edge.Predicate),
-			Target:    NodeResolveId(cType.Edge.Target, nMap),
+			Target:    targetID,
 		}
 
 		return cnt, cnt.ValidateIRI()
 
 	case *pb.Counter_Node:
+		nID, err := NodeResolveId(cType.Node, nMap)
+		if err != nil{
+			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.node"}
+		}
+
 		cnt := &NodeCounter{
 			Counter: uint16(tCounter.Counter),
-			Node:    NodeResolveId(cType.Node, nMap),
+			Node:    nID,
 		}
 
 		return cnt, cnt.ValidateIRI()
@@ -65,15 +95,15 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string) (BaseCount
 }
 
 
-func NodeResolveId(nID string, nMap *map[string]string) string{
+func NodeResolveId(nID string, nMap *map[string]string) (string, error){
 	if strings.HasPrefix(nID, "tmp:") {
 		if val, ok := (*nMap)[strings.TrimLeft(nID, "tmp:")]; ok {
-			return val
+			return val, nil
 		}
 
-		log.Panicf("unable to map %s in %v", nID, *nMap)
+		return "", errors.New("node map is incomplete")
 	}
 
-	return nID
+	return nID, nil
 }
 

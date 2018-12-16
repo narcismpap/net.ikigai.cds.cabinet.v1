@@ -15,8 +15,13 @@ import (
 )
 
 func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error{
+	subjectID, err := iri.NodeResolveId(edge.Subject, &o.IdMap)
+	if err != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
+	}
+
 	edgeIRI := &iri.Edge{
-		Subject: 	iri.NodeResolveId(edge.Subject, &o.IdMap),
+		Subject: 	subjectID,
 		Predicate: 	uint16(edge.Predicate),
 		Target: 	edge.Target,
 	}
@@ -26,8 +31,8 @@ func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error{
 		AllowPredicateWildcard: false,
 	}
 
-	if valdErr := edgeIRI.ValidateIRI(edgePerms); valdErr != nil{
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, valdErr)
+	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
 	o.tr.ClearRange(edgeIRI.GetClearRange(o.server.dbEdge))

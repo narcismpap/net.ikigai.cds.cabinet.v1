@@ -11,6 +11,8 @@ import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/segmentio/ksuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 )
 
@@ -20,6 +22,10 @@ func (o *TransactionOperation) NodeCreate(node *pb.Node) error{
 
 	newID := string(newIDBytes)
 	nodeIRI := &iri.Node{Type: uint16(node.Type), Id: newID}
+
+	if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
+	}
 
 	o.tr.Set(nodeIRI.GetKey(o.server.dbNode), PreparePayload(node.Properties))
 	o.IdMap[strings.TrimLeft(node.Id, "tmp:")] = newID

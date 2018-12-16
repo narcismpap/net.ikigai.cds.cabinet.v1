@@ -20,7 +20,7 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 		iri, err := iri.ResolveMetaIRI(meta, nil)
 
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
 
 		metaValue := rtr.Get(iri.GetKey(s.dbMeta)).MustGet()

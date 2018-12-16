@@ -19,7 +19,7 @@ func (o *TransactionOperation) MetaClear(meta *pb.Meta) error{
 	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap)
 
 	if err != nil {
-		return status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 	}
 
 	o.tr.ClearRange(metaIRI.GetClearRange(o.server.dbMeta))

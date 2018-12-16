@@ -28,8 +28,8 @@ func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest)
 			AllowPredicateWildcard: false,
 		}
 
-		if valdErr := edgeIRI.ValidateIRI(edgePerms); valdErr != nil{
-			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, valdErr)
+		if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
 		edgeProp := rtr.Get(edgeIRI.GetKey(s.dbEdge)).MustGet()

@@ -15,10 +15,20 @@ import (
 )
 
 func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
+	subjectID, err := iri.NodeResolveId(edge.Subject, &o.IdMap)
+	if err != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
+	}
+
+	targetID, err := iri.NodeResolveId(edge.Target, &o.IdMap)
+	if err != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.target")
+	}
+
 	edgeIRI := &iri.Edge{
-		Subject: iri.NodeResolveId(edge.Subject, &o.IdMap),
+		Subject: subjectID,
 		Predicate: uint16(edge.Predicate),
-		Target: iri.NodeResolveId(edge.Target, &o.IdMap),
+		Target: targetID,
 	}
 
 	edgePerms := &iri.EdgePermissions{
@@ -26,8 +36,8 @@ func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
 		AllowPredicateWildcard: false,
 	}
 
-	if valdErr := edgeIRI.ValidateIRI(edgePerms); valdErr != nil{
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, valdErr)
+	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
 	o.tr.Set(edgeIRI.GetKey(o.server.dbEdge), PreparePayload(edge.Properties))

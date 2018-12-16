@@ -25,6 +25,11 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 
 	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, UUID: seq.Uuid}
+
+		if vldErr := seqIRI.ValidateIRI(); vldErr != nil{
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
+		}
+
 		dbSeqID := tr.Get(seqIRI.GetReverseKey(s.dbSequence)).MustGet()
 
 		if dbSeqID == nil{

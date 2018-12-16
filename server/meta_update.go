@@ -18,13 +18,13 @@ func (o *TransactionOperation) MetaUpdate(meta *pb.Meta) error{
 	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap)
 
 	if err != nil {
-		return status.Error(codes.InvalidArgument, RPCErrorInvalidIRI)
+		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 	}
 
 	o.tr.Set(metaIRI.GetKey(o.server.dbMeta), PreparePayload(meta.Val))
 
 	if DebugServerRequests {
-		o.server.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v", o.action, metaIRI.GetPath()))
+		o.server.logEvent(fmt.Sprintf("T.MetaUpdate(%v) = %v\n\n", o.action, metaIRI.GetPath()))
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{

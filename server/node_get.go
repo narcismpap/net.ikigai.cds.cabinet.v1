@@ -19,6 +19,11 @@ import (
 func (s *CDSCabinetServer) NodeGet(ctx context.Context, nodeRq *pb.NodeGetRequest) (*pb.Node, error){
 	nodeProp, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		nodeIRI := &iri.Node{Type: uint16(nodeRq.NodeType), Id: nodeRq.Id}
+
+		if vldErr := nodeIRI.ValidateIRI(); vldErr != nil{
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
+		}
+
 		nodeProp := rtr.Get(nodeIRI.GetKey(s.dbNode)).MustGet()
 
 		if DebugServerRequests {

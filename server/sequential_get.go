@@ -34,6 +34,10 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 	seqResponse, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid, UUID: seq.Uuid}
 
+		if vldErr := seqIRI.ValidateIRI(); vldErr != nil{
+			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
+		}
+
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialGet(%v) = %v", seq, seqIRI.GetPath()))
 		}
