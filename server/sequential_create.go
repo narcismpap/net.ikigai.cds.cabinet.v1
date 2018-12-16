@@ -12,6 +12,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strconv"
 )
 
@@ -24,6 +26,12 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 	newId, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
 		baseSeqIRI := &iri.Sequence{Type: seq.Type}
+
+		// check UUID is unique
+		if tr.Get((&iri.Sequence{Type: seq.Type, UUID: seq.Uuid}).GetReverseKey(s.dbSequence)).MustGet() != nil{
+			return nil, status.Error(codes.AlreadyExists, RPCErrorDuplicateRecord)
+		}
+
 		lastKey := baseSeqIRI.GetIncrementKey(s.dbSequence)
 		lastNum := tr.Get(lastKey).MustGet()
 

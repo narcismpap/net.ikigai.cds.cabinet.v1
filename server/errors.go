@@ -23,6 +23,7 @@ const (
 	RPCErrorFieldUnexpected	= "E(0x007) Field %s is unexpected"
 	RPCErrorFieldSpecific	= "E(0x008) Error %s on %s"
 	RPCErrorDataCorrupted	= "E(0x008) Data is corrupted on %s"
+	RPCErrorDuplicateRecord	= "E(0x009) Requested record already exists"
 )
 
 func CheckFatalError(err error){

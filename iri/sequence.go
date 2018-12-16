@@ -26,9 +26,9 @@ func (s *Sequence) DbSeqID() string{
 
 func (s *Sequence) GetPath() string{
 	if s.SeqID > 0 {
-		return fmt.Sprintf("/s/%s/i/%d", s.Type, s.SeqID)
+		return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
 	}else{
-		return fmt.Sprintf("/s/%s/u/%d", s.Type, s.SeqID)
+		return fmt.Sprintf("/su/%s", s.UUID)
 	}
 }
 
@@ -37,9 +37,9 @@ func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{
 }
 
 func (s *Sequence) GetReverseKey(db subspace.Subspace) fdb.Key{
-	return db.Pack(tuple.Tuple{s.Type, "u", s.UUID})
+	return db.Pack(tuple.Tuple{"su", s.UUID})
 }
 
 func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key{
-	return db.Pack(tuple.Tuple{"l", s.Type})
+	return db.Pack(tuple.Tuple{"sl", s.Type})
 }
