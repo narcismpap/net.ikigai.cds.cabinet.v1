@@ -31,6 +31,10 @@ func (e *Edge) GetPath() string{
 	return fmt.Sprintf("/e/%s/%d/%s", e.Subject, e.Predicate, e.Target)
 }
 
+func (e *Edge) Parse(path string) error{
+	return nil
+}
+
 func (e *Edge) GetPathProperty(prop int) string{
 	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }

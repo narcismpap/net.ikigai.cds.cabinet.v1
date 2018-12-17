@@ -30,6 +30,10 @@ func (i *NodeIndex) GetPath() string{
 	return fmt.Sprintf("/i/%d/%s/%s", i.IndexId, i.Value, i.Node)
 }
 
+func (i *NodeIndex) Parse(path string) error{
+	return nil
+}
+
 func (m *NodeIndex) getIndexK() string{
 	return IntToKeyElement(m.IndexId)
 }

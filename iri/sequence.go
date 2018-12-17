@@ -35,7 +35,9 @@ func (s *Sequence) GetPath() string{
 	}
 }
 
-
+func (s *Sequence) Parse(path string) error{
+	return nil
+}
 
 func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Pack(tuple.Tuple{s.Type, "i", s.DbSeqID()})
@@ -89,4 +91,3 @@ func (s *Sequence) ValidateIRI(p *perms.Sequence) error{
 func (s *Sequence) ValidatePermission(p perms.Sequence) error{
 	return nil
 }
-

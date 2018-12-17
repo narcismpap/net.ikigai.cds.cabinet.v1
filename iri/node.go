@@ -32,6 +32,10 @@ func (n *Node) GetPath() string{
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
+func (n *Node) Parse(path string) error{
+	return nil
+}
+
 func (n *Node) GetKey(db subspace.Subspace) fdb.Key{
 	return db.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
 }
