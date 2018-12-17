@@ -81,7 +81,7 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.Edge:
 		edgePerms := &perms.Edge{}
-
+		
 		if vldErr := sourceIRI.ValidateIRI(edgePerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
@@ -90,7 +90,7 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.NodeIndex:
 		idxPerms := &perms.Index{}
-
+		
 		if vldErr := sourceIRI.ValidateIRI(idxPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
@@ -99,7 +99,7 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.NodeMeta:
 		metaPerms := &perms.Meta{}
-
+		
 		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
@@ -108,7 +108,7 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.EdgeMeta:
 		metaPerms := &perms.Meta{}
-
+		
 		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil{
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}

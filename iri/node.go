@@ -37,7 +37,7 @@ func (n *Node) Parse(path string) error{
 	parts := strings.Split(path, "/") // n/{TYPE}/{ID}
 	var err error
 
-	if n.Type, err = KeyElementToInt(parts[1]); err != nil{
+	if n.Type, err = StringToUINT16(parts[1]); err != nil{
 		return &ParsingError{msg: "invalid type", field: "node.type"}
 	}
 

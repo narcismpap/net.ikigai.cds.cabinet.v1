@@ -39,11 +39,11 @@ func (m *EdgeMeta) Parse(path string) error{
 	parts := strings.Split(path, "/") // m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY}
 	var err error
 
-	if m.Property, err = KeyElementToInt(parts[5]); err != nil{
+	if m.Property, err = StringToUINT16(parts[5]); err != nil{
 		return &ParsingError{msg: "invalid property", field: "meta.property"}
 	}
 
-	if m.Predicate, err = KeyElementToInt(parts[3]); err != nil{
+	if m.Predicate, err = StringToUINT16(parts[3]); err != nil{
 		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
 	}
 
@@ -127,7 +127,7 @@ func (m *NodeMeta) Parse(path string) error{
 	parts := strings.Split(path, "/") // m/n/{NODE}/{PROP}
 	var err error
 
-	if m.Property, err = KeyElementToInt(parts[3]); err != nil{
+	if m.Property, err = StringToUINT16(parts[3]); err != nil{
 		return &ParsingError{msg: "invalid property", field: "meta.property"}
 	}
 

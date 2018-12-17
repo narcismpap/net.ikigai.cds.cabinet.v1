@@ -44,11 +44,11 @@ func (c *EdgeCounter) Parse(path string) error{
 	parts := strings.Split(path, "/") // c/e/{COUNTER}/{SUBJECT}/{PREDICATE}/{TARGET}
 	var err error
 
-	if c.Counter, err = KeyElementToInt(parts[2]); err != nil{
+	if c.Counter, err = StringToUINT16(parts[2]); err != nil{
 		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
 	}
 
-	if c.Predicate, err = KeyElementToInt(parts[4]); err != nil{
+	if c.Predicate, err = StringToUINT16(parts[4]); err != nil{
 		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
 	}
 
@@ -119,7 +119,7 @@ func (c *NodeCounter) Parse(path string) error{
 	parts := strings.Split(path, "/") // c/n/{COUNTER}/{NODE}
 	var err error
 
-	if c.Counter, err = KeyElementToInt(parts[2]); err != nil{
+	if c.Counter, err = StringToUINT16(parts[2]); err != nil{
 		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
 	}
 

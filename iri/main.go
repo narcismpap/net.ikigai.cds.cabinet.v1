@@ -33,3 +33,14 @@ func KeyElementToInt(k string) (uint16, error){
 
 	return uint16(v), nil
 }
+
+func StringToUINT16(k string) (uint16, error){
+	v, e := strconv.ParseUint(k, 10, 32)
+
+	if e != nil{
+		return 0, e
+	}
+
+	return uint16(v), nil
+}
+

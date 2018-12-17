@@ -36,7 +36,7 @@ func (e *Edge) Parse(path string) error{
 	parts := strings.Split(path, "/") // e/{SUBJECT}/{PREDICATE}/{TARGET}
 	var err error
 
-	if e.Predicate, err = KeyElementToInt(parts[2]); err != nil{
+	if e.Predicate, err = StringToUINT16(parts[2]); err != nil{
 		return &ParsingError{msg: "invalid predicate", field: "edge.predicate"}
 	}
 
