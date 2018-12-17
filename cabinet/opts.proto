@@ -8,79 +8,18 @@ syntax = "proto3";
 package cds.cabinet.v1;
 
 
-enum TransactionRetryBehaviour{
-    AUTOMATIC = 0;
-    SINGLE_ATTEMPT = 1;
-    SINGLE_RETRY = 2;
-}
-
 enum CheckOperators{
     EXISTS = 0;
+    TOUCH = 8;
 
     EQUAL = 1;
     NOT_EQUAL = 2;
 
-    GREATER_THAN = 3;
-    GREATER_THAN_EQUAL = 4;
+    //GREATER_THAN = 3;
+    //GREATER_THAN_EQUAL = 4;
 
-    LESS_THAN = 5;
-    LESS_THAN_EQUAL = 6;
+    //LESS_THAN = 5;
+    //LESS_THAN_EQUAL = 6;
 
-    BETWEEN = 7;
-}
-
-enum FieldType{
-    NODE = 0;       // n
-    PREDICATE = 1;  // p <global>
-    INDEX = 2;      // i
-    PROPERTY = 3;   // a
-    META = 4;       // m
-    COUNTER = 5;    // c
-}
-
-enum ErrorCodes {
-    AccessDenied = 0;
-    AccessDeniedIRI = 1;
-    AccessDeniedMutation = 2;
-    AccessDeniedMethod = 3;
-
-    ConnectionError = 10;
-    MalformedIRI = 11;
-    GeneralError = 12;
-
-    ListNoPagination = 50;
-    IllegalUpdate = 51;
-
-    NodeNotFound = 100;
-    NodeInvalidID = 101;
-    NodeInvalidType = 102;
-
-    EdgeNotFound = 150;
-    EdgeInvalidSubject = 151;
-    EdgeInvalidTarget = 152;
-    EdgeInvalidPredicate = 153;
-
-    IndexNotFound = 200;
-    IndexInvalidID = 201;
-    IndexInvalidValue = 202;
-    IndexInvalidNode = 203;
-
-    MetaNotFound = 250;
-    MetaInvalidObject = 251;
-    MetaInvalidKey = 252;
-
-    BatchIllegalOperation = 300;
-
-    FieldInvalidID = 350;
-    FieldInvalidUUID = 351;
-    FieldInvalidType = 352;
-
-    CounterInvalidIncrement = 400;
-
-    TransactionInvalidAction = 451;
-    TransactionSyntaxError = 452;
-    ReadCheckNaN = 453;
-    TransactionRetriesExceeded = 454;
-
-    SequentialInvalidType = 500;
+    //BETWEEN = 7;
 }

@@ -26,6 +26,7 @@ const (
 	RPCErrorDuplicateRecord = "E(0x010) Requested record already exists"
 	RPCErrorIRISpecific     = "E(0x011) IRI: %s"
 	RPCErrorListIterator    = "E(0x012) List iteration failed"
+	RPCErrorReadCheck 	 	= "E(0x013) ReadCheck failure in transaction"
 )
 
 func CheckFatalError(err error){

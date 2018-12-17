@@ -8,7 +8,6 @@ package server
 
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
-	"context"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -113,8 +112,4 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 	}
 
 	return nil
-}
-
-func (s *CDSCabinetServer) ReadCheck(ctx context.Context, readRq *pb.ReadCheckRequest) (*pb.ReadCheckResponse, error){
-	return nil, nil
 }

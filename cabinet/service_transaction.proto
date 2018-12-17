@@ -69,7 +69,6 @@ message TransactionActionResponse{
 
 }
 
-
 message ReadCheckRequest{
     string source = 1;
 
