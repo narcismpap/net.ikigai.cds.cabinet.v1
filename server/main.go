@@ -56,12 +56,16 @@ func StartServer() *CDSCabinetServer {
 		dbIndex:    container.Sub("i"),
 		dbMeta:     container.Sub("m"),
 		dbCount:    container.Sub("c"),
-		dbSequence: container.Sub("server"),
+		dbSequence: container.Sub("s"),
 	}
 
 	// install db
 	var coreSeq = []string{
-		"n", "e", "i", "m", "c",
+		"n", // node type
+		"p", // edge predicate
+		"i", // index
+		"m", // meta property
+		"c", // counter
 	}
 
 	_, err = server.fdb.Transact(func (tr fdb.Transaction) (interface{}, error) {
