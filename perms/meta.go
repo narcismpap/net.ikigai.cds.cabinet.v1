@@ -7,5 +7,5 @@
 package perms
 
 type Meta struct{
-
+	AllowWildcardProperty bool
 }

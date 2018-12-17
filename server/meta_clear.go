@@ -17,7 +17,9 @@ import (
 
 
 func (o *TransactionOperation) MetaClear(meta *pb.Meta) error{
-	metaPerms := &perms.Meta{}
+	metaPerms := &perms.Meta{
+		AllowWildcardProperty: true,
+	}
 
 	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap, metaPerms)
 	if err != nil {

@@ -70,7 +70,7 @@ func (m *EdgeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 func (m *EdgeMeta) ValidateIRI(p *perms.Meta) error{
 	var err error
 
-	if !validateSequence(m.Property){
+	if !validateSequence(m.Property) && !p.AllowWildcardProperty{
 		return &ParsingError{msg: "null record", field: "meta.property"}
 	}else if !validateSequence(m.Predicate){
 		return &ParsingError{msg: "null record", field: "meta.edge.predicate"}
@@ -128,7 +128,7 @@ func (m *NodeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 func (m *NodeMeta) ValidateIRI(p *perms.Meta) error{
 	var err error
 
-	if !validateSequence(m.Property){
+	if !validateSequence(m.Property) && !p.AllowWildcardProperty{
 		return &ParsingError{msg: "null record", field: "meta.property"}
 	}
 

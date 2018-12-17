@@ -22,7 +22,9 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 			s.logEvent(fmt.Sprintf("MetaList(%v)", metaRq))
 		}
 
-		metaPerms := &perms.Meta{}
+		metaPerms := &perms.Meta{
+			AllowWildcardProperty: true,
+		}
 
 		metaIRI, err := iri.ResolveMetaIRI(metaRq.Meta, nil, metaPerms)
 		if err != nil {
@@ -33,8 +35,10 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 		switch iOpt := metaRq.Meta.Object.(type) {
 			case *pb.Meta_Edge:
 				isEdgeMeta = true
+			case *pb.Meta_Node:
+				isEdgeMeta = false
 			default:
-				panic(fmt.Sprintf("cannot determine type of %v", iOpt))
+				return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, fmt.Sprintf("%v is not valid Meta Object", iOpt))
 		}
 
 		ri := metaIRI.GetListRange(s.dbMeta, rtr, metaRq.Opt).Iterator()
@@ -53,7 +57,7 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 			obj := &pb.Meta{}
 			propKey := 2 // 2 on NODE, 4 on EDGE
 
-			if isEdgeMeta{
+			if !isEdgeMeta{
 				if metaRq.IncludeNode {
 					obj.Object = &pb.Meta_Node{Node: metaKeys[1].(string)}
 				}
@@ -72,11 +76,11 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 						return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "meta.edge.predicate")
 					}
 
-					obj.Key = uint32(propType)
+					mEdge.Predicate = uint32(propType)
 				}
 
 				if metaRq.IncludeTarget {
-					mEdge.Subject = metaKeys[3].(string)
+					mEdge.Target = metaKeys[3].(string)
 				}
 
 				obj.Object = &pb.Meta_Edge{Edge: mEdge}
