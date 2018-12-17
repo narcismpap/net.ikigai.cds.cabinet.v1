@@ -22,7 +22,7 @@ func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDS
 			s.logEvent(fmt.Sprintf("IndexList(%v)", indexRq))
 		}
 
-		listIRI := &iri.NodeIndex{IndexId: uint16(indexRq.Index)}
+		listIRI := &iri.NodeIndex{IndexId: uint16(indexRq.Index), Value: indexRq.Value}
 		ri := listIRI.GetListRange(s.dbIndex, rtr, indexRq.Opt).Iterator()
 
 		for ri.Advance() {

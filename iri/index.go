@@ -45,6 +45,10 @@ func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange{
 func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
 	readRange := db.Sub(i.getIndexK())
 
+	if i.Value != "*"{
+		readRange = readRange.Sub(i.Value)
+	}
+
 	return rtr.GetRange(readRange, fdb.RangeOptions{
 		Limit: 	 int(opt.PageSize),
 		Reverse: opt.Reverse,
