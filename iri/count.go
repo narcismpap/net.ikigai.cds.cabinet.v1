@@ -13,6 +13,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
+	"strings"
 )
 
 type BaseCounter interface {
@@ -40,6 +41,20 @@ func (c *EdgeCounter) GetPath() string{
 }
 
 func (c *EdgeCounter) Parse(path string) error{
+	parts := strings.Split(path, "/") // c/e/{COUNTER}/{SUBJECT}/{PREDICATE}/{TARGET}
+	var err error
+
+	if c.Counter, err = KeyElementToInt(parts[2]); err != nil{
+		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
+	}
+
+	if c.Predicate, err = KeyElementToInt(parts[4]); err != nil{
+		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
+	}
+
+	c.Subject = parts[3]
+	c.Target = parts[5]
+
 	return nil
 }
 
@@ -62,27 +77,27 @@ func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange{
 	}
 }
 
-func (e *EdgeCounter) ValidateIRI(p *perms.Count) error{
+func (c *EdgeCounter) ValidateIRI(p *perms.Count) error{
 	var err error
 
-	if !validateSequence(e.Counter){
+	if !validateSequence(c.Counter){
 		return &ParsingError{msg: "null record", field: "counter.counter"}
-	}else if !validateSequence(e.Predicate){
+	}else if !validateSequence(c.Predicate){
 		return &ParsingError{msg: "null record", field: "counter.edge.predicate"}
 	}
 
-	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil{
+	if c.subjectKSUID, err = validateNodeID(c.Subject); err != nil{
 		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.subject"}
 	}
 
-	if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
+	if c.targetKSUID, err = validateNodeID(c.Target); err != nil{
 		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.target"}
 	}
 
 	return nil
 }
 
-func (e *EdgeCounter) ValidatePermission(p perms.Count) error{
+func (c *EdgeCounter) ValidatePermission(p perms.Count) error{
 	return nil
 }
 
@@ -101,6 +116,14 @@ func (c *NodeCounter) GetPath() string{
 }
 
 func (c *NodeCounter) Parse(path string) error{
+	parts := strings.Split(path, "/") // c/n/{COUNTER}/{NODE}
+	var err error
+
+	if c.Counter, err = KeyElementToInt(parts[2]); err != nil{
+		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
+	}
+
+	c.Node = parts[3]
 	return nil
 }
 
@@ -133,6 +156,6 @@ func (c *NodeCounter) ValidateIRI(p *perms.Count) error{
 	return nil
 }
 
-func (e *NodeCounter) ValidatePermission(p perms.Count) error{
+func (c *NodeCounter) ValidatePermission(p perms.Count) error{
 	return nil
 }

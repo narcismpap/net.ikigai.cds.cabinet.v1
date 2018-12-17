@@ -36,7 +36,7 @@ func (s *Sequence) GetPath() string{
 }
 
 func (s *Sequence) Parse(path string) error{
-	return nil
+	return errors.New("not implemented")
 }
 
 func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key{

@@ -14,6 +14,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
+	"strings"
 )
 
 type Node struct{
@@ -33,6 +34,14 @@ func (n *Node) GetPath() string{
 }
 
 func (n *Node) Parse(path string) error{
+	parts := strings.Split(path, "/") // n/{TYPE}/{ID}
+	var err error
+
+	if n.Type, err = KeyElementToInt(parts[1]); err != nil{
+		return &ParsingError{msg: "invalid type", field: "node.type"}
+	}
+
+	n.Id = parts[2]
 	return nil
 }
 
@@ -71,6 +80,6 @@ func (n *Node) ValidateIRI(p *perms.Node) error{
 	return nil
 }
 
-func (e *Node) ValidatePermission(p perms.Node) error{
+func (n *Node) ValidatePermission(p perms.Node) error{
 	return nil
 }

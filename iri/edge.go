@@ -14,6 +14,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
+	"strings"
 )
 
 type Edge struct{
@@ -32,6 +33,16 @@ func (e *Edge) GetPath() string{
 }
 
 func (e *Edge) Parse(path string) error{
+	parts := strings.Split(path, "/") // e/{SUBJECT}/{PREDICATE}/{TARGET}
+	var err error
+
+	if e.Predicate, err = KeyElementToInt(parts[2]); err != nil{
+		return &ParsingError{msg: "invalid predicate", field: "edge.predicate"}
+	}
+
+	e.Subject = parts[1]
+	e.Target = parts[3]
+
 	return nil
 }
 

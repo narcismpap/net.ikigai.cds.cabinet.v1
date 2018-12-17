@@ -14,6 +14,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
+	"strings"
 )
 
 type NodeIndex struct{
@@ -31,11 +32,21 @@ func (i *NodeIndex) GetPath() string{
 }
 
 func (i *NodeIndex) Parse(path string) error{
+	parts := strings.Split(path, "/") // i/{INDEX}/{VAL}/{NODE}
+	var err error
+
+	if i.IndexId, err = KeyElementToInt(parts[1]); err != nil{
+		return &ParsingError{msg: "invalid index", field: "index.index"}
+	}
+
+	i.Value = parts[2]
+	i.Node = parts[3]
+
 	return nil
 }
 
-func (m *NodeIndex) getIndexK() string{
-	return IntToKeyElement(m.IndexId)
+func (i *NodeIndex) getIndexK() string{
+	return IntToKeyElement(i.IndexId)
 }
 
 func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key{
@@ -77,6 +88,6 @@ func (i *NodeIndex) ValidateIRI(p *perms.Index) error{
 	return nil
 }
 
-func (e *NodeIndex) ValidatePermission(p perms.Index) error{
+func (i *NodeIndex) ValidatePermission(p perms.Index) error{
 	return nil
 }

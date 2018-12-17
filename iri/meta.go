@@ -14,6 +14,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/segmentio/ksuid"
+	"strings"
 )
 
 /* Edges*/
@@ -35,6 +36,20 @@ func (m *EdgeMeta) GetPath() string{
 }
 
 func (m *EdgeMeta) Parse(path string) error{
+	parts := strings.Split(path, "/") // m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY}
+	var err error
+
+	if m.Property, err = KeyElementToInt(parts[5]); err != nil{
+		return &ParsingError{msg: "invalid property", field: "meta.property"}
+	}
+
+	if m.Predicate, err = KeyElementToInt(parts[3]); err != nil{
+		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
+	}
+
+	m.Subject = parts[2]
+	m.Target = parts[4]
+
 	return nil
 }
 
@@ -91,7 +106,7 @@ func (m *EdgeMeta) ValidateIRI(p *perms.Meta) error{
 	return nil
 }
 
-func (e *EdgeMeta) ValidatePermission(p perms.Meta) error{
+func (m *EdgeMeta) ValidatePermission(p perms.Meta) error{
 	return nil
 }
 
@@ -109,6 +124,14 @@ func (m *NodeMeta) GetPath() string{
 }
 
 func (m *NodeMeta) Parse(path string) error{
+	parts := strings.Split(path, "/") // m/n/{NODE}/{PROP}
+	var err error
+
+	if m.Property, err = KeyElementToInt(parts[3]); err != nil{
+		return &ParsingError{msg: "invalid property", field: "meta.property"}
+	}
+
+	m.Node = parts[2]
 	return nil
 }
 
@@ -147,6 +170,6 @@ func (m *NodeMeta) ValidateIRI(p *perms.Meta) error{
 	return nil
 }
 
-func (e *NodeMeta) ValidatePermission(p perms.Meta) error{
+func (m *NodeMeta) ValidatePermission(p perms.Meta) error{
 	return nil
 }
