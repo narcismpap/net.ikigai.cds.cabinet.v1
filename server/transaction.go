@@ -43,59 +43,59 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 			switch tOpr := trx.action.Action.(type) {
 				// Counter
 				case *pb.TransactionAction_CounterIncrement:
-					err = trx.CounterIncrement(tOpr.CounterIncrement)
+					err = trx.CounterIncrement(tOpr.CounterIncrement); break
 
 				case *pb.TransactionAction_CounterDelete:
-					err = trx.CounterDelete(tOpr.CounterDelete)
+					err = trx.CounterDelete(tOpr.CounterDelete); break
 
 				case *pb.TransactionAction_CounterRegister:
-					err = trx.CounterRegister(tOpr.CounterRegister)
+					err = trx.CounterRegister(tOpr.CounterRegister); break
 
 
 				// Edge
 				case *pb.TransactionAction_EdgeUpdate:
-					err = trx.EdgeUpdate(tOpr.EdgeUpdate)
+					err = trx.EdgeUpdate(tOpr.EdgeUpdate); break
 
 				case *pb.TransactionAction_EdgeDelete:
-					err = trx.EdgeDelete(tOpr.EdgeDelete)
+					err = trx.EdgeDelete(tOpr.EdgeDelete); break
 
 				case *pb.TransactionAction_EdgeClear:
-					err = trx.EdgeClear(tOpr.EdgeClear)
+					err = trx.EdgeClear(tOpr.EdgeClear); break
 
 
 				// Index
 				case *pb.TransactionAction_IndexUpdate:
-					err = trx.IndexUpdate(tOpr.IndexUpdate)
+					err = trx.IndexUpdate(tOpr.IndexUpdate); break
 
 				case *pb.TransactionAction_IndexDelete:
-					err = trx.IndexDelete(tOpr.IndexDelete)
+					err = trx.IndexDelete(tOpr.IndexDelete); break
 
 
 				// Meta
 				case *pb.TransactionAction_MetaUpdate:
-					err = trx.MetaUpdate(tOpr.MetaUpdate)
+					err = trx.MetaUpdate(tOpr.MetaUpdate); break
 
 				case *pb.TransactionAction_MetaDelete:
-					err = trx.MetaDelete(tOpr.MetaDelete)
+					err = trx.MetaDelete(tOpr.MetaDelete); break
 
 				case *pb.TransactionAction_MetaClear:
-					err = trx.MetaClear(tOpr.MetaClear)
+					err = trx.MetaClear(tOpr.MetaClear); break
 
 
 				// Node
 				case *pb.TransactionAction_NodeCreate:
-					err = trx.NodeCreate(tOpr.NodeCreate)
+					err = trx.NodeCreate(tOpr.NodeCreate); break
 
 				case *pb.TransactionAction_NodeUpdate:
-					err = trx.NodeUpdate(tOpr.NodeUpdate)
+					err = trx.NodeUpdate(tOpr.NodeUpdate); break
 
 				case *pb.TransactionAction_NodeDelete:
-					err = trx.NodeDelete(tOpr.NodeDelete)
+					err = trx.NodeDelete(tOpr.NodeDelete); break
 
 
 				// Read Check
 				case *pb.TransactionAction_ReadCheck:
-					err = trx.ReadCheck(tOpr.ReadCheck)
+					err = trx.ReadCheck(tOpr.ReadCheck); break
 
 				default:
 					return nil, status.Error(codes.Unimplemented, RPCErrorInvalidAction)
