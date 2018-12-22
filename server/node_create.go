@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func (o *TransactionOperation) NodeCreate(node *pb.Node) error{
+func (o *TransactionOperation) NodeCreate(node *pb.Node) error {
 	newIDBytes, err := ksuid.New().MarshalText()
 	CheckFatalError(err)
 
@@ -25,7 +25,7 @@ func (o *TransactionOperation) NodeCreate(node *pb.Node) error{
 	nodeIRI := &iri.Node{Type: uint16(node.Type), Id: newID}
 	nodePerms := &perms.Node{}
 
-	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
+	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
@@ -37,7 +37,7 @@ func (o *TransactionOperation) NodeCreate(node *pb.Node) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 		Response: &pb.TransactionActionResponse_NodeCreate{NodeCreate: &pb.NodeCreateResponse{Id: nodeIRI.Id}},
 	})

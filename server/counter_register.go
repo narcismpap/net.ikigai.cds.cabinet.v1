@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) CounterRegister(counter *pb.Counter) error{
+func (o *TransactionOperation) CounterRegister(counter *pb.Counter) error {
 	counterPerms := &perms.Count{}
 
 	cntIRI, err := iri.ResolveCounterIRI(counter, &o.IdMap, counterPerms)
@@ -26,7 +26,7 @@ func (o *TransactionOperation) CounterRegister(counter *pb.Counter) error{
 	incVal, err := Int64ToBytes(int64(0))
 	CheckFatalError(err)
 
-	for x := range CounterKeys{
+	for x := range CounterKeys {
 		o.tr.Set(cntIRI.GetKey(o.server.dbCount, CounterKeys[x]), incVal)
 	}
 
@@ -35,7 +35,7 @@ func (o *TransactionOperation) CounterRegister(counter *pb.Counter) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

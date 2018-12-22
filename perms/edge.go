@@ -6,7 +6,7 @@
 
 package perms
 
-type Edge struct{
+type Edge struct {
 	AllowPredicateWildcard bool
-	AllowTargetWildcard bool
+	AllowTargetWildcard    bool
 }

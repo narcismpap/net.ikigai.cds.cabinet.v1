@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) MetaDelete(meta *pb.Meta) error{
+func (o *TransactionOperation) MetaDelete(meta *pb.Meta) error {
 	metaPerms := &perms.Meta{}
 
 	metaIRI, err := iri.ResolveMetaIRI(meta, &o.IdMap, metaPerms)
@@ -30,7 +30,7 @@ func (o *TransactionOperation) MetaDelete(meta *pb.Meta) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

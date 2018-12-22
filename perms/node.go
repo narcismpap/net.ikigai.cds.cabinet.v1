@@ -6,6 +6,5 @@
 
 package perms
 
-type Node struct{
-
+type Node struct {
 }

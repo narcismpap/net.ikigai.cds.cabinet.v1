@@ -6,7 +6,7 @@
 
 package server
 
-const(
+const (
 	DebugServerRequests = true
 )
 
@@ -14,7 +14,7 @@ const(
 // Returned by gRPC, standardized on E(0xYYY)
 const (
 	//RPCError
-	RPCErrorInvalidAction 	= "E(0x001) Unknown TransactionAction"
+	RPCErrorInvalidAction   = "E(0x001) Unknown TransactionAction"
 	RPCErrorRepeatAction    = "E(0x002) Repeat actionId in transaction"
 	RPCErrorArgumentInvalid = "E(0x003) One or more arguments are invalid (generic)"
 	RPCErrorInvalidIRI      = "E(0x004) Invalid IRI (generic)"
@@ -26,11 +26,11 @@ const (
 	RPCErrorDuplicateRecord = "E(0x010) Requested record already exists"
 	RPCErrorIRISpecific     = "E(0x011) IRI: %s"
 	RPCErrorListIterator    = "E(0x012) List iteration failed"
-	RPCErrorReadCheck 	 	= "E(0x013) ReadCheck failure in transaction"
+	RPCErrorReadCheck       = "E(0x013) ReadCheck failure in transaction"
 )
 
-func CheckFatalError(err error){
-	if err != nil{
+func CheckFatalError(err error) {
+	if err != nil {
 		panic(err)
 	}
 }

@@ -17,25 +17,25 @@ import (
 	"strings"
 )
 
-type NodeIndex struct{
+type NodeIndex struct {
 	IRI
 
-	Node string
+	Node    string
 	IndexId uint16
-	Value string
+	Value   string
 
 	nodeKSUID ksuid.KSUID
 }
 
-func (i *NodeIndex) GetPath() string{
+func (i *NodeIndex) GetPath() string {
 	return fmt.Sprintf("/i/%d/%s/%s", i.IndexId, i.Value, i.Node)
 }
 
-func (i *NodeIndex) Parse(path string) error{
+func (i *NodeIndex) Parse(path string) error {
 	parts := strings.Split(path, "/") // i/{INDEX}/{VAL}/{NODE}
 	var err error
 
-	if i.IndexId, err = StringToUINT16(parts[1]); err != nil{
+	if i.IndexId, err = StringToUINT16(parts[1]); err != nil {
 		return &ParsingError{msg: "invalid index", field: "index.index"}
 	}
 
@@ -45,49 +45,49 @@ func (i *NodeIndex) Parse(path string) error{
 	return nil
 }
 
-func (i *NodeIndex) getIndexK() string{
+func (i *NodeIndex) getIndexK() string {
 	return IntToKeyElement(i.IndexId)
 }
 
-func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key{
+func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key {
 	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value, i.Node})
 }
 
-func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange{
+func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange {
 	return nil
 }
 
-func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
+func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
 	readRange := db.Sub(i.getIndexK())
 
-	if i.Value != "*"{
+	if i.Value != "*" {
 		readRange = readRange.Sub(i.Value)
 	}
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{
-		Limit: 	 int(opt.PageSize),
+		Limit:   int(opt.PageSize),
 		Reverse: opt.Reverse,
 	})
 }
 
-func (i *NodeIndex) ValidateIRI(p *perms.Index) error{
+func (i *NodeIndex) ValidateIRI(p *perms.Index) error {
 	var err error
 
-	if !validateSequence(i.IndexId){
+	if !validateSequence(i.IndexId) {
 		return &ParsingError{msg: "null record", field: "index.IndexId"}
 	}
 
-	if len(i.Value) > 768{
+	if len(i.Value) > 768 {
 		return &ParsingError{msg: "len > 768", field: "index.value"}
 	}
 
-	if i.nodeKSUID, err = validateNodeID(i.Node); err != nil{
+	if i.nodeKSUID, err = validateNodeID(i.Node); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "index.node"}
 	}
 
 	return nil
 }
 
-func (i *NodeIndex) ValidatePermission(p perms.Index) error{
+func (i *NodeIndex) ValidatePermission(p perms.Index) error {
 	return nil
 }

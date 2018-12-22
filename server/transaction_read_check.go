@@ -13,20 +13,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) ReadCheck(rc *pb.ReadCheckRequest) error{
+func (o *TransactionOperation) ReadCheck(rc *pb.ReadCheckRequest) error {
 	if DebugServerRequests {
 		o.server.logEvent(fmt.Sprintf("T.ReadCheck(%v)", rc))
 	}
 
 	rcStatus, err := readCheckLogic(o.tr, o.server, rc)
 
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	if rcStatus == false{
+	if rcStatus == false {
 		_ = o.stream.Send(&pb.TransactionActionResponse{
-			Status: pb.MutationStatus_READ_CHECK_FAILURE,
+			Status:   pb.MutationStatus_READ_CHECK_FAILURE,
 			ActionId: o.action.ActionId,
 		})
 
@@ -34,7 +34,7 @@ func (o *TransactionOperation) ReadCheck(rc *pb.ReadCheckRequest) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

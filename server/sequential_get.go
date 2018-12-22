@@ -17,26 +17,26 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential) (*pb.Sequential, error){
+func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential) (*pb.Sequential, error) {
 	vldError := validateSequentialRequest(seq, []string{"t"}, []string{})
 
-	if vldError != nil{
+	if vldError != nil {
 		return nil, vldError
 	}
 
-	if seq.Seqid > 0 && len(seq.Uuid) > 0{
+	if seq.Seqid > 0 && len(seq.Uuid) > 0 {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldSpecific, "mutually exclusive", "seq.uuid,seq.seqId"))
 	}
 
-	if seq.Seqid == 0 && len(seq.Uuid) == 0{
+	if seq.Seqid == 0 && len(seq.Uuid) == 0 {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldSpecific, "one ID required", "seq.uuid|seq.seqId"))
 	}
 
-	seqResponse, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	seqResponse, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, SeqID: seq.Seqid, UUID: seq.Uuid}
 		seqPerms := &perms.Sequence{}
 
-		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil{
+		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
@@ -47,21 +47,21 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 		if len(seq.Uuid) == 0 {
 			sVal := rtr.Get(seqIRI.GetKey(s.dbSequence)).MustGet()
 
-			if sVal == nil{
+			if sVal == nil {
 				return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 			}
 
 			seqIRI.UUID = string(sVal)
-		}else{
+		} else {
 			sVal := rtr.Get(seqIRI.GetReverseKey(s.dbSequence)).MustGet()
 
-			if sVal == nil{
+			if sVal == nil {
 				return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 			}
 
 			seqID, err := BytesToInt(sVal)
 
-			if err != nil{
+			if err != nil {
 				return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "seqId"))
 			}
 
@@ -71,7 +71,7 @@ func (s *CDSCabinetServer) SequentialGet(ctx context.Context, seq *pb.Sequential
 		return &pb.Sequential{Seqid: seqIRI.SeqID, Uuid: seqIRI.UUID}, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 

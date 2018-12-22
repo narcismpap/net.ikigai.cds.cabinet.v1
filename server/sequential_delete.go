@@ -17,30 +17,30 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error){
+func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequential) (*pb.MutationResponse, error) {
 	vldError := validateSequentialRequest(seq, []string{"t", "u"}, []string{"s"})
 
-	if vldError != nil{
+	if vldError != nil {
 		return nil, vldError
 	}
 
-	_, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	_, err := s.fdb.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		seqIRI := iri.Sequence{Type: seq.Type, UUID: seq.Uuid}
 		seqPerms := &perms.Sequence{}
 
-		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil{
+		if vldErr := seqIRI.ValidateIRI(seqPerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
 		dbSeqID := tr.Get(seqIRI.GetReverseKey(s.dbSequence)).MustGet()
 
-		if dbSeqID == nil{
+		if dbSeqID == nil {
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		seqID, err := BytesToInt(dbSeqID)
 
-		if err != nil{
+		if err != nil {
 			return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "seqId"))
 		}
 
@@ -56,7 +56,7 @@ func (s *CDSCabinetServer) SequentialDelete(ctx context.Context, seq *pb.Sequent
 		return nil, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 

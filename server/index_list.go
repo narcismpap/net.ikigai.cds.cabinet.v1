@@ -15,9 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
-func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDSCabinet_IndexListServer) error{
-	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDSCabinet_IndexListServer) error {
+	_, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("IndexList(%v)", indexRq))
 		}
@@ -43,11 +42,11 @@ func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDS
 				obj.Value = indexKeys[1].(string)
 			}
 
-			if indexRq.IncludeProp{
+			if indexRq.IncludeProp {
 				obj.Properties = kv.Value
 			}
 
-			if indexRq.IncludeNode{
+			if indexRq.IncludeNode {
 				obj.Node = indexKeys[2].(string)
 			}
 

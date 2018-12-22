@@ -6,6 +6,6 @@
 
 package perms
 
-type Meta struct{
+type Meta struct {
 	AllowWildcardProperty bool
 }

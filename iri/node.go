@@ -17,27 +17,27 @@ import (
 	"strings"
 )
 
-type Node struct{
+type Node struct {
 	IRI
 	Type uint16
-	Id string
+	Id   string
 
 	nodeKSUID ksuid.KSUID
 }
 
-func (n *Node) getTypeK() string{
+func (n *Node) getTypeK() string {
 	return IntToKeyElement(n.Type)
 }
 
-func (n *Node) GetPath() string{
+func (n *Node) GetPath() string {
 	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
 }
 
-func (n *Node) Parse(path string) error{
+func (n *Node) Parse(path string) error {
 	parts := strings.Split(path, "/") // n/{TYPE}/{ID}
 	var err error
 
-	if n.Type, err = StringToUINT16(parts[1]); err != nil{
+	if n.Type, err = StringToUINT16(parts[1]); err != nil {
 		return &ParsingError{msg: "invalid type", field: "node.type"}
 	}
 
@@ -45,41 +45,41 @@ func (n *Node) Parse(path string) error{
 	return nil
 }
 
-func (n *Node) GetKey(db subspace.Subspace) fdb.Key{
+func (n *Node) GetKey(db subspace.Subspace) fdb.Key {
 	return db.Sub(n.getTypeK()).Pack(tuple.Tuple{n.Id})
 }
 
-func (n *Node) GetClearRange(db subspace.Subspace) fdb.ExactRange{
-	if n.Id == ""{
+func (n *Node) GetClearRange(db subspace.Subspace) fdb.ExactRange {
+	if n.Id == "" {
 		return db.Sub(n.getTypeK())
-	}else{
+	} else {
 		return db.Sub(n.getTypeK()).Sub(n.Id)
 	}
 }
 
-func (n *Node) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
+func (n *Node) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
 	readRange := db.Sub(n.getTypeK())
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{
-		Limit: 	 int(opt.PageSize),
+		Limit:   int(opt.PageSize),
 		Reverse: opt.Reverse,
 	})
 }
 
-func (n *Node) ValidateIRI(p *perms.Node) error{
+func (n *Node) ValidateIRI(p *perms.Node) error {
 	var err error
 
-	if !validateSequence(n.Type){
+	if !validateSequence(n.Type) {
 		return &ParsingError{msg: "null record", field: "counter.counter"}
 	}
 
-	if n.nodeKSUID, err = validateNodeID(n.Id); err != nil{
+	if n.nodeKSUID, err = validateNodeID(n.Id); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "node.id"}
 	}
 
 	return nil
 }
 
-func (n *Node) ValidatePermission(p perms.Node) error{
+func (n *Node) ValidatePermission(p perms.Node) error {
 	return nil
 }

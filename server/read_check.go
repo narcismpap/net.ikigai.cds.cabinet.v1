@@ -17,44 +17,43 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
-func (s *CDSCabinetServer) ReadCheck(ctx context.Context, rcRq *pb.ReadCheckRequest) (*pb.ReadCheckResponse, error){
+func (s *CDSCabinetServer) ReadCheck(ctx context.Context, rcRq *pb.ReadCheckRequest) (*pb.ReadCheckResponse, error) {
 	if DebugServerRequests {
 		s.logEvent(fmt.Sprintf("ReadCheck(%v)", rcRq))
 	}
 
-	pbr, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	pbr, err := s.fdb.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		return readCheckLogic(tr, s, rcRq)
 	})
 
 	return &pb.ReadCheckResponse{Result: pbr.(bool)}, err
 }
 
-func readCheckLogic(tr fdb.Transaction, s *CDSCabinetServer, rcRq *pb.ReadCheckRequest) (bool, error){
+func readCheckLogic(tr fdb.Transaction, s *CDSCabinetServer, rcRq *pb.ReadCheckRequest) (bool, error) {
 	source, err := getIRIValue(tr, s, rcRq.Source)
 	var target string
 
-	if err != nil{
+	if err != nil {
 		return false, err
 	}
 
 	switch targetObj := rcRq.Target.Target.(type) {
-		case *pb.CheckTarget_Iri:
-			targetBytes, err := getIRIValue(tr, s, targetObj.Iri)
-			if err != nil{
-				return false, err
-			}
+	case *pb.CheckTarget_Iri:
+		targetBytes, err := getIRIValue(tr, s, targetObj.Iri)
+		if err != nil {
+			return false, err
+		}
 
-			target = string(targetBytes)
+		target = string(targetBytes)
 
-		case *pb.CheckTarget_Val:
-			target = targetObj.Val
+	case *pb.CheckTarget_Val:
+		target = targetObj.Val
 
-		default:
-			return false, status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "unknown target type", "readCheck.target")
+	default:
+		return false, status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "unknown target type", "readCheck.target")
 	}
 
-	switch rcRq.Operator{
+	switch rcRq.Operator {
 	case pb.CheckOperators_EXISTS:
 		return source != nil, nil
 	case pb.CheckOperators_EQUAL:
@@ -69,11 +68,11 @@ func readCheckLogic(tr fdb.Transaction, s *CDSCabinetServer, rcRq *pb.ReadCheckR
 
 }
 
-func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte, error){
+func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte, error) {
 	varIRI, err := iri.Parse(reqIRI)
 	var source []byte
 
-	if err != nil{
+	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "source cannot be parsed")
 	}
 
@@ -81,8 +80,8 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.Edge:
 		edgePerms := &perms.Edge{}
-		
-		if vldErr := sourceIRI.ValidateIRI(edgePerms); vldErr != nil{
+
+		if vldErr := sourceIRI.ValidateIRI(edgePerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
@@ -90,8 +89,8 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.NodeIndex:
 		idxPerms := &perms.Index{}
-		
-		if vldErr := sourceIRI.ValidateIRI(idxPerms); vldErr != nil{
+
+		if vldErr := sourceIRI.ValidateIRI(idxPerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
@@ -99,8 +98,8 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.NodeMeta:
 		metaPerms := &perms.Meta{}
-		
-		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil{
+
+		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
@@ -108,8 +107,8 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 
 	case *iri.EdgeMeta:
 		metaPerms := &perms.Meta{}
-		
-		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil{
+
+		if vldErr := sourceIRI.ValidateIRI(metaPerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
@@ -118,7 +117,7 @@ func getIRIValue(tr fdb.Transaction, s *CDSCabinetServer, reqIRI string) ([]byte
 	case *iri.Node:
 		nodePerms := &perms.Node{}
 
-		if vldErr := sourceIRI.ValidateIRI(nodePerms); vldErr != nil{
+		if vldErr := sourceIRI.ValidateIRI(nodePerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 

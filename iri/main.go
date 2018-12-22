@@ -20,27 +20,26 @@ type IRI interface {
 	GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult
 }
 
-func IntToKeyElement(v uint16) string{
+func IntToKeyElement(v uint16) string {
 	return strconv.FormatUint(uint64(v), 36)
 }
 
-func KeyElementToInt(k string) (uint16, error){
+func KeyElementToInt(k string) (uint16, error) {
 	v, e := strconv.ParseUint(k, 36, 32)
 
-	if e != nil{
+	if e != nil {
 		return 0, e
 	}
 
 	return uint16(v), nil
 }
 
-func StringToUINT16(k string) (uint16, error){
+func StringToUINT16(k string) (uint16, error) {
 	v, e := strconv.ParseUint(k, 10, 32)
 
-	if e != nil{
+	if e != nil {
 		return 0, e
 	}
 
 	return uint16(v), nil
 }
-

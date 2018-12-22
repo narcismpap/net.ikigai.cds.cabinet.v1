@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	ServerPort          = 8888
+	ServerPort = 8888
 )
 
-func main(){
+func main() {
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", ServerPort))
 
@@ -37,7 +37,7 @@ func main(){
 	pb.RegisterCDSCabinetServer(grpcServer, cdsServer.StartServer())
 	err = grpcServer.Serve(lis)
 
-	if err != nil{
+	if err != nil {
 		log.Fatalf("[E] Error during gRPC execution: %v", err)
 	}
 }

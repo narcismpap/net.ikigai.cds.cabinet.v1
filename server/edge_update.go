@@ -15,29 +15,29 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
+func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error {
 	subjectID, err := iri.NodeResolveId(edge.Subject, &o.IdMap)
-	if err != nil{
+	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
 	}
 
 	targetID, err := iri.NodeResolveId(edge.Target, &o.IdMap)
-	if err != nil{
+	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.target")
 	}
 
 	edgeIRI := &iri.Edge{
-		Subject: subjectID,
+		Subject:   subjectID,
 		Predicate: uint16(edge.Predicate),
-		Target: targetID,
+		Target:    targetID,
 	}
 
 	edgePerms := &perms.Edge{
-		AllowTargetWildcard: false,
+		AllowTargetWildcard:    false,
 		AllowPredicateWildcard: false,
 	}
 
-	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
@@ -48,7 +48,7 @@ func (o *TransactionOperation) EdgeUpdate(edge *pb.Edge) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

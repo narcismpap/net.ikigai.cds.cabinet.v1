@@ -17,26 +17,26 @@ import (
 	"strings"
 )
 
-type Edge struct{
+type Edge struct {
 	IRI
 
-	Subject string
+	Subject   string
 	Predicate uint16
-	Target string
+	Target    string
 
 	subjectKSUID ksuid.KSUID
-	targetKSUID ksuid.KSUID
+	targetKSUID  ksuid.KSUID
 }
 
-func (e *Edge) GetPath() string{
+func (e *Edge) GetPath() string {
 	return fmt.Sprintf("/e/%s/%d/%s", e.Subject, e.Predicate, e.Target)
 }
 
-func (e *Edge) Parse(path string) error{
+func (e *Edge) Parse(path string) error {
 	parts := strings.Split(path, "/") // e/{SUBJECT}/{PREDICATE}/{TARGET}
 	var err error
 
-	if e.Predicate, err = StringToUINT16(parts[2]); err != nil{
+	if e.Predicate, err = StringToUINT16(parts[2]); err != nil {
 		return &ParsingError{msg: "invalid predicate", field: "edge.predicate"}
 	}
 
@@ -46,59 +46,59 @@ func (e *Edge) Parse(path string) error{
 	return nil
 }
 
-func (e *Edge) GetPathProperty(prop int) string{
+func (e *Edge) GetPathProperty(prop int) string {
 	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }
 
-func (e *Edge) getPredicateK() string{
+func (e *Edge) getPredicateK() string {
 	return IntToKeyElement(e.Predicate)
 }
 
-func (e *Edge) GetKey(db subspace.Subspace) fdb.Key{
+func (e *Edge) GetKey(db subspace.Subspace) fdb.Key {
 	return db.Pack(tuple.Tuple{e.Subject, e.getPredicateK(), e.Target})
 }
 
-func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange{
-	if e.Predicate == 0{
+func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange {
+	if e.Predicate == 0 {
 		return db.Sub(e.Subject)
-	}else{
+	} else {
 		return db.Sub(e.Subject).Sub(e.getPredicateK())
 	}
 }
 
-func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult{
+func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
 	readRange := db.Sub(e.Subject)
 
-	if e.Predicate > 0{
+	if e.Predicate > 0 {
 		readRange = readRange.Sub(e.getPredicateK())
 	}
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{
-		Limit: 	 int(opt.PageSize),
+		Limit:   int(opt.PageSize),
 		Reverse: opt.Reverse,
 	})
 }
 
-func (e *Edge) ValidateIRI(p *perms.Edge) error{
+func (e *Edge) ValidateIRI(p *perms.Edge) error {
 	var err error
 
-	if !validateSequence(e.Predicate) && !p.AllowPredicateWildcard{
+	if !validateSequence(e.Predicate) && !p.AllowPredicateWildcard {
 		return &ParsingError{msg: "null record", field: "edge.predicate"}
 	}
 
-	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil{
+	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "edge.subject"}
 	}
 
-	if p.AllowTargetWildcard && e.Target == "*"{
+	if p.AllowTargetWildcard && e.Target == "*" {
 
-	}else if e.targetKSUID, err = validateNodeID(e.Target); err != nil{
+	} else if e.targetKSUID, err = validateNodeID(e.Target); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "edge.target"}
 	}
 
 	return nil
 }
 
-func (e *Edge) ValidatePermission(p *perms.Edge) error{
+func (e *Edge) ValidatePermission(p *perms.Edge) error {
 	return nil
 }

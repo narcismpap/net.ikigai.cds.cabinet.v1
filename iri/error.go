@@ -9,7 +9,7 @@ package iri
 import "fmt"
 
 type ParsingError struct {
-	msg string
+	msg   string
 	field string
 }
 

@@ -13,17 +13,17 @@ import (
 	"strings"
 )
 
-func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI, error){
+func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI, error) {
 	switch mType := tMeta.Object.(type) {
 
 	case *pb.Meta_Edge:
 		subjectID, err := NodeResolveId(mType.Edge.Subject, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.subject"}
 		}
 
 		targetID, err := NodeResolveId(mType.Edge.Target, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.target"}
 		}
 
@@ -38,13 +38,13 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI
 
 	case *pb.Meta_Node:
 		nID, err := NodeResolveId(mType.Node, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.node"}
 		}
 
 		meta := &NodeMeta{
-			Property: 	uint16(tMeta.Key),
-			Node: 		nID,
+			Property: uint16(tMeta.Key),
+			Node:     nID,
 		}
 
 		return meta, meta.ValidateIRI(p)
@@ -54,17 +54,17 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI
 	}
 }
 
-func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.Count) (BaseCounter, error){
+func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.Count) (BaseCounter, error) {
 	switch cType := tCounter.Object.(type) {
 
 	case *pb.Counter_Edge:
 		subjectID, err := NodeResolveId(cType.Edge.Subject, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.subject"}
 		}
 
 		targetID, err := NodeResolveId(cType.Edge.Target, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.target"}
 		}
 
@@ -79,7 +79,7 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.C
 
 	case *pb.Counter_Node:
 		nID, err := NodeResolveId(cType.Node, nMap)
-		if err != nil{
+		if err != nil {
 			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.node"}
 		}
 
@@ -95,8 +95,7 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.C
 	}
 }
 
-
-func NodeResolveId(nID string, nMap *map[string]string) (string, error){
+func NodeResolveId(nID string, nMap *map[string]string) (string, error) {
 	if strings.HasPrefix(nID, "tmp:") {
 		if val, ok := (*nMap)[strings.TrimLeft(nID, "tmp:")]; ok {
 			return val, nil
@@ -107,4 +106,3 @@ func NodeResolveId(nID string, nMap *map[string]string) (string, error){
 
 	return nID, nil
 }
-

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) CounterDelete(counter *pb.Counter) error{
+func (o *TransactionOperation) CounterDelete(counter *pb.Counter) error {
 	counterPerms := &perms.Count{}
 
 	cntIRI, err := iri.ResolveCounterIRI(counter, &o.IdMap, counterPerms)
@@ -30,7 +30,7 @@ func (o *TransactionOperation) CounterDelete(counter *pb.Counter) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

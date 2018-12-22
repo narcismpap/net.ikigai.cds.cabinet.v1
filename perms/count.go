@@ -6,6 +6,5 @@
 
 package perms
 
-type Count struct{
-
+type Count struct {
 }

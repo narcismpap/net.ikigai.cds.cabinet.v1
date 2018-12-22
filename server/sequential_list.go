@@ -17,14 +17,14 @@ import (
 	"strings"
 )
 
-func (s *CDSCabinetServer) SequentialList(seqRq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error{
+func (s *CDSCabinetServer) SequentialList(seqRq *pb.SequentialListRequest, stream pb.CDSCabinet_SequentialListServer) error {
 	if len(seqRq.GetType()) == 0 {
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, ".type"))
-	}else if seqRq.Opt.GetPageSize() == 0{
+	} else if seqRq.Opt.GetPageSize() == 0 {
 		return status.Error(codes.InvalidArgument, fmt.Sprintf(RPCErrorFieldRequired, "opt.page_size"))
 	}
 
-	_, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (interface{}, error) {
+	_, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialList(%v)", seqRq))
 		}
@@ -48,15 +48,15 @@ func (s *CDSCabinetServer) SequentialList(seqRq *pb.SequentialListRequest, strea
 
 			obj := &pb.Sequential{}
 
-			if seqRq.IncludeType{
+			if seqRq.IncludeType {
 				obj.Type = seqRq.Type
 			}
 
-			if seqRq.IncludeSeqid{
+			if seqRq.IncludeSeqid {
 				obj.Seqid = uint32(seqID)
 			}
 
-			if seqRq.IncludeUuid{
+			if seqRq.IncludeUuid {
 				obj.Uuid = string(kv.Value)
 			}
 

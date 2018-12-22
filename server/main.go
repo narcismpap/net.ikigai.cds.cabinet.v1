@@ -16,7 +16,7 @@ import (
 	"strconv"
 )
 
-type CDSCabinetServer struct{
+type CDSCabinetServer struct {
 	Version int32
 
 	fdb         fdb.Transactor
@@ -30,10 +30,9 @@ type CDSCabinetServer struct{
 	dbSequence subspace.Subspace
 }
 
-func (s *CDSCabinetServer) logEvent(e string){
+func (s *CDSCabinetServer) logEvent(e string) {
 	fmt.Println(e)
 }
-
 
 func StartServer() *CDSCabinetServer {
 	fdb.MustAPIVersion(600)
@@ -68,7 +67,7 @@ func StartServer() *CDSCabinetServer {
 		"c", // counter
 	}
 
-	_, err = server.fdb.Transact(func (tr fdb.Transaction) (interface{}, error) {
+	_, err = server.fdb.Transact(func(tr fdb.Transaction) (interface{}, error) {
 		tr.ClearRange(server.dbContainer)
 
 		for i := range coreSeq {

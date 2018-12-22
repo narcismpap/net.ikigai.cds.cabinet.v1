@@ -15,21 +15,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) IndexUpdate(index *pb.Index) error{
+func (o *TransactionOperation) IndexUpdate(index *pb.Index) error {
 	nodeId, err := iri.NodeResolveId(index.Node, &o.IdMap)
-	if err != nil{
+	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "index.node")
 	}
 
 	indexIRI := &iri.NodeIndex{
-		Node: nodeId,
+		Node:    nodeId,
 		IndexId: uint16(index.Type),
-		Value: index.Value,
+		Value:   index.Value,
 	}
 
 	indexPerms := &perms.Index{}
 
-	if vldErr := indexIRI.ValidateIRI(indexPerms); vldErr != nil{
+	if vldErr := indexIRI.ValidateIRI(indexPerms); vldErr != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
@@ -40,7 +40,7 @@ func (o *TransactionOperation) IndexUpdate(index *pb.Index) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

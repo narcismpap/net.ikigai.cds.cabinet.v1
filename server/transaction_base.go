@@ -11,12 +11,12 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 )
 
-type TransactionOperation struct{
-	IdMap map[string]string
+type TransactionOperation struct {
+	IdMap       map[string]string
 	UsedActions map[uint32]bool
 
 	action *pb.TransactionAction
 	stream pb.CDSCabinet_TransactionServer
-	tr fdb.Transaction
+	tr     fdb.Transaction
 	server *CDSCabinetServer
 }

@@ -18,7 +18,7 @@ import (
 )
 
 func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) (*pb.CounterValueResponse, error) {
-	total, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+	total, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		counterPerms := &perms.Count{}
 
 		cntIRI, err := iri.ResolveCounterIRI(counter, nil, counterPerms)
@@ -52,32 +52,31 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 			keysSeen += 1
 		}
 
-		if keysSeen == 0{
+		if keysSeen == 0 {
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return total, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	return &pb.CounterValueResponse{Value: total.(int64)}, nil
 }
 
-
 var CounterKeys = map[int]string{
-	0: "0",
-	1: "1",
-	2: "2",
-	3: "3",
-	4: "4",
-	5: "5",
-	6: "6",
-	7: "7",
-	8: "8",
-	9: "9",
+	0:  "0",
+	1:  "1",
+	2:  "2",
+	3:  "3",
+	4:  "4",
+	5:  "5",
+	6:  "6",
+	7:  "7",
+	8:  "8",
+	9:  "9",
 	10: "a",
 	11: "b",
 	12: "c",

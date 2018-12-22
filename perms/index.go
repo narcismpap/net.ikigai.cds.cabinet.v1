@@ -6,6 +6,5 @@
 
 package perms
 
-type Index struct{
-
+type Index struct {
 }

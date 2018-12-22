@@ -16,8 +16,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error){
-	metaValue, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.MetaGetResponse, error) {
+	metaValue, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		metaPerms := &perms.Meta{}
 
 		iri, err := iri.ResolveMetaIRI(meta, nil, metaPerms)
@@ -26,14 +26,14 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 		}
 
 		metaValue := rtr.Get(iri.GetKey(s.dbMeta)).MustGet()
-		if metaValue == nil{
+		if metaValue == nil {
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return metaValue, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 

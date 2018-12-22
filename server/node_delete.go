@@ -15,20 +15,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) NodeDelete(node *pb.Node) error{
+func (o *TransactionOperation) NodeDelete(node *pb.Node) error {
 	nodeId, err := iri.NodeResolveId(node.Id, &o.IdMap)
-	if err != nil{
+	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "node.id")
 	}
 
 	nodeIRI := &iri.Node{
 		Type: uint16(node.Type),
-		Id: nodeId,
+		Id:   nodeId,
 	}
 
 	nodePerms := &perms.Node{}
 
-	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil{
+	if vldErr := nodeIRI.ValidateIRI(nodePerms); vldErr != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
@@ -39,7 +39,7 @@ func (o *TransactionOperation) NodeDelete(node *pb.Node) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

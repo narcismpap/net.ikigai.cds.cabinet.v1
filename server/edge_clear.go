@@ -15,24 +15,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error{
+func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error {
 	subjectID, err := iri.NodeResolveId(edge.Subject, &o.IdMap)
-	if err != nil{
+	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
 	}
 
 	edgeIRI := &iri.Edge{
-		Subject: 	subjectID,
-		Predicate: 	uint16(edge.Predicate),
-		Target: 	edge.Target,
+		Subject:   subjectID,
+		Predicate: uint16(edge.Predicate),
+		Target:    edge.Target,
 	}
 
 	edgePerms := &perms.Edge{
-		AllowTargetWildcard: true,
+		AllowTargetWildcard:    true,
 		AllowPredicateWildcard: false,
 	}
 
-	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+	if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 	}
 
@@ -43,7 +43,7 @@ func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }

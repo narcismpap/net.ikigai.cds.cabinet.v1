@@ -17,18 +17,18 @@ import (
 	"strconv"
 )
 
-func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error){
+func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequential) (newSeq *pb.Sequential, err error) {
 	vldError := validateSequentialRequest(seq, []string{"t", "u"}, []string{"s"})
 
-	if vldError != nil{
+	if vldError != nil {
 		return nil, vldError
 	}
 
-	newId, err := s.fdb.Transact(func (tr fdb.Transaction) (ret interface{}, err error) {
+	newId, err := s.fdb.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		baseSeqIRI := &iri.Sequence{Type: seq.Type}
 
 		// check UUID is unique
-		if tr.Get((&iri.Sequence{Type: seq.Type, UUID: seq.Uuid}).GetReverseKey(s.dbSequence)).MustGet() != nil{
+		if tr.Get((&iri.Sequence{Type: seq.Type, UUID: seq.Uuid}).GetReverseKey(s.dbSequence)).MustGet() != nil {
 			return nil, status.Error(codes.AlreadyExists, RPCErrorDuplicateRecord)
 		}
 
@@ -37,9 +37,9 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 
 		var lastInt32 uint32
 
-		if lastNum == nil{
+		if lastNum == nil {
 			lastInt32 = uint32(1)
-		}else {
+		} else {
 			lastInt, err := strconv.ParseUint(string(lastNum), 10, 32)
 
 			if err != nil {
@@ -57,7 +57,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 		tr.Set(seqIRI.GetKey(s.dbSequence), []byte(seq.Uuid))
 		tr.Set(seqIRI.GetReverseKey(s.dbSequence), rVal)
 
-		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32 + 1), 10)))
+		tr.Set(lastKey, []byte(strconv.FormatUint(uint64(lastInt32+1), 10)))
 
 		if DebugServerRequests {
 			s.logEvent(fmt.Sprintf("SequentialCreate(%v) = %v", seq, seqIRI.GetPath()))
@@ -66,7 +66,7 @@ func (s *CDSCabinetServer) SequentialCreate(ctx context.Context, seq *pb.Sequent
 		return lastInt32, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return
 	}
 

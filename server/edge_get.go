@@ -16,33 +16,33 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest) (*pb.Edge, error){
-	edgeProp, err := s.fdb.ReadTransact(func (rtr fdb.ReadTransaction) (ret interface{}, err error) {
+func (s *CDSCabinetServer) EdgeGet(ctx context.Context, edge *pb.EdgeGetRequest) (*pb.Edge, error) {
+	edgeProp, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		edgeIRI := &iri.Edge{
-			Subject: edge.Edge.Subject,
+			Subject:   edge.Edge.Subject,
 			Predicate: uint16(edge.Edge.Predicate),
-			Target: edge.Edge.Target,
+			Target:    edge.Edge.Target,
 		}
 
 		edgePerms := &perms.Edge{
-			AllowTargetWildcard: false,
+			AllowTargetWildcard:    false,
 			AllowPredicateWildcard: false,
 		}
 
-		if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil{
+		if vldErr := edgeIRI.ValidateIRI(edgePerms); vldErr != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, vldErr)
 		}
 
 		edgeProp := rtr.Get(edgeIRI.GetKey(s.dbEdge)).MustGet()
 
-		if edgeProp == nil{
+		if edgeProp == nil {
 			return nil, status.Error(codes.NotFound, RPCErrorNotFound)
 		}
 
 		return edgeProp, nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 

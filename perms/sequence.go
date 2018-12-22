@@ -6,6 +6,5 @@
 
 package perms
 
-type Sequence struct{
-
+type Sequence struct {
 }

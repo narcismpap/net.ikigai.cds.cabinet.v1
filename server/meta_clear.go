@@ -15,8 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
-func (o *TransactionOperation) MetaClear(meta *pb.Meta) error{
+func (o *TransactionOperation) MetaClear(meta *pb.Meta) error {
 	metaPerms := &perms.Meta{
 		AllowWildcardProperty: true,
 	}
@@ -33,7 +32,7 @@ func (o *TransactionOperation) MetaClear(meta *pb.Meta) error{
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{
-		Status: pb.MutationStatus_SUCCESS,
+		Status:   pb.MutationStatus_SUCCESS,
 		ActionId: o.action.ActionId,
 	})
 }
