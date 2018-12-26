@@ -44,11 +44,11 @@ func (c *EdgeCounter) Parse(path string) error {
 	parts := strings.Split(path, "/") // c/e/{COUNTER}/{SUBJECT}/{PREDICATE}/{TARGET}
 	var err error
 
-	if c.Counter, err = StringToUINT16(parts[2]); err != nil {
+	if c.Counter, err = ParseCoreSequence(parts[2]); err != nil {
 		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
 	}
 
-	if c.Predicate, err = StringToUINT16(parts[4]); err != nil {
+	if c.Predicate, err = ParseCoreSequence(parts[4]); err != nil {
 		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
 	}
 
@@ -58,22 +58,22 @@ func (c *EdgeCounter) Parse(path string) error {
 	return nil
 }
 
-func (c *EdgeCounter) GetCounterK() string {
-	return IntToKeyElement(c.Counter)
+func (c *EdgeCounter) getCounterK() []byte {
+	return SequenceToSmallKey(c.Counter)
 }
 
-func (c *EdgeCounter) GetPredicateK() string {
-	return IntToKeyElement(c.Predicate)
+func (c *EdgeCounter) getPredicateK() []byte {
+	return SequenceToSmallKey(c.Predicate)
 }
 
 func (c *EdgeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key {
-	return dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, cntGroup})
+	return dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, cntGroup})
 }
 
 func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange {
 	return fdb.KeyRange{
-		Begin: dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "0"}),
-		End:   dbCnt.Sub("e").Pack(tuple.Tuple{c.GetCounterK(), c.Subject, c.GetPredicateK(), c.Target, "f"}),
+		Begin: dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "0"}),
+		End:   dbCnt.Sub("e").Pack(tuple.Tuple{c.getCounterK(), c.Subject, c.getPredicateK(), c.Target, "f"}),
 	}
 }
 
@@ -118,7 +118,7 @@ func (c *NodeCounter) Parse(path string) error {
 	parts := strings.Split(path, "/") // c/n/{COUNTER}/{NODE}
 	var err error
 
-	if c.Counter, err = StringToUINT16(parts[2]); err != nil {
+	if c.Counter, err = ParseCoreSequence(parts[2]); err != nil {
 		return &ParsingError{msg: "invalid counter", field: "counter.counter"}
 	}
 
@@ -126,8 +126,8 @@ func (c *NodeCounter) Parse(path string) error {
 	return nil
 }
 
-func (c *NodeCounter) getCounterK() string {
-	return IntToKeyElement(c.Counter)
+func (c *NodeCounter) getCounterK() []byte {
+	return SequenceToSmallKey(c.Counter)
 }
 
 func (c *NodeCounter) GetKey(dbCnt subspace.Subspace, cntGroup string) fdb.Key {

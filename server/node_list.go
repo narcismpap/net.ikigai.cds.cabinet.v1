@@ -39,7 +39,7 @@ func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCab
 			}
 
 			if nodeRq.IncludeType {
-				nType, err := iri.KeyElementToInt(nodeKeys[0].(string))
+				nType, err := iri.SmallKeyToSequence(nodeKeys[0].([]byte))
 
 				if err != nil {
 					return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "node.type")

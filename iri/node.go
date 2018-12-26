@@ -25,8 +25,8 @@ type Node struct {
 	nodeKSUID ksuid.KSUID
 }
 
-func (n *Node) getTypeK() string {
-	return IntToKeyElement(n.Type)
+func (n *Node) getTypeK() []byte {
+	return SequenceToSmallKey(n.Type)
 }
 
 func (n *Node) GetPath() string {
@@ -37,7 +37,7 @@ func (n *Node) Parse(path string) error {
 	parts := strings.Split(path, "/") // n/{TYPE}/{ID}
 	var err error
 
-	if n.Type, err = StringToUINT16(parts[1]); err != nil {
+	if n.Type, err = ParseCoreSequence(parts[1]); err != nil {
 		return &ParsingError{msg: "invalid type", field: "node.type"}
 	}
 

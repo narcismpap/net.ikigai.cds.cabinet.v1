@@ -71,7 +71,7 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 				}
 
 				if metaRq.IncludePredicate {
-					propType, err := iri.KeyElementToInt(metaKeys[2].(string))
+					propType, err := iri.SmallKeyToSequence(metaKeys[2].([]byte))
 					if err != nil {
 						return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "meta.edge.predicate")
 					}
@@ -87,7 +87,7 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 			}
 
 			if metaRq.IncludeProperty {
-				propType, err := iri.KeyElementToInt(metaKeys[propKey].(string))
+				propType, err := iri.SmallKeyToSequence(metaKeys[propKey].([]byte))
 				if err != nil {
 					return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "meta.key")
 				}

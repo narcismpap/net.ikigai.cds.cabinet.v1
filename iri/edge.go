@@ -36,7 +36,7 @@ func (e *Edge) Parse(path string) error {
 	parts := strings.Split(path, "/") // e/{SUBJECT}/{PREDICATE}/{TARGET}
 	var err error
 
-	if e.Predicate, err = StringToUINT16(parts[2]); err != nil {
+	if e.Predicate, err = ParseCoreSequence(parts[2]); err != nil {
 		return &ParsingError{msg: "invalid predicate", field: "edge.predicate"}
 	}
 
@@ -50,8 +50,8 @@ func (e *Edge) GetPathProperty(prop int) string {
 	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }
 
-func (e *Edge) getPredicateK() string {
-	return IntToKeyElement(e.Predicate)
+func (e *Edge) getPredicateK() []byte {
+	return SequenceToSmallKey(e.Predicate)
 }
 
 func (e *Edge) GetKey(db subspace.Subspace) fdb.Key {

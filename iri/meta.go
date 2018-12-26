@@ -39,11 +39,11 @@ func (m *EdgeMeta) Parse(path string) error {
 	parts := strings.Split(path, "/") // m/e/{SUBJECT}/{PREDICATE}/{TARGET}/{PROPERTY}
 	var err error
 
-	if m.Property, err = StringToUINT16(parts[5]); err != nil {
+	if m.Property, err = ParseCoreSequence(parts[5]); err != nil {
 		return &ParsingError{msg: "invalid property", field: "meta.property"}
 	}
 
-	if m.Predicate, err = StringToUINT16(parts[3]); err != nil {
+	if m.Predicate, err = ParseCoreSequence(parts[3]); err != nil {
 		return &ParsingError{msg: "invalid predicate", field: "counter.edge.predicate"}
 	}
 
@@ -53,12 +53,12 @@ func (m *EdgeMeta) Parse(path string) error {
 	return nil
 }
 
-func (m *EdgeMeta) getPropertyK() string {
-	return IntToKeyElement(m.Property)
+func (m *EdgeMeta) getPropertyK() []byte {
+	return SequenceToSmallKey(m.Property)
 }
 
-func (m *EdgeMeta) getPredicateK() string {
-	return IntToKeyElement(m.Predicate)
+func (m *EdgeMeta) getPredicateK() []byte {
+	return SequenceToSmallKey(m.Predicate)
 }
 
 func (m *EdgeMeta) GetKey(db subspace.Subspace) fdb.Key {
@@ -126,7 +126,7 @@ func (m *NodeMeta) Parse(path string) error {
 	parts := strings.Split(path, "/") // m/n/{NODE}/{PROP}
 	var err error
 
-	if m.Property, err = StringToUINT16(parts[3]); err != nil {
+	if m.Property, err = ParseCoreSequence(parts[3]); err != nil {
 		return &ParsingError{msg: "invalid property", field: "meta.property"}
 	}
 
@@ -134,8 +134,8 @@ func (m *NodeMeta) Parse(path string) error {
 	return nil
 }
 
-func (m *NodeMeta) getPropertyK() string {
-	return IntToKeyElement(m.Property)
+func (m *NodeMeta) getPropertyK() []byte {
+	return SequenceToSmallKey(m.Property)
 }
 
 func (m *NodeMeta) GetKey(db subspace.Subspace) fdb.Key {

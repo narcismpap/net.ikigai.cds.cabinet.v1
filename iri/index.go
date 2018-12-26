@@ -35,7 +35,7 @@ func (i *NodeIndex) Parse(path string) error {
 	parts := strings.Split(path, "/") // i/{INDEX}/{VAL}/{NODE}
 	var err error
 
-	if i.IndexId, err = StringToUINT16(parts[1]); err != nil {
+	if i.IndexId, err = ParseCoreSequence(parts[1]); err != nil {
 		return &ParsingError{msg: "invalid index", field: "index.index"}
 	}
 
@@ -45,8 +45,8 @@ func (i *NodeIndex) Parse(path string) error {
 	return nil
 }
 
-func (i *NodeIndex) getIndexK() string {
-	return IntToKeyElement(i.IndexId)
+func (i *NodeIndex) getIndexK() []byte {
+	return SequenceToSmallKey(i.IndexId)
 }
 
 func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key {

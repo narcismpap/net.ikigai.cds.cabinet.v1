@@ -8,6 +8,7 @@ package iri
 
 import (
 	pb "cds.ikigai.net/cabinet.v1/rpc"
+	"encoding/binary"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"strconv"
@@ -20,11 +21,21 @@ type IRI interface {
 	GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult
 }
 
-func IntToKeyElement(v uint16) string {
+func SequenceToSmallKey(v uint16) []byte {
+	b := make([]byte, 2)
+	binary.BigEndian.PutUint16(b, v)
+	return b
+}
+
+func SmallKeyToSequence(k []byte) (uint16, error) {
+	return binary.BigEndian.Uint16(k), nil
+}
+
+func SequenceToSortableKey(v uint16) string {
 	return strconv.FormatUint(uint64(v), 36)
 }
 
-func KeyElementToInt(k string) (uint16, error) {
+func SortableKeyToSequence(k string) (uint16, error) {
 	v, e := strconv.ParseUint(k, 36, 32)
 
 	if e != nil {
@@ -34,7 +45,7 @@ func KeyElementToInt(k string) (uint16, error) {
 	return uint16(v), nil
 }
 
-func StringToUINT16(k string) (uint16, error) {
+func ParseCoreSequence(k string) (uint16, error) {
 	v, e := strconv.ParseUint(k, 10, 32)
 
 	if e != nil {

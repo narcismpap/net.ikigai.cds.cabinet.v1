@@ -39,7 +39,7 @@ func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCab
 			}
 
 			if edgeRq.IncludePredicate {
-				predicate, err := iri.KeyElementToInt(edgeKeys[1].(string))
+				predicate, err := iri.SmallKeyToSequence(edgeKeys[1].([]byte))
 
 				if err != nil {
 					return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "edge.predicate")
