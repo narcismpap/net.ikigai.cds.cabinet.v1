@@ -14,6 +14,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"strings"
 )
 
 type Sequence struct {
@@ -29,14 +30,30 @@ func (s *Sequence) DbSeqID() string {
 
 func (s *Sequence) GetPath() string {
 	if s.SeqID > 0 {
-		return fmt.Sprintf("/s/%s/%d", s.Type, s.SeqID)
+		return fmt.Sprintf("s/%s/%d", s.Type, s.SeqID)
 	} else {
-		return fmt.Sprintf("/su/%s", s.UUID)
+		return fmt.Sprintf("su/%s", s.UUID)
 	}
 }
 
 func (s *Sequence) Parse(path string) error {
-	return errors.New("not implemented")
+	parts := strings.Split(path, "/") // s/{TYPE}/{ID} or su/{UUID}
+	var err error
+
+	switch parts[0] {
+	case "s":
+		s.Type = parts[1]
+
+		if s.SeqID, err = ParseCoreSequence32(parts[2]); err != nil {
+			return &ParsingError{msg: "invalid seqid", field: "seq.seqid"}
+		}
+	case "su":
+		s.UUID = parts[1]
+	default:
+		return &ParsingError{msg: "invalid sequence prefix", field: "0"}
+	}
+
+	return nil
 }
 
 func (s *Sequence) GetKey(db subspace.Subspace) fdb.Key {

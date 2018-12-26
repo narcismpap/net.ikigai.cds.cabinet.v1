@@ -37,7 +37,7 @@ type EdgeCounter struct {
 }
 
 func (c *EdgeCounter) GetPath() string {
-	return fmt.Sprintf("/c/e/%d/%s/%d/%s", c.Counter, c.Subject, c.Predicate, c.Target)
+	return fmt.Sprintf("c/e/%d/%s/%d/%s", c.Counter, c.Subject, c.Predicate, c.Target)
 }
 
 func (c *EdgeCounter) Parse(path string) error {
@@ -111,7 +111,7 @@ type NodeCounter struct {
 }
 
 func (c *NodeCounter) GetPath() string {
-	return fmt.Sprintf("/c/n/%d/%s", c.Counter, c.Node)
+	return fmt.Sprintf("c/n/%d/%s", c.Counter, c.Node)
 }
 
 func (c *NodeCounter) Parse(path string) error {

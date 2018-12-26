@@ -29,7 +29,7 @@ type Edge struct {
 }
 
 func (e *Edge) GetPath() string {
-	return fmt.Sprintf("/e/%s/%d/%s", e.Subject, e.Predicate, e.Target)
+	return fmt.Sprintf("e/%s/%d/%s", e.Subject, e.Predicate, e.Target)
 }
 
 func (e *Edge) Parse(path string) error {
@@ -44,10 +44,6 @@ func (e *Edge) Parse(path string) error {
 	e.Target = parts[3]
 
 	return nil
-}
-
-func (e *Edge) GetPathProperty(prop int) string {
-	return fmt.Sprintf("/e/%s/%d/%s/p/%d", e.Subject, e.Predicate, e.Target, prop)
 }
 
 func (e *Edge) getPredicateK() []byte {

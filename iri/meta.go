@@ -32,7 +32,7 @@ type EdgeMeta struct {
 }
 
 func (m *EdgeMeta) GetPath() string {
-	return fmt.Sprintf("/m/e/%s/%d/%s/%d", m.Subject, m.Predicate, m.Target, m.Property)
+	return fmt.Sprintf("m/e/%s/%d/%s/%d", m.Subject, m.Predicate, m.Target, m.Property)
 }
 
 func (m *EdgeMeta) Parse(path string) error {
@@ -119,7 +119,7 @@ type NodeMeta struct {
 }
 
 func (m *NodeMeta) GetPath() string {
-	return fmt.Sprintf("/m/n/%s/%d", m.Node, m.Property)
+	return fmt.Sprintf("m/n/%s/%d", m.Node, m.Property)
 }
 
 func (m *NodeMeta) Parse(path string) error {

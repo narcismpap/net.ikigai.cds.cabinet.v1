@@ -54,3 +54,13 @@ func ParseCoreSequence(k string) (uint16, error) {
 
 	return uint16(v), nil
 }
+
+func ParseCoreSequence32(k string) (uint32, error) {
+	v, e := strconv.ParseUint(k, 10, 32)
+
+	if e != nil {
+		return 0, e
+	}
+
+	return uint32(v), nil
+}

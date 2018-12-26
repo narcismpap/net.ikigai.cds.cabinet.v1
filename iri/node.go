@@ -30,7 +30,7 @@ func (n *Node) getTypeK() []byte {
 }
 
 func (n *Node) GetPath() string {
-	return fmt.Sprintf("/n/%d/%s", n.Type, n.Id)
+	return fmt.Sprintf("n/%d/%s", n.Type, n.Id)
 }
 
 func (n *Node) Parse(path string) error {
