@@ -4,30 +4,31 @@
 // Author: Narcis M. PAP
 // Copyright (c) 2018 Ikigai Cloud. All rights reserved.
 
-package iri
+package server
 
 import (
+	"cds.ikigai.net/cabinet.v1/iri"
 	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"errors"
 	"strings"
 )
 
-func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI, error) {
+func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (iri.IRI, error) {
 	switch mType := tMeta.Object.(type) {
 
 	case *pb.Meta_Edge:
 		subjectID, err := NodeResolveId(mType.Edge.Subject, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.subject"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "meta.edge.subject")
 		}
 
 		targetID, err := NodeResolveId(mType.Edge.Target, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.edge.target"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "meta.edge.target")
 		}
 
-		meta := &EdgeMeta{
+		meta := &iri.EdgeMeta{
 			Property:  uint16(tMeta.Key),
 			Subject:   subjectID,
 			Predicate: uint16(mType.Edge.Predicate),
@@ -39,10 +40,10 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI
 	case *pb.Meta_Node:
 		nID, err := NodeResolveId(mType.Node, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "meta.node"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "meta.node")
 		}
 
-		meta := &NodeMeta{
+		meta := &iri.NodeMeta{
 			Property: uint16(tMeta.Key),
 			Node:     nID,
 		}
@@ -50,25 +51,25 @@ func ResolveMetaIRI(tMeta *pb.Meta, nMap *map[string]string, p *perms.Meta) (IRI
 		return meta, meta.ValidateIRI(p)
 
 	default:
-		return nil, &ParsingError{msg: "unimplemented object type", field: "meta.object"}
+		return nil, iri.NewParsingError("unimplemented object type", "meta.object")
 	}
 }
 
-func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.Count) (BaseCounter, error) {
+func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.Count) (iri.BaseCounter, error) {
 	switch cType := tCounter.Object.(type) {
 
 	case *pb.Counter_Edge:
 		subjectID, err := NodeResolveId(cType.Edge.Subject, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.subject"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "counter.edge.subject")
 		}
 
 		targetID, err := NodeResolveId(cType.Edge.Target, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.edge.target"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "counter.edge.target")
 		}
 
-		cnt := &EdgeCounter{
+		cnt := &iri.EdgeCounter{
 			Counter:   uint16(tCounter.Counter),
 			Subject:   subjectID,
 			Predicate: uint16(cType.Edge.Predicate),
@@ -80,10 +81,10 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.C
 	case *pb.Counter_Node:
 		nID, err := NodeResolveId(cType.Node, nMap)
 		if err != nil {
-			return nil, &ParsingError{msg: "tmp:X is invalid", field: "counter.node"}
+			return nil, iri.NewParsingError("tmp:X is invalid", "counter.node")
 		}
 
-		cnt := &NodeCounter{
+		cnt := &iri.NodeCounter{
 			Counter: uint16(tCounter.Counter),
 			Node:    nID,
 		}
@@ -91,7 +92,7 @@ func ResolveCounterIRI(tCounter *pb.Counter, nMap *map[string]string, p *perms.C
 		return cnt, cnt.ValidateIRI(p)
 
 	default:
-		return nil, &ParsingError{msg: "unimplemented object type", field: "counter.object"}
+		return nil, iri.NewParsingError("unimplemented object type", "counter.object")
 	}
 }
 

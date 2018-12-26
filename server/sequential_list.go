@@ -30,7 +30,9 @@ func (s *CDSCabinetServer) SequentialList(seqRq *pb.SequentialListRequest, strea
 		}
 
 		listIRI := &iri.Sequence{Type: seqRq.Type}
-		ri := listIRI.GetListRange(s.dbSequence, rtr, seqRq.Opt).Iterator()
+		listOpt := &iri.ListOptions{PageSize: int(seqRq.Opt.PageSize), Reverse: seqRq.Opt.Reverse}
+
+		ri := listIRI.GetListRange(s.dbSequence, rtr, listOpt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()

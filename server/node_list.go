@@ -22,7 +22,9 @@ func (s *CDSCabinetServer) NodeList(nodeRq *pb.NodeListRequest, stream pb.CDSCab
 		}
 
 		listIRI := &iri.Node{Type: uint16(nodeRq.NodeType)}
-		ri := listIRI.GetListRange(s.dbNode, rtr, nodeRq.Opt).Iterator()
+		listOpt := &iri.ListOptions{PageSize: int(nodeRq.Opt.PageSize), Reverse: nodeRq.Opt.Reverse}
+
+		ri := listIRI.GetListRange(s.dbNode, rtr, listOpt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()

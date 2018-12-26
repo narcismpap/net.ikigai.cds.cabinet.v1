@@ -8,7 +8,6 @@ package iri
 
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
-	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -62,7 +61,7 @@ func (e *Edge) GetClearRange(db subspace.Subspace) fdb.ExactRange {
 	}
 }
 
-func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
+func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
 	readRange := db.Sub(e.Subject)
 
 	if e.Predicate > 0 {

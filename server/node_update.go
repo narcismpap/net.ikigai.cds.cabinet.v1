@@ -16,7 +16,7 @@ import (
 )
 
 func (o *TransactionOperation) NodeUpdate(node *pb.Node) error {
-	nodeId, err := iri.NodeResolveId(node.Id, &o.IdMap)
+	nodeId, err := NodeResolveId(node.Id, &o.IdMap)
 	nodePerms := &perms.Node{}
 
 	if err != nil {

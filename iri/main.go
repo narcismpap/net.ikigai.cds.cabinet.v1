@@ -7,7 +7,6 @@
 package iri
 
 import (
-	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"encoding/binary"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -18,7 +17,12 @@ type IRI interface {
 	GetPath() string
 	GetKey(db subspace.Subspace) fdb.Key
 	GetClearRange(db subspace.Subspace) fdb.ExactRange
-	GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult
+	GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult
+}
+
+type ListOptions struct{
+	PageSize int
+	Reverse bool
 }
 
 func SequenceToSmallKey(v uint16) []byte {

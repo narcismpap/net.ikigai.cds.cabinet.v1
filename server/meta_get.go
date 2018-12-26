@@ -7,7 +7,6 @@
 package server
 
 import (
-	"cds.ikigai.net/cabinet.v1/iri"
 	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
@@ -20,7 +19,7 @@ func (s *CDSCabinetServer) MetaGet(ctx context.Context, meta *pb.Meta) (*pb.Meta
 	metaValue, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		metaPerms := &perms.Meta{}
 
-		iri, err := iri.ResolveMetaIRI(meta, nil, metaPerms)
+		iri, err := ResolveMetaIRI(meta, nil, metaPerms)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}

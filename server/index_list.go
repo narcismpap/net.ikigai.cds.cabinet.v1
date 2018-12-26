@@ -22,7 +22,9 @@ func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDS
 		}
 
 		listIRI := &iri.NodeIndex{IndexId: uint16(indexRq.Index), Value: indexRq.Value}
-		ri := listIRI.GetListRange(s.dbIndex, rtr, indexRq.Opt).Iterator()
+		listOpt := &iri.ListOptions{PageSize: int(indexRq.Opt.PageSize), Reverse: indexRq.Opt.Reverse}
+
+		ri := listIRI.GetListRange(s.dbIndex, rtr, listOpt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()

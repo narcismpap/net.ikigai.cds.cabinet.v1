@@ -26,7 +26,7 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 			AllowWildcardProperty: true,
 		}
 
-		metaIRI, err := iri.ResolveMetaIRI(metaRq.Meta, nil, metaPerms)
+		metaIRI, err := ResolveMetaIRI(metaRq.Meta, nil, metaPerms)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
@@ -41,7 +41,8 @@ func (s *CDSCabinetServer) MetaList(metaRq *pb.MetaListRequest, stream pb.CDSCab
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, fmt.Sprintf("%v is not valid Meta Object", iOpt))
 		}
 
-		ri := metaIRI.GetListRange(s.dbMeta, rtr, metaRq.Opt).Iterator()
+		listOpt := &iri.ListOptions{PageSize: int(metaRq.Opt.PageSize), Reverse: metaRq.Opt.Reverse}
+		ri := metaIRI.GetListRange(s.dbMeta, rtr, listOpt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()

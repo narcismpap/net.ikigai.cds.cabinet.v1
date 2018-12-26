@@ -16,7 +16,7 @@ import (
 )
 
 func (o *TransactionOperation) NodeDelete(node *pb.Node) error {
-	nodeId, err := iri.NodeResolveId(node.Id, &o.IdMap)
+	nodeId, err := NodeResolveId(node.Id, &o.IdMap)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "node.id")
 	}

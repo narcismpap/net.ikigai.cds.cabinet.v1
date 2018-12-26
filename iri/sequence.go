@@ -8,7 +8,6 @@ package iri
 
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
-	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -67,7 +66,7 @@ func (s *Sequence) GetIncrementKey(db subspace.Subspace) fdb.Key {
 	return db.Pack(tuple.Tuple{"sl", s.Type})
 }
 
-func (s *Sequence) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
+func (s *Sequence) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
 	readRange := db.Sub(s.Type).Sub("i")
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{

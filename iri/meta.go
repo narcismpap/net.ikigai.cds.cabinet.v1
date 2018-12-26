@@ -8,7 +8,6 @@ package iri
 
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
-	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -77,7 +76,7 @@ func (m *EdgeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange {
 	return db.Sub("e").Sub(m.Subject)
 }
 
-func (m *EdgeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
+func (m *EdgeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
 	readRange := db.Sub("e").Sub(m.Subject).Sub(m.getPredicateK()).Sub(m.Target)
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{
@@ -146,7 +145,7 @@ func (m *NodeMeta) GetClearRange(db subspace.Subspace) fdb.ExactRange {
 	return db.Sub("n").Sub(m.Node)
 }
 
-func (m *NodeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *pb.ListOptions) fdb.RangeResult {
+func (m *NodeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
 	readRange := db.Sub("n").Sub(m.Node)
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{

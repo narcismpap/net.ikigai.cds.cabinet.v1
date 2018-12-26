@@ -7,7 +7,6 @@
 package server
 
 import (
-	"cds.ikigai.net/cabinet.v1/iri"
 	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
 	"context"
@@ -21,7 +20,7 @@ func (s *CDSCabinetServer) CounterGet(ctx context.Context, counter *pb.Counter) 
 	total, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (ret interface{}, err error) {
 		counterPerms := &perms.Count{}
 
-		cntIRI, err := iri.ResolveCounterIRI(counter, nil, counterPerms)
+		cntIRI, err := ResolveCounterIRI(counter, nil, counterPerms)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, err)
 		}
