@@ -69,11 +69,11 @@ func (n *Node) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *
 func (n *Node) ValidateIRI(p *perms.Node) error {
 	var err error
 
-	if !validateSequence(n.Type) {
+	if !ValidateSequence(n.Type) {
 		return &ParsingError{msg: "null record", field: "node.type"}
 	}
 
-	if n.nodeKSUID, err = validateNodeID(n.Id); err != nil {
+	if n.nodeKSUID, err = ValidateNodeId(n.Id); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "node.id"}
 	}
 

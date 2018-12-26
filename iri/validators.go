@@ -11,14 +11,14 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-func validateNodeID(id string) (ksuid.KSUID, error) {
+func ValidateNodeId(id string) (ksuid.KSUID, error) {
 	return ksuid.Parse(id)
 }
 
-func validateUUID(sUUID string) (uuid.UUID, error) {
-	return uuid.FromString(sUUID)
+func ValidateUuid(sUuid string) (uuid.UUID, error) {
+	return uuid.FromString(sUuid)
 }
 
-func validateSequence(seq uint16) bool {
-	return seq > 0 && seq < 65535
+func ValidateSequence(seq uint16) bool {
+	return seq > 0
 }

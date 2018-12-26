@@ -13,6 +13,10 @@ type ParsingError struct {
 	field string
 }
 
+func NewParsingError(msg string, field string) *ParsingError {
+	return &ParsingError{msg: msg, field: field}
+}
+
 func (e *ParsingError) Error() string {
 	return fmt.Sprintf("%s on %s", e.msg, e.field)
 }

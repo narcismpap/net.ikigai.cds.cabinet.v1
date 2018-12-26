@@ -79,20 +79,20 @@ func (s *Sequence) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 func (s *Sequence) ValidateIRI(p *perms.Sequence) error {
 	var err error
 
-	if len(s.Type) == 0 {
-		return &ParsingError{msg: "null record", field: "seq.type"}
-	} else if len(s.Type) > 10 {
-		return &ParsingError{msg: "len > 10", field: "seq.type"}
-	}
-
 	if len(s.UUID) > 0 && s.SeqID > 0 {
 		return &ParsingError{msg: "mutually exclusive", field: "seq.uuid,seq.id"}
 	}else if len(s.UUID) == 0 && s.SeqID == 0 {
 		return &ParsingError{msg: "id required", field: "seq.uuid|seq.id"}
 	}
 
+	if len(s.Type) == 0 && s.SeqID > 0 {
+		return &ParsingError{msg: "null record", field: "seq.type"}
+	} else if len(s.Type) > 10 {
+		return &ParsingError{msg: "len > 10", field: "seq.type"}
+	}
+
 	if len(s.UUID) > 0 {
-		if _, err = validateUUID(s.UUID); err != nil {
+		if _, err = ValidateUuid(s.UUID); err != nil {
 			return &ParsingError{msg: "invalid UUID", field: "seq.uuid"}
 		}
 	}

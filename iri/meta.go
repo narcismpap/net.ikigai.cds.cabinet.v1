@@ -89,17 +89,17 @@ func (m *EdgeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 func (m *EdgeMeta) ValidateIRI(p *perms.Meta) error {
 	var err error
 
-	if !validateSequence(m.Property) && !p.AllowWildcardProperty {
+	if !ValidateSequence(m.Property) && !p.AllowWildcardProperty {
 		return &ParsingError{msg: "null record", field: "meta.property"}
-	} else if !validateSequence(m.Predicate) {
+	} else if !ValidateSequence(m.Predicate) {
 		return &ParsingError{msg: "null record", field: "meta.edge.predicate"}
 	}
 
-	if m.subjectKSUID, err = validateNodeID(m.Subject); err != nil {
+	if m.subjectKSUID, err = ValidateNodeId(m.Subject); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "meta.edge.subject"}
 	}
 
-	if m.targetKSUID, err = validateNodeID(m.Target); err != nil {
+	if m.targetKSUID, err = ValidateNodeId(m.Target); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "meta.edge.target"}
 	}
 
@@ -158,11 +158,11 @@ func (m *NodeMeta) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 func (m *NodeMeta) ValidateIRI(p *perms.Meta) error {
 	var err error
 
-	if !validateSequence(m.Property) && !p.AllowWildcardProperty {
+	if !ValidateSequence(m.Property) && !p.AllowWildcardProperty {
 		return &ParsingError{msg: "null record", field: "meta.property"}
 	}
 
-	if m.nodeKSUID, err = validateNodeID(m.Node); err != nil {
+	if m.nodeKSUID, err = ValidateNodeId(m.Node); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "meta.node"}
 	}
 

@@ -73,7 +73,7 @@ func TestIRISequenceBadSignature(t *testing.T) {
 	// empty
 	x.error((&iri.Sequence{
 
-	}).ValidateIRI(p), "null record on seq.type")
+	}).ValidateIRI(p), "id required on seq.uuid|seq.id")
 
 	// bad type, missing & over-sized
 	x.error((&iri.Sequence{
@@ -90,7 +90,7 @@ func TestIRISequenceBadSignature(t *testing.T) {
 
 	// seqid & uuid cannot co-exist
 	x.error((&iri.Sequence{
-		SeqID: 100, UUID: "5D5D892A-C4EA-40F9-9724-5B1CD5A68057", Type: "test",
+		SeqID: 100, UUID: "5D5D892A-C4EA-40F9-9724-5B1CD5A68057",
 	}).ValidateIRI(p), "mutually exclusive on seq.uuid,seq.id")
 
 	// missing ID & UUID

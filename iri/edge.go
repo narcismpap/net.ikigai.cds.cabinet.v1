@@ -78,17 +78,17 @@ func (e *Edge) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *
 func (e *Edge) ValidateIRI(p *perms.Edge) error {
 	var err error
 
-	if !validateSequence(e.Predicate) && !p.AllowPredicateWildcard {
+	if !ValidateSequence(e.Predicate) && !p.AllowPredicateWildcard {
 		return &ParsingError{msg: "null record", field: "edge.predicate"}
 	}
 
-	if e.subjectKSUID, err = validateNodeID(e.Subject); err != nil {
+	if e.subjectKSUID, err = ValidateNodeId(e.Subject); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "edge.subject"}
 	}
 
 	if p.AllowTargetWildcard && e.Target == "*" {
 
-	} else if e.targetKSUID, err = validateNodeID(e.Target); err != nil {
+	} else if e.targetKSUID, err = ValidateNodeId(e.Target); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "edge.target"}
 	}
 

@@ -80,17 +80,17 @@ func (c *EdgeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange {
 func (c *EdgeCounter) ValidateIRI(p *perms.Count) error {
 	var err error
 
-	if !validateSequence(c.Counter) {
+	if !ValidateSequence(c.Counter) {
 		return &ParsingError{msg: "null record", field: "counter.counter"}
-	} else if !validateSequence(c.Predicate) {
+	} else if !ValidateSequence(c.Predicate) {
 		return &ParsingError{msg: "null record", field: "counter.edge.predicate"}
 	}
 
-	if c.subjectKSUID, err = validateNodeID(c.Subject); err != nil {
+	if c.subjectKSUID, err = ValidateNodeId(c.Subject); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.subject"}
 	}
 
-	if c.targetKSUID, err = validateNodeID(c.Target); err != nil {
+	if c.targetKSUID, err = ValidateNodeId(c.Target); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "counter.edge.target"}
 	}
 
@@ -144,11 +144,11 @@ func (c *NodeCounter) GetKeyRange(dbCnt subspace.Subspace) fdb.ExactRange {
 func (c *NodeCounter) ValidateIRI(p *perms.Count) error {
 	var err error
 
-	if !validateSequence(c.Counter) {
+	if !ValidateSequence(c.Counter) {
 		return &ParsingError{msg: "null record", field: "counter.counter"}
 	}
 
-	if c.nodeKSUID, err = validateNodeID(c.Node); err != nil {
+	if c.nodeKSUID, err = ValidateNodeId(c.Node); err != nil {
 		return &ParsingError{msg: "invalid Node ID", field: "counter.node"}
 	}
 
