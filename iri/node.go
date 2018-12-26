@@ -70,7 +70,7 @@ func (n *Node) ValidateIRI(p *perms.Node) error {
 	var err error
 
 	if !validateSequence(n.Type) {
-		return &ParsingError{msg: "null record", field: "counter.counter"}
+		return &ParsingError{msg: "null record", field: "node.type"}
 	}
 
 	if n.nodeKSUID, err = validateNodeID(n.Id); err != nil {

@@ -9,7 +9,6 @@ package iri
 import (
 	"cds.ikigai.net/cabinet.v1/perms"
 	pb "cds.ikigai.net/cabinet.v1/rpc"
-	"errors"
 	"fmt"
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -88,9 +87,7 @@ func (s *Sequence) ValidateIRI(p *perms.Sequence) error {
 
 	if len(s.UUID) > 0 && s.SeqID > 0 {
 		return &ParsingError{msg: "mutually exclusive", field: "seq.uuid,seq.id"}
-	}
-
-	if len(s.UUID) == 0 && s.SeqID == 0 {
+	}else if len(s.UUID) == 0 && s.SeqID == 0 {
 		return &ParsingError{msg: "id required", field: "seq.uuid|seq.id"}
 	}
 
@@ -98,8 +95,6 @@ func (s *Sequence) ValidateIRI(p *perms.Sequence) error {
 		if _, err = validateUUID(s.UUID); err != nil {
 			return &ParsingError{msg: "invalid UUID", field: "seq.uuid"}
 		}
-	} else if s.SeqID == 0 {
-		return errors.New("missing seqId")
 	}
 
 	return nil

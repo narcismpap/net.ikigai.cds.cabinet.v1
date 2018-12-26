@@ -77,8 +77,10 @@ func (i *NodeIndex) ValidateIRI(p *perms.Index) error {
 		return &ParsingError{msg: "null record", field: "index.IndexId"}
 	}
 
-	if len(i.Value) > 768 {
-		return &ParsingError{msg: "len > 768", field: "index.value"}
+	if len(i.Value) == 0 {
+		return &ParsingError{msg: "null record", field: "index.value"}
+	}else if len(i.Value) > 256 {
+		return &ParsingError{msg: "len > 256", field: "index.value"}
 	}
 
 	if i.nodeKSUID, err = validateNodeID(i.Node); err != nil {

@@ -42,3 +42,17 @@ func (i *IRITester) seqKey32(a uint32, b uint32, name string){
 		i.t.Errorf("Key mismatch (.%s): %d != %d", name, a, b)
 	}
 }
+
+func (i *IRITester) error(err error, expected string){
+	if err == nil || string(err.Error()) != expected{
+		i.t.Errorf("Expected [%s] error, got [%v]", expected, err)
+		panic(err)
+	}
+}
+
+func (i *IRITester) nil(err error){
+	if err != nil{
+		i.t.Errorf("Expected nil error, got [%v]", err)
+		//panic(err)
+	}
+}
