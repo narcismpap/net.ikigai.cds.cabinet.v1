@@ -12,10 +12,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
+	"sync"
 )
 
 func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) error {
 	_, err := s.fdb.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		actMux := sync.Mutex{}
 
 		trx := TransactionOperation{
 			IdMap:       make(map[string]string),
@@ -37,7 +39,9 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 			if _, ok := trx.UsedActions[trx.action.ActionId]; ok {
 				return nil, status.Error(codes.Unimplemented, RPCErrorRepeatAction)
 			} else {
+				actMux.Lock()
 				trx.UsedActions[trx.action.ActionId] = true
+				actMux.Unlock()
 			}
 
 			switch tOpr := trx.action.Action.(type) {

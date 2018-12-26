@@ -18,7 +18,7 @@ import (
 func (o *TransactionOperation) EdgeClear(edge *pb.Edge) error {
 	subjectID, err := NodeResolveId(edge.Subject, &o.IdMap)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
+		return status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "tmp:X is invalid", "edge.subject")
 	}
 
 	edgeIRI := &iri.Edge{

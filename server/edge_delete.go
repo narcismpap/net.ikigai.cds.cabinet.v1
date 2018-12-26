@@ -18,12 +18,12 @@ import (
 func (o *TransactionOperation) EdgeDelete(edge *pb.Edge) error {
 	subjectID, err := NodeResolveId(edge.Subject, &o.IdMap)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.subject")
+		return status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "tmp:X is invalid", "edge.subject")
 	}
 
 	targetID, err := NodeResolveId(edge.Target, &o.IdMap)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "edge.target")
+		return status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "tmp:X is invalid", "edge.target")
 	}
 
 	edgeIRI := &iri.Edge{

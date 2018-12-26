@@ -23,6 +23,7 @@ func (s *CDSCabinetServer) EdgeList(edgeRq *pb.EdgeListRequest, stream pb.CDSCab
 
 		listIRI := &iri.Edge{Subject: edgeRq.Subject, Predicate: uint16(edgeRq.Predicate)}
 		listOpt := &iri.ListOptions{PageSize: int(edgeRq.Opt.PageSize), Reverse: edgeRq.Opt.Reverse}
+
 		ri := listIRI.GetListRange(s.dbEdge, rtr, listOpt).Iterator()
 
 		for ri.Advance() {

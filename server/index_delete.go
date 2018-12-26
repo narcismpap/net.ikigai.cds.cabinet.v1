@@ -18,7 +18,7 @@ import (
 func (o *TransactionOperation) IndexDelete(index *pb.Index) error {
 	nodeId, err := NodeResolveId(index.Node, &o.IdMap)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, RPCErrorIRISpecific, "tmp:X is invalid", "index.node")
+		return status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "tmp:X is invalid", "index.node")
 	}
 
 	indexIRI := &iri.NodeIndex{
