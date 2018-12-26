@@ -18,7 +18,7 @@ func TestIRIError(t *testing.T) {
 
 	er := iri.NewParsingError("null record", "john.doe")
 
-	r.IsEqualString(er.Field(), "john.doe", "ParsingError.Field()")
-	r.IsEqualString(er.Message(), "null record", "ParsingError.Message()")
-	r.IsEqualString(er.Error(), "null record on john.doe", "ParsingError.Error()")
+	r.AssertEqualString(er.Field(), "john.doe", "ParsingError.Field()")
+	r.AssertEqualString(er.Message(), "null record", "ParsingError.Message()")
+	r.AssertEqualString(er.Error(), "null record on john.doe", "ParsingError.Error()")
 }
