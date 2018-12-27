@@ -12,6 +12,16 @@ import (
 	"testing"
 )
 
+var tEdgeBytes ExpectedBytes
+
+func init(){
+	// IRI: e/1EsJ4OwOAdywg8iM3dnH2ODHfjq/1024/1EsJ4O4FlJXmKdNxLk52Go4x0uE
+	tEdgeBytes.key = []byte{21, 18, 2, 101, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0, 1, 4, 0, 255, 0, 2, 49, 69, 115, 74, 52, 79, 52, 70, 108, 74, 88, 109, 75, 100, 78, 120, 76, 107, 53, 50, 71, 111, 52, 120, 48, 117, 69, 0}
+	tEdgeBytes.start = []byte{21, 18, 2, 101, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0, 1, 4, 0, 255, 0, 0}
+	tEdgeBytes.end = []byte{21, 18, 2, 101, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0, 1, 4, 0, 255, 0, 255}
+}
+
+
 func TestIRIEdgeCompose(t *testing.T) {
 	x := NewIRITester(t)
 
@@ -21,6 +31,12 @@ func TestIRIEdgeCompose(t *testing.T) {
 	x.key(e1.Subject, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "subject")
 	x.key(e1.Target, "1EsJ4O4FlJXmKdNxLk52Go4x0uE", "target")
 	x.seqKey(e1.Predicate, 1024, "predicate")
+
+	x.bytes([]byte(e1.GetKey(testDb.DbEdge)), tEdgeBytes.key, "GetKey()")
+
+	rStart, rEnd := e1.GetClearRange(testDb.DbEdge).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tEdgeBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tEdgeBytes.end, "GetClearRange(end)")
 }
 
 func TestIRIEdgeParse(t *testing.T) {
@@ -28,7 +44,7 @@ func TestIRIEdgeParse(t *testing.T) {
 
 	e2 := &iri.Edge{}
 	if err := e2.Parse("e/1EsJ4OwOAdywg8iM3dnH2ODHfjq/1024/1EsJ4O4FlJXmKdNxLk52Go4x0uE"); err != nil{
-		x.t.Log(err)
+		t.Error(err)
 	}
 
 	x.path(e2.GetPath(), "e/1EsJ4OwOAdywg8iM3dnH2ODHfjq/1024/1EsJ4O4FlJXmKdNxLk52Go4x0uE")
@@ -36,6 +52,12 @@ func TestIRIEdgeParse(t *testing.T) {
 	x.key(e2.Subject, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "subject")
 	x.key(e2.Target, "1EsJ4O4FlJXmKdNxLk52Go4x0uE", "target")
 	x.seqKey(e2.Predicate, 1024, "predicate")
+
+	x.bytes([]byte(e2.GetKey(testDb.DbEdge)), tEdgeBytes.key, "GetKey()")
+
+	rStart, rEnd := e2.GetClearRange(testDb.DbEdge).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tEdgeBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tEdgeBytes.end, "GetClearRange(end)")
 }
 
 func TestIRIEdgeBadSignature(t *testing.T) {

@@ -12,6 +12,14 @@ import (
 	"testing"
 )
 
+var tNodeBytes ExpectedBytes
+
+func init(){
+	// IRI: n/128/1EsJ4OwOAdywg8iM3dnH2ODHfjq
+	tNodeBytes.key = []byte{21, 18, 2, 110, 0, 1, 0, 255, 128, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0}
+	tNodeBytes.start = []byte{21, 18, 2, 110, 0, 1, 0, 255, 128, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0, 0}
+	tNodeBytes.end = []byte{21, 18, 2, 110, 0, 1, 0, 255, 128, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0, 255}
+}
 
 func TestIRINodeCompose(t *testing.T) {
 	x := NewIRITester(t)
@@ -21,6 +29,12 @@ func TestIRINodeCompose(t *testing.T) {
 
 	x.key(n1.Id, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "node")
 	x.seqKey(n1.Type, 128, "type")
+
+	x.bytes([]byte(n1.GetKey(testDb.DbNode)), tNodeBytes.key, "GetKey()")
+
+	rStart, rEnd := n1.GetClearRange(testDb.DbNode).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tNodeBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tNodeBytes.end, "GetClearRange(end)")
 }
 
 func TestIRINodeParse(t *testing.T) {
@@ -28,13 +42,19 @@ func TestIRINodeParse(t *testing.T) {
 
 	n2 := &iri.Node{}
 	if err := n2.Parse("n/128/1EsJ4OwOAdywg8iM3dnH2ODHfjq"); err != nil{
-		x.t.Log(err)
+		t.Error(err)
 	}
 
 	x.path(n2.GetPath(), "n/128/1EsJ4OwOAdywg8iM3dnH2ODHfjq")
 
 	x.key(n2.Id, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "node")
 	x.seqKey(n2.Type, 128, "type")
+
+	x.bytes([]byte(n2.GetKey(testDb.DbNode)), tNodeBytes.key, "GetKey()")
+
+	rStart, rEnd := n2.GetClearRange(testDb.DbNode).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tNodeBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tNodeBytes.end, "GetClearRange(end)")
 }
 
 

@@ -12,6 +12,14 @@ import (
 	"testing"
 )
 
+var tIndexBytes ExpectedBytes
+
+func init(){
+	// IRI: i/95/cat/1EsJ4OwOAdywg8iM3dnH2ODHfjq
+	tIndexBytes.key = []byte{21, 18, 2, 105, 0, 1, 0, 255, 95, 0, 2, 99, 97, 116, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0}
+	tIndexBytes.start = []byte{}
+	tIndexBytes.end = []byte{}
+}
 
 func TestIRIIndexCompose(t *testing.T) {
 	x := NewIRITester(t)
@@ -22,6 +30,8 @@ func TestIRIIndexCompose(t *testing.T) {
 	x.key(i1.Node, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "node")
 	x.key(i1.Value, "cat", "value")
 	x.seqKey(i1.IndexId, 95, "index")
+
+	x.bytes([]byte(i1.GetKey(testDb.DbIndex)), tIndexBytes.key, "GetKey()")
 }
 
 func TestIRIIndexParse(t *testing.T) {
@@ -29,7 +39,7 @@ func TestIRIIndexParse(t *testing.T) {
 
 	i2 := &iri.NodeIndex{}
 	if err := i2.Parse("i/95/cat/1EsJ4OwOAdywg8iM3dnH2ODHfjq"); err != nil{
-		x.t.Log(err)
+		t.Error(err)
 	}
 
 	x.path(i2.GetPath(), "i/95/cat/1EsJ4OwOAdywg8iM3dnH2ODHfjq")
@@ -37,6 +47,8 @@ func TestIRIIndexParse(t *testing.T) {
 	x.key(i2.Node, "1EsJ4OwOAdywg8iM3dnH2ODHfjq", "node")
 	x.key(i2.Value, "cat", "value")
 	x.seqKey(i2.IndexId, 95, "index")
+
+	x.bytes([]byte(i2.GetKey(testDb.DbIndex)), tIndexBytes.key, "GetKey()")
 }
 
 func TestIRIIndexBadSignature(t *testing.T) {

@@ -75,6 +75,10 @@ func (s *Sequence) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, o
 	})
 }
 
+func (s *Sequence) GetClearRange(db subspace.Subspace) fdb.ExactRange {
+	return nil
+}
+
 func (s *Sequence) ValidateIRI(p *perms.Sequence) error {
 	var err error
 
