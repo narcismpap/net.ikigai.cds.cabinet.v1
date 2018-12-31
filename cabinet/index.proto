@@ -14,4 +14,10 @@ message Index{
     string value = 4;
 
     bytes properties = 10;
+    bool unique = 11;
+}
+
+message IndexChoice{
+    string value = 1;
+    uint32 count = 2;
 }

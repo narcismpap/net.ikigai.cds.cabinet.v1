@@ -25,6 +25,7 @@ func (o *TransactionOperation) IndexDelete(index *pb.Index) error {
 		Node:    nodeId,
 		IndexId: uint16(index.Type),
 		Value:   index.Value,
+		Unique:  index.Unique,
 	}
 
 	indexPerms := &perms.Index{}
@@ -34,6 +35,12 @@ func (o *TransactionOperation) IndexDelete(index *pb.Index) error {
 	}
 
 	o.tr.Clear(indexIRI.GetKey(o.server.dbIndex))
+
+	if !index.Unique {
+		incVal, err := Int64ToBytes(int64(-1))
+		CheckFatalError(err)
+		o.tr.Add(indexIRI.GetCounterKey(o.server.dbIndexCnt), incVal)
+	}
 
 	if DebugServerRequests {
 		o.server.logEvent(fmt.Sprintf("T.IndexDelete(%v) = %v", o.action, indexIRI.GetPath()))

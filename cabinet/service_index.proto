@@ -34,3 +34,8 @@ message IndexListRequest{
     bool include_prop = 22;
     bool include_node = 23;
 }
+
+message IndexChoiceRequest{
+    ListOptions opt = 1;
+    uint32 index = 2;
+}

@@ -37,20 +37,24 @@ func readCheckLogic(tr fdb.Transaction, s *CDSCabinetServer, rcRq *pb.ReadCheckR
 		return false, err
 	}
 
-	switch targetObj := rcRq.Target.Target.(type) {
-	case *pb.CheckTarget_Iri:
-		targetBytes, err := getIRIValue(tr, s, targetObj.Iri)
-		if err != nil {
-			return false, err
+	if rcRq.Target == nil{
+		target = ""
+	}else {
+		switch targetObj := rcRq.Target.Target.(type) {
+		case *pb.CheckTarget_Iri:
+			targetBytes, err := getIRIValue(tr, s, targetObj.Iri)
+			if err != nil {
+				return false, err
+			}
+
+			target = string(targetBytes)
+
+		case *pb.CheckTarget_Val:
+			target = targetObj.Val
+
+		default:
+			return false, status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "unknown target type", "readCheck.target")
 		}
-
-		target = string(targetBytes)
-
-	case *pb.CheckTarget_Val:
-		target = targetObj.Val
-
-	default:
-		return false, status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "unknown target type", "readCheck.target")
 	}
 
 	switch rcRq.Operator {

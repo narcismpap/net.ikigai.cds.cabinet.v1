@@ -25,6 +25,7 @@ type CDSCabinetServer struct {
 	dbNode     subspace.Subspace
 	dbEdge     subspace.Subspace
 	dbIndex    subspace.Subspace
+	dbIndexCnt subspace.Subspace
 	dbMeta     subspace.Subspace
 	dbCount    subspace.Subspace
 	dbSequence subspace.Subspace
@@ -53,6 +54,7 @@ func StartServer() *CDSCabinetServer {
 		dbNode:     container.Sub("n"),
 		dbEdge:     container.Sub("e"),
 		dbIndex:    container.Sub("i"),
+		dbIndexCnt: container.Sub("k"),
 		dbMeta:     container.Sub("m"),
 		dbCount:    container.Sub("c"),
 		dbSequence: container.Sub("s"),

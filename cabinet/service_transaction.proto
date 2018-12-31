@@ -39,7 +39,7 @@ message TransactionAction{
         Edge edge_delete = 12;
         Edge edge_clear = 13;
 
-        Index index_update = 21;
+        Index index_create = 21;
         Index index_delete = 22;
         // index clearing is the app's responsibility using *.index_delete
 

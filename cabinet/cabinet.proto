@@ -39,6 +39,7 @@ service CDSCabinet {
 
     rpc IndexGet(IndexGetRequest) returns(Index);
     rpc IndexList(IndexListRequest) returns(stream Index);
+    rpc IndexChoices(IndexChoiceRequest) returns(stream IndexChoice);
 
     rpc MetaGet(Meta) returns(MetaGetResponse);
     rpc MetaList(MetaListRequest) returns(stream Meta);

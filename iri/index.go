@@ -22,6 +22,7 @@ type NodeIndex struct {
 	Node    string
 	IndexId uint16
 	Value   string
+	Unique	bool
 
 	nodeKSUID ksuid.KSUID
 }
@@ -52,6 +53,10 @@ func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key {
 	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value, i.Node})
 }
 
+func (i *NodeIndex) GetCounterKey(db subspace.Subspace) fdb.Key {
+	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value})
+}
+
 func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange {
 	return nil
 }
@@ -62,6 +67,15 @@ func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, 
 	if i.Value != "*" {
 		readRange = readRange.Sub(i.Value)
 	}
+
+	return rtr.GetRange(readRange, fdb.RangeOptions{
+		Limit:   int(opt.PageSize),
+		Reverse: opt.Reverse,
+	})
+}
+
+func (i *NodeIndex) GetCounterListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
+	readRange := db.Sub(i.getIndexK())
 
 	return rtr.GetRange(readRange, fdb.RangeOptions{
 		Limit:   int(opt.PageSize),

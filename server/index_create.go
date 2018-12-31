@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (o *TransactionOperation) IndexUpdate(index *pb.Index) error {
+func (o *TransactionOperation) IndexCreate(index *pb.Index) error {
 	nodeId, err := NodeResolveId(index.Node, &o.IdMap)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, RPCErrorFieldSpecific, "tmp:X is invalid", "index.node")
@@ -25,6 +25,7 @@ func (o *TransactionOperation) IndexUpdate(index *pb.Index) error {
 		Node:    nodeId,
 		IndexId: uint16(index.Type),
 		Value:   index.Value,
+		Unique:  index.Unique,
 	}
 
 	indexPerms := &perms.Index{}
@@ -35,8 +36,14 @@ func (o *TransactionOperation) IndexUpdate(index *pb.Index) error {
 
 	o.tr.Set(indexIRI.GetKey(o.server.dbIndex), PreparePayload(index.Properties))
 
+	if !index.Unique {
+		incVal, err := Int64ToBytes(int64(1))
+		CheckFatalError(err)
+		o.tr.Add(indexIRI.GetCounterKey(o.server.dbIndexCnt), incVal)
+	}
+
 	if DebugServerRequests {
-		o.server.logEvent(fmt.Sprintf("T.IndexUpdate(%v) = %v", o.action, indexIRI.GetPath()))
+		o.server.logEvent(fmt.Sprintf("T.IndexCreate(%v) = %v", o.action, indexIRI.GetPath()))
 	}
 
 	return o.stream.Send(&pb.TransactionActionResponse{

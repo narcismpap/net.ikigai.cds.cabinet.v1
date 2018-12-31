@@ -72,8 +72,8 @@ func (s *CDSCabinetServer) Transaction(bStream pb.CDSCabinet_TransactionServer) 
 				break
 
 			// Index
-			case *pb.TransactionAction_IndexUpdate:
-				err = trx.IndexUpdate(tOpr.IndexUpdate)
+			case *pb.TransactionAction_IndexCreate:
+				err = trx.IndexCreate(tOpr.IndexCreate)
 				break
 
 			case *pb.TransactionAction_IndexDelete:

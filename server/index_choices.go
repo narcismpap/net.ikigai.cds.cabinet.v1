@@ -15,41 +15,34 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *CDSCabinetServer) IndexList(indexRq *pb.IndexListRequest, stream pb.CDSCabinet_IndexListServer) error {
+func (s *CDSCabinetServer) IndexChoices(indexRq *pb.IndexChoiceRequest, stream pb.CDSCabinet_IndexChoicesServer) error {
 	_, err := s.fdb.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		if DebugServerRequests {
-			s.logEvent(fmt.Sprintf("IndexList(%v)", indexRq))
+			s.logEvent(fmt.Sprintf("IndexChoices(%v)", indexRq))
 		}
 
-		listIRI := &iri.NodeIndex{IndexId: uint16(indexRq.Index), Value: indexRq.Value}
+		listIRI := &iri.NodeIndex{IndexId: uint16(indexRq.Index), Value: "*"}
 		listOpt := &iri.ListOptions{PageSize: int(indexRq.Opt.PageSize), Reverse: indexRq.Opt.Reverse}
 
-		ri := listIRI.GetListRange(s.dbIndex, rtr, listOpt).Iterator()
+		ri := listIRI.GetCounterListRange(s.dbIndexCnt, rtr, listOpt).Iterator()
 
 		for ri.Advance() {
 			kv := ri.MustGet()
-			indexKeys, err := s.dbIndex.Unpack(kv.Key) // [type, value, node] = properties
+			idxChoiceKeys, err := s.dbIndexCnt.Unpack(kv.Key) // [type, value] = atomic<cnt>
 
 			if err != nil {
 				return nil, status.Errorf(codes.DataLoss, RPCErrorDataCorrupted, "index.key")
 			}
 
-			obj := &pb.Index{}
+			cVal, err := BytesToInt(kv.Value)
 
-			if indexRq.IncludeIndex {
-				obj.Type = indexRq.Index
+			if err != nil {
+				return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "index.choice.key"))
 			}
 
-			if indexRq.IncludeValue {
-				obj.Value = indexKeys[1].(string)
-			}
-
-			if indexRq.IncludeProp {
-				obj.Properties = kv.Value
-			}
-
-			if indexRq.IncludeNode {
-				obj.Node = indexKeys[2].(string)
+			obj := &pb.IndexChoice{
+				Value: idxChoiceKeys[1].(string),
+				Count: uint32(cVal),
 			}
 
 			if err := stream.Send(obj); err != nil {
