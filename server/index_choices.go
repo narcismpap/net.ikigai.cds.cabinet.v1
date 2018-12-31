@@ -40,6 +40,12 @@ func (s *CDSCabinetServer) IndexChoices(indexRq *pb.IndexChoiceRequest, stream p
 				return nil, status.Error(codes.DataLoss, fmt.Sprintf(RPCErrorDataCorrupted, "index.choice.key"))
 			}
 
+			// sanity checks, when counter drops <0 means there is an application bug (T.IndexDelete > T.IndexCreate)
+			if cVal < 0{
+				s.logError(NewKeyReport(KeyReportBelowZero, indexRq, "val <0", []byte(kv.Key), kv.Value))
+				cVal = 0
+			}
+
 			obj := &pb.IndexChoice{
 				Value: idxChoiceKeys[1].(string),
 				Count: uint32(cVal),

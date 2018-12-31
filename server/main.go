@@ -31,8 +31,30 @@ type CDSCabinetServer struct {
 	dbSequence subspace.Subspace
 }
 
+type KeyReportClass uint8
+
+const (
+	KeyReportBelowZero = KeyReportClass(0)
+)
+
+type KeyReport struct{
+	class KeyReportClass
+	request interface{}
+	err string
+	key []byte
+	value []byte
+}
+
+func NewKeyReport(class KeyReportClass, request interface{}, err string, key []byte, value []byte) *KeyReport {
+	return &KeyReport{class: class, request: request, err: err, key: key, value: value}
+}
+
 func (s *CDSCabinetServer) logEvent(e string) {
 	fmt.Println(e)
+}
+
+func (s *CDSCabinetServer) logError(k *KeyReport) {
+	fmt.Printf("ERROR: KeyReport(%v) got %v on %v \n", k.request, k.value, k.key)
 }
 
 func StartServer() *CDSCabinetServer {

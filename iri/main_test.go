@@ -28,6 +28,7 @@ type IRITesterDb struct {
 	DbNode     subspace.Subspace
 	DbEdge     subspace.Subspace
 	DbIndex    subspace.Subspace
+	DbIndexCnt subspace.Subspace
 	DbMeta     subspace.Subspace
 	DbCount    subspace.Subspace
 	DbSequence subspace.Subspace
@@ -50,6 +51,7 @@ func init() {
 	testDb.DbNode = testDb.Container.Sub("n")
 	testDb.DbEdge = testDb.Container.Sub("e")
 	testDb.DbIndex = testDb.Container.Sub("i")
+	testDb.DbIndexCnt = testDb.Container.Sub("k")
 	testDb.DbMeta = testDb.Container.Sub("m")
 	testDb.DbCount = testDb.Container.Sub("c")
 	testDb.DbSequence = testDb.Container.Sub("s")

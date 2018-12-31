@@ -13,12 +13,17 @@ import (
 )
 
 var tIndexBytes ExpectedBytes
+var tIndexCounterBytes ExpectedBytes
 
 func init(){
 	// IRI: i/95/cat/1EsJ4OwOAdywg8iM3dnH2ODHfjq
 	tIndexBytes.key = []byte{21, 18, 2, 105, 0, 1, 0, 255, 95, 0, 2, 99, 97, 116, 0, 2, 49, 69, 115, 74, 52, 79, 119, 79, 65, 100, 121, 119, 103, 56, 105, 77, 51, 100, 110, 72, 50, 79, 68, 72, 102, 106, 113, 0}
-	tIndexBytes.start = []byte{}
-	tIndexBytes.end = []byte{}
+	tIndexBytes.start = []byte{21, 18, 2, 105, 0, 1, 0, 255, 95, 0, 0}
+	tIndexBytes.end = []byte{21, 18, 2, 105, 0, 1, 0, 255, 95, 0, 255}
+
+	tIndexCounterBytes.key = []byte{21, 18, 2, 107, 0, 1, 0, 255, 95, 0, 2, 99, 97, 116, 0}
+	tIndexCounterBytes.start = []byte{21, 18, 2, 107, 0, 1, 0, 255, 95, 0, 0}
+	tIndexCounterBytes.end = []byte{21, 18, 2, 107, 0, 1, 0, 255, 95, 0, 255}
 }
 
 func TestIRIIndexCompose(t *testing.T) {
@@ -31,7 +36,19 @@ func TestIRIIndexCompose(t *testing.T) {
 	x.key(i1.Value, "cat", "value")
 	x.seqKey(i1.IndexId, 95, "index")
 
+	// std key
 	x.bytes([]byte(i1.GetKey(testDb.DbIndex)), tIndexBytes.key, "GetKey()")
+
+	rStart, rEnd := i1.GetClearRange(testDb.DbIndex).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tIndexBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tIndexBytes.end, "GetClearRange(end)")
+
+	// counter key
+	x.bytes([]byte(i1.GetCounterKey(testDb.DbIndexCnt)), tIndexCounterBytes.key, "GetKey()")
+
+	crStart, crEnd := i1.GetCounterClearRange(testDb.DbIndexCnt).FDBRangeKeys()
+	x.bytes([]byte(crStart.FDBKey()), tIndexCounterBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(crEnd.FDBKey()), tIndexCounterBytes.end, "GetClearRange(end)")
 }
 
 func TestIRIIndexParse(t *testing.T) {
@@ -48,7 +65,71 @@ func TestIRIIndexParse(t *testing.T) {
 	x.key(i2.Value, "cat", "value")
 	x.seqKey(i2.IndexId, 95, "index")
 
+	// std key
 	x.bytes([]byte(i2.GetKey(testDb.DbIndex)), tIndexBytes.key, "GetKey()")
+
+	rStart, rEnd := i2.GetClearRange(testDb.DbIndex).FDBRangeKeys()
+	x.bytes([]byte(rStart.FDBKey()), tIndexBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(rEnd.FDBKey()), tIndexBytes.end, "GetClearRange(end)")
+
+	// counter key
+	x.bytes([]byte(i2.GetCounterKey(testDb.DbIndexCnt)), tIndexCounterBytes.key, "GetKey()")
+
+	crStart, crEnd := i2.GetCounterClearRange(testDb.DbIndexCnt).FDBRangeKeys()
+	x.bytes([]byte(crStart.FDBKey()), tIndexCounterBytes.start, "GetClearRange(start)")
+	x.bytes([]byte(crEnd.FDBKey()), tIndexCounterBytes.end, "GetClearRange(end)")
+}
+
+func TestIRIPermissions(t *testing.T) {
+	x := NewIRITester(t)
+
+	pNone := &perms.Index{}
+	pNode := &perms.Index{AllowNodeWildcard: true}
+	pValue := &perms.Index{AllowValueWildcard: true}
+	pBoth := &perms.Index{AllowNodeWildcard: true, AllowValueWildcard: true}
+
+	// Missing Node
+	x.error((&iri.NodeIndex{
+		IndexId: 10, Value: "cat",
+	}).ValidateIRI(pNone), "invalid Node ID on index.node")
+
+	x.error((&iri.NodeIndex{
+		IndexId: 10, Value: "cat",
+	}).ValidateIRI(pValue), "invalid Node ID on index.node")
+
+	x.nil((&iri.NodeIndex{
+		IndexId: 10, Value: "cat",
+	}).ValidateIRI(pNode))
+
+	x.nil((&iri.NodeIndex{
+		IndexId: 10, Value: "cat",
+	}).ValidateIRI(pBoth))
+
+	// Missing Value
+	x.error((&iri.NodeIndex{
+		IndexId: 10, Node: "1EsJ4OwOAdywg8iM3dnH2ODHfjq",
+	}).ValidateIRI(pNone), "null record on index.value")
+
+	x.error((&iri.NodeIndex{
+		IndexId: 10, Node: "1EsJ4OwOAdywg8iM3dnH2ODHfjq",
+	}).ValidateIRI(pNone), "null record on index.value")
+
+	x.nil((&iri.NodeIndex{
+		IndexId: 10, Node: "1EsJ4OwOAdywg8iM3dnH2ODHfjq",
+	}).ValidateIRI(pValue))
+
+	x.nil((&iri.NodeIndex{
+		IndexId: 10, Node: "1EsJ4OwOAdywg8iM3dnH2ODHfjq",
+	}).ValidateIRI(pBoth))
+
+	// Missing both
+	x.error((&iri.NodeIndex{
+		IndexId: 10,
+	}).ValidateIRI(pNone), "null record on index.value")
+
+	x.nil((&iri.NodeIndex{
+		IndexId: 10,
+	}).ValidateIRI(pBoth))
 }
 
 func TestIRIIndexBadSignature(t *testing.T) {

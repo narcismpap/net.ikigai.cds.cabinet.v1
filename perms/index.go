@@ -7,4 +7,6 @@
 package perms
 
 type Index struct {
+	AllowNodeWildcard bool
+	AllowValueWildcard bool
 }

@@ -23,6 +23,10 @@ message IndexGetRequest{
     Index index = 1;
 }
 
+message IndexDropRequest{
+    uint32 index = 1;
+}
+
 message IndexListRequest{
     ListOptions opt = 1;
 

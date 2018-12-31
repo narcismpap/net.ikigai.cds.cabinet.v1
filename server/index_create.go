@@ -37,9 +37,7 @@ func (o *TransactionOperation) IndexCreate(index *pb.Index) error {
 	o.tr.Set(indexIRI.GetKey(o.server.dbIndex), PreparePayload(index.Properties))
 
 	if !index.Unique {
-		incVal, err := Int64ToBytes(int64(1))
-		CheckFatalError(err)
-		o.tr.Add(indexIRI.GetCounterKey(o.server.dbIndexCnt), incVal)
+		o.tr.Add(indexIRI.GetCounterKey(o.server.dbIndexCnt), MustInt64ToBytes(1))
 	}
 
 	if DebugServerRequests {

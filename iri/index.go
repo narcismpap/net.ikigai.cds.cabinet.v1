@@ -53,12 +53,8 @@ func (i *NodeIndex) GetKey(db subspace.Subspace) fdb.Key {
 	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value, i.Node})
 }
 
-func (i *NodeIndex) GetCounterKey(db subspace.Subspace) fdb.Key {
-	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value})
-}
-
 func (i *NodeIndex) GetClearRange(db subspace.Subspace) fdb.ExactRange {
-	return nil
+	return db.Sub(i.getIndexK())
 }
 
 func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
@@ -74,6 +70,10 @@ func (i *NodeIndex) GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, 
 	})
 }
 
+func (i *NodeIndex) GetCounterKey(db subspace.Subspace) fdb.Key {
+	return db.Pack(tuple.Tuple{i.getIndexK(), i.Value})
+}
+
 func (i *NodeIndex) GetCounterListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult {
 	readRange := db.Sub(i.getIndexK())
 
@@ -83,6 +83,10 @@ func (i *NodeIndex) GetCounterListRange(db subspace.Subspace, rtr fdb.ReadTransa
 	})
 }
 
+func (i *NodeIndex) GetCounterClearRange(db subspace.Subspace) fdb.ExactRange {
+	return db.Sub(i.getIndexK())
+}
+
 func (i *NodeIndex) ValidateIRI(p *perms.Index) error {
 	var err error
 
@@ -90,13 +94,13 @@ func (i *NodeIndex) ValidateIRI(p *perms.Index) error {
 		return &ParsingError{msg: "null record", field: "index.IndexId"}
 	}
 
-	if len(i.Value) == 0 {
+	if len(i.Value) == 0 && !p.AllowValueWildcard {
 		return &ParsingError{msg: "null record", field: "index.value"}
-	}else if len(i.Value) > 256 {
+	}else if len(i.Value) > 256 && !p.AllowValueWildcard {
 		return &ParsingError{msg: "len > 256", field: "index.value"}
 	}
 
-	if i.nodeKSUID, err = ValidateNodeId(i.Node); err != nil {
+	if i.nodeKSUID, err = ValidateNodeId(i.Node); err != nil && !p.AllowNodeWildcard {
 		return &ParsingError{msg: "invalid Node ID", field: "index.node"}
 	}
 

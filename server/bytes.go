@@ -11,6 +11,13 @@ import (
 	"encoding/binary"
 )
 
+func MustInt64ToBytes(v int64) []byte {
+	vBytes, err := Int64ToBytes(int64(v))
+	CheckFatalError(err)
+
+	return vBytes
+}
+
 func Int64ToBytes(v int64) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, v)
