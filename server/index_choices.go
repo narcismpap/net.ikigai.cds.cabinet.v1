@@ -41,7 +41,7 @@ func (s *CDSCabinetServer) IndexChoices(indexRq *pb.IndexChoiceRequest, stream p
 			}
 
 			// sanity checks, when counter drops <0 means there is an application bug (T.IndexDelete > T.IndexCreate)
-			if cVal < 0{
+			if cVal < 0 {
 				s.logError(NewKeyReport(KeyReportBelowZero, indexRq, "val <0", []byte(kv.Key), kv.Value))
 				cVal = 0
 			}

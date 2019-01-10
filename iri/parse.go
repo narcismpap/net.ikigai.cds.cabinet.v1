@@ -15,25 +15,25 @@ func Parse(s string) (IRI, error) {
 		err := seq.Parse(s)
 		return seq, err
 
-	// Sequence (UUID)
-	}else if s[:3] == "su/" {
+		// Sequence (UUID)
+	} else if s[:3] == "su/" {
 		seq := &Sequence{}
 		err := seq.Parse(s)
 		return seq, err
 
-	// Edge
+		// Edge
 	} else if s[:2] == "e/" {
 		seq := &Edge{}
 		err := seq.Parse(s)
 		return seq, err
 
-	// Index
+		// Index
 	} else if s[:2] == "i/" {
 		seq := &NodeIndex{}
 		err := seq.Parse(s)
 		return seq, err
 
-	// Meta
+		// Meta
 	} else if s[:2] == "m/" {
 		if s[2:4] == "n/" {
 			seq := &NodeMeta{}
@@ -45,7 +45,7 @@ func Parse(s string) (IRI, error) {
 			return seq, err
 		}
 
-	// Node
+		// Node
 	} else if s[:2] == "n/" {
 		seq := &Node{}
 		err := seq.Parse(s)

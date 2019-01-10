@@ -18,7 +18,7 @@ type IRI interface {
 	GetListRange(db subspace.Subspace, rtr fdb.ReadTransaction, opt *ListOptions) fdb.RangeResult
 }
 
-type ListOptions struct{
+type ListOptions struct {
 	PageSize int
-	Reverse bool
+	Reverse  bool
 }

@@ -37,9 +37,9 @@ func readCheckLogic(tr fdb.Transaction, s *CDSCabinetServer, rcRq *pb.ReadCheckR
 		return false, err
 	}
 
-	if rcRq.Target == nil{
+	if rcRq.Target == nil {
 		target = ""
-	}else {
+	} else {
 		switch targetObj := rcRq.Target.Target.(type) {
 		case *pb.CheckTarget_Iri:
 			targetBytes, err := getIRIValue(tr, s, targetObj.Iri)

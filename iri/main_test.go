@@ -15,10 +15,22 @@ import (
 	"valencex.com/dev/testutil"
 )
 
-type ExpectedBytes struct{
-	key []byte
+type ExpectedBytes struct {
+	key   []byte
 	start []byte
-	end []byte
+	end   []byte
+}
+
+func (s *ExpectedBytes) getKey(sub []byte) []byte{
+	return append(sub, s.key...)
+}
+
+func (s *ExpectedBytes) getStart(sub []byte) []byte{
+	return append(sub, s.start...)
+}
+
+func (s *ExpectedBytes) GetEnd(sub []byte) []byte{
+	return append(sub, s.end...)
 }
 
 type IRITesterDb struct {
@@ -32,6 +44,14 @@ type IRITesterDb struct {
 	DbMeta     subspace.Subspace
 	DbCount    subspace.Subspace
 	DbSequence subspace.Subspace
+
+	DbNodeBytes     []byte
+	DbEdgeBytes     []byte
+	DbIndexBytes    []byte
+	DbIndexCntBytes []byte
+	DbMetaBytes     []byte
+	DbCountBytes    []byte
+	DbSequenceBytes []byte
 }
 
 var testDb IRITesterDb
@@ -55,6 +75,14 @@ func init() {
 	testDb.DbMeta = testDb.Container.Sub("m")
 	testDb.DbCount = testDb.Container.Sub("c")
 	testDb.DbSequence = testDb.Container.Sub("s")
+
+	testDb.DbNodeBytes = testDb.DbNode.Bytes()
+	testDb.DbEdgeBytes = testDb.DbEdge.Bytes()
+	testDb.DbIndexBytes = testDb.DbIndex.Bytes()
+	testDb.DbIndexCntBytes = testDb.DbIndexCnt.Bytes()
+	testDb.DbMetaBytes = testDb.DbMeta.Bytes()
+	testDb.DbCountBytes = testDb.DbCount.Bytes()
+	testDb.DbSequenceBytes = testDb.DbSequence.Bytes()
 }
 
 type IRITester struct {

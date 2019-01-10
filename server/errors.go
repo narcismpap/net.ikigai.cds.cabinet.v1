@@ -27,7 +27,7 @@ const (
 	RPCErrorIRISpecific     = "E(0x011) IRI: %s"
 	RPCErrorListIterator    = "E(0x012) List iteration failed"
 	RPCErrorReadCheck       = "E(0x013) ReadCheck failure in transaction"
-	RPCErrorServer			= "E(0x014) Server processing error"
+	RPCErrorServer          = "E(0x014) Server processing error"
 )
 
 func CheckFatalError(err error) {

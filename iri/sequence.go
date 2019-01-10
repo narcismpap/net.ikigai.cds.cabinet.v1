@@ -84,7 +84,7 @@ func (s *Sequence) ValidateIRI(p *perms.Sequence) error {
 
 	if len(s.UUID) > 0 && s.SeqID > 0 {
 		return &ParsingError{msg: "mutually exclusive", field: "seq.uuid,seq.id"}
-	}else if len(s.UUID) == 0 && s.SeqID == 0 {
+	} else if len(s.UUID) == 0 && s.SeqID == 0 {
 		return &ParsingError{msg: "id required", field: "seq.uuid|seq.id"}
 	}
 

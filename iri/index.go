@@ -22,7 +22,7 @@ type NodeIndex struct {
 	Node    string
 	IndexId uint16
 	Value   string
-	Unique	bool
+	Unique  bool
 
 	nodeKSUID ksuid.KSUID
 }
@@ -96,7 +96,7 @@ func (i *NodeIndex) ValidateIRI(p *perms.Index) error {
 
 	if len(i.Value) == 0 && !p.AllowValueWildcard {
 		return &ParsingError{msg: "null record", field: "index.value"}
-	}else if len(i.Value) > 256 && !p.AllowValueWildcard {
+	} else if len(i.Value) > 256 && !p.AllowValueWildcard {
 		return &ParsingError{msg: "len > 256", field: "index.value"}
 	}
 

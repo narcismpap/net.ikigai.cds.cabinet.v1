@@ -19,8 +19,8 @@ func TestNodeResolveId(t *testing.T) {
 	mp := map[string]string{"1": "1Et4vvPvqDfhGyGhpzaizwSEYU0", "2": "1Et4vwss75S9KYuZw2nXgVKiLQT"}
 	em := make(map[string]string)
 
-	mapTests := []struct{
-		in string
+	mapTests := []struct {
+		in  string
 		out string
 	}{
 		{"test", "test"},
@@ -29,7 +29,7 @@ func TestNodeResolveId(t *testing.T) {
 		{"tmp:2", "1Et4vwss75S9KYuZw2nXgVKiLQT"},
 	}
 
-	for t := range mapTests{
+	for t := range mapTests {
 		vl, err := server.NodeResolveId(mapTests[t].in, &mp)
 
 		r.AssertNilError(err, "NodeResolveId")

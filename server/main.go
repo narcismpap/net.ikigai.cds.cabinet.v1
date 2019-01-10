@@ -37,12 +37,12 @@ const (
 	KeyReportBelowZero = KeyReportClass(0)
 )
 
-type KeyReport struct{
-	class KeyReportClass
+type KeyReport struct {
+	class   KeyReportClass
 	request interface{}
-	err string
-	key []byte
-	value []byte
+	err     string
+	key     []byte
+	value   []byte
 }
 
 func NewKeyReport(class KeyReportClass, request interface{}, err string, key []byte, value []byte) *KeyReport {

@@ -20,4 +20,3 @@ func (r *rpcMsg) Matches(msg interface{}) bool {
 func (r *rpcMsg) String() string {
 	return fmt.Sprintf("is %s", r.msg)
 }
-
